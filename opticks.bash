@@ -3941,40 +3941,26 @@ opticks-okdist-dirlabel-notes
 Examples::
 
    el9_amd64_gcc11
-
-Messy ancient version of the dirlabel, before following simple JUNOSW approach::
-
-   x86_64-centos7-gcc48-geant4_10_04_p02-dbg
+   el9_amd64_gcc15
+   el9_amd64_gcc15_g411  # MAYBE BETTER NOT ?
 
 The label is used by okdist- for naming directories that contain
 Opticks binary distributions.
 
-Note that the below versions are not included in this directory label as
-they are encompassed by the Opticks version.
+Perhaps should stick with standard JUNOSW arch names - but
+could potentially add a sub-config dirname ?::
 
+    el9_amd64_gcc15/cuda13_g411
+
+When changing this need to change JUNO_OPTICKS_PREFIX used in ~/junosw/.gitlab-ci.yml
+
+Potential things to put in the sub-config dirname:
+
+* Debug/Release/Client
 * OptiX version
 * CUDA Version
 * NVIDIA Driver Version
 * Geant4 version
-
-
-CUDA is treated separately and lib access is from LD_LIBRARY_PATH
-so perhaps it belongs in the name ?
-
-junosw releases::
-
-    /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.2.3/
-
-
-HMM Perhaps CUDA and Geant4 major versions belongs in this name ?::
-
-    el9_amd64_gcc15_cuda13_g411
-
-
-Changes
-~~~~~~~~
-
-2026/08/24 - add appending of "_g411" to the dirlabel when g411 is present in OPTICKS_CONFIG
 
 
 EON
@@ -3983,10 +3969,10 @@ EON
 opticks-okdist-mode(){ echo dbg ; }
 opticks-okdist-dirlabel(){
 
-    local config=$(opticks-config)  ## eg Debug Debug_g411
-    #local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode)
     local label=$(opticks-os-release)_$(opticks-os-arch)_$(opticks-compiler-version)
 
+    # HMM MAYBE NOT ?
+    local config=$(opticks-config)  ## eg Debug Debug_g411
     if [[ "$config" =~ g411 ]]; then
         label=${label}_g411
     fi

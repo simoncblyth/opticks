@@ -13,7 +13,6 @@ Workflow for adding Opticks tags:
    opticks-setup-generate   ## if have changed the setup bashrc
    opticks-t
 
-   * NB : VITAL TO REBUILD : AS THE INSTALL IS BELOW PACKAGED UP INTO RELEASE TARBALL
 
 1. edit okconf/OpticksVersionNumber.hh increasing OPTICKS_VERSION_NUMBER
    to correspond to the next intended tag string and add table entry for the next tag
@@ -51,8 +50,7 @@ Workflow for adding Opticks tags:
        ./addtag.sh | sh      # run those commands
        open https://github.com/simoncblyth/opticks/tags # check web interface
 
-5. after all code changes and tagging do a final build to avoid stale build compared to code
-   error from okdist--::
+5. after all code changes and tagging redo build to avoid stale build compared to code error from okdist--::
 
    vip       ## check/set OPTICKS_CONFIG in ~/j/opticks_config.sh
    lo        ## get into env
@@ -60,19 +58,18 @@ Workflow for adding Opticks tags:
    oo        ## update build - OPTICKS_PREFIX should be specific to the OPTICKS_CONFIG
    opticks-t ## final test
 
-6. create distribution tarball for the build::
+* NB : MUST REBUILD AT LAST MOMENT OTHERWISE okdist-- DETECTS SOURCE STALENESS AND REFUSES TO CREATE TARBALL
+
+6. create distribution tarball for the build, now including vLatest symbolic link inside tarball::
 
    okdist-;okdist--
 
-7. scp the okdist tarball to eg O:ok/releases/el9_amd64_gcc11/ and deploy that
-   to eg /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/
-   and update the Opticks-vLatest link::
+7. scp the okdist tarball to O:incoming/ where the crontab invoked O:cvmfs_ingest.sh ingests to cvmfs::
 
-       okdist-;okdist-deploy-to-cvmfs
+       okdist-;okdist-scp-to-stratum-zero
 
 If there are multiple OPTICKS_PREFIX builds to be installed, eg different Geant4 or other config
-repeat the above steps 5 and 6 from different sessions after getting into
-the corresponding environment.
+repeat the above steps 0,5,6 from different sessions after getting into the corresponding environments.
 
 
 EOU

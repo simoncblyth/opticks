@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.6.8  | 68  | 2026/09/02 | Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs                                              |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.7  | 67  | 2026/08/25 | monitoring machinery, new LS model prep, rainbow example, shader revisit, Geant4 1140, collect MaterialConstProperty                                          |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.6  | 66  | 2026/06/18 | revive sreport for RTX PRO 6000 BW tests, try old geom recreat from GDML, fix several optix launch exceptions with optix 9.1 cuda 13.1 on Ada workstation     |
@@ -101,6 +103,15 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+v0.6.8 2026/09/02 : Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs
+--------------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-09-02 c52121e70 - rework tarball creation and deployment to handle multiple configs cleanly using full cvmfs base relative paths, adding vLatest symlink, adding dirs, using full slug tarball, adding ENV.bash to work with the crontab invoked cvmfs_ingest.sh on stratum-zero
+* 2026-09-01 72b99195f - strict bash -u compat for setup, check Geant4 track SetTag GetTag in 1042 and 1140,  add SOPTIX_Capability_test.sh giving RT core version
+* 2026-08-25 349051553 - notes on the generalized handling of builds with different config thru to cvmfs releases
+* 2026-08-25 154010f85 - generalize okdist-deploy-to-cvmfs to handle builds with different configs such as against a different geant4 version
 
 
 v0.6.7 2026/08/25 : monitoring machinery, new LS model prep, rainbow example, shader revisit, Geant4 1140, collect MaterialConstProperty

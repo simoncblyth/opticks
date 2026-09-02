@@ -496,7 +496,7 @@ okdist-relp()
     tar tf "$dist" --wildcards '*/envset.sh' --transform='s|/envset\.sh$||' --show-transformed-names
 }
 
-okdist-deploy-to-cvmfs()
+okdist-scp-to-stratum-zero()
 {
     : NOW JUST SCP TO STRATUM-ZERO WHERE CRONTAB INVOKED SCRIPT cvmfs_ingest.sh ADDS TO CVMFS
     local dist=$(okdist-path)
