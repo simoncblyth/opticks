@@ -8,7 +8,9 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
-| v0.6.8  | 68  | 2026/09/02 | Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs                                              |
+| v0.6.9  | 69  | 2026/09/02 | Fix OK_CVMFS_FULL repeated ok/releases in crucial okdist generated ENV.bash                                                                                   |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| v0.6.8  | 68  | 2026/09/02 | Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs [NOT DISTRIBUTED]                            |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.7  | 67  | 2026/08/25 | monitoring machinery, new LS model prep, rainbow example, shader revisit, Geant4 1140, collect MaterialConstProperty                                          |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -105,8 +107,11 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
-v0.6.8 2026/09/02 : Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs
---------------------------------------------------------------------------------------------------------------------------------------
+v0.6.9 2026/09/02 : Fix OK_CVMFS_FULL repeated ok/releases in crucial okdist generated ENV.bash
+--------------------------------------------------------------------------------------------------
+
+v0.6.8 2026/09/02 : Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs [NOT DISTRIBUTED]
+----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 * 2026-09-02 c52121e70 - rework tarball creation and deployment to handle multiple configs cleanly using full cvmfs base relative paths, adding vLatest symlink, adding dirs, using full slug tarball, adding ENV.bash to work with the crontab invoked cvmfs_ingest.sh on stratum-zero
 * 2026-09-01 72b99195f - strict bash -u compat for setup, check Geant4 track SetTag GetTag in 1042 and 1140,  add SOPTIX_Capability_test.sh giving RT core version

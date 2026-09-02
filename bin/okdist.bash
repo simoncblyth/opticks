@@ -278,7 +278,7 @@ okdist-install-metadata()
 okdist-install-ENV-(){ cat << EOE
 # $BASH_SOURCE $FUNCNAME $LINENO
 export OK_CVMFS_REPO=opticks.ihep.ac.cn
-export OK_CVMFS_FULL=/cvmfs/opticks.ihep.ac.cn/ok/releases/$(okdist-prefix)
+export OK_CVMFS_FULL=/cvmfs/opticks.ihep.ac.cn/$(okdist-prefix)
 EOE
 }
 
