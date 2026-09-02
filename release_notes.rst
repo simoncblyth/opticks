@@ -110,6 +110,8 @@ Snapshot Tags History
 v0.6.9 2026/09/02 : Fix OK_CVMFS_FULL repeated ok/releases in crucial okdist generated ENV.bash
 --------------------------------------------------------------------------------------------------
 
+* 2026-09-02 0f880bf4e - Fix OK_CVMFS_FULL repeated ok/releases in crucial okdist generated ENV.bash
+
 v0.6.8 2026/09/02 : Generalize tarball creation for standardized cvmfs_ingest.sh deployment that cleanly works with multiple configs [NOT DISTRIBUTED]
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 

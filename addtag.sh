@@ -9,10 +9,9 @@ Workflow for adding Opticks tags:
 
 0. check if now is an appropriate time to tag, by running tests::
 
-   oo                       ## update installation folder
-   opticks-setup-generate   ## if have changed the setup bashrc
-   opticks-t
-
+       oo                       ## update installation folder
+       opticks-setup-generate   ## if have changed the setup bashrc
+       opticks-t
 
 1. edit okconf/OpticksVersionNumber.hh increasing OPTICKS_VERSION_NUMBER
    to correspond to the next intended tag string and add table entry for the next tag
@@ -38,10 +37,10 @@ Workflow for adding Opticks tags:
        git add okconf/OpticksVersionNumber.hh release_notes.rst
        git commit -m "Prepare to ./addtag.sh $vntag OPTICKS_VERSION_NUMBER $opticks_version_number "
 
-3. push code changes to bitbucket, github and gitlab (see below initial_setup_of_remotes)
+3. push code changes to bitbucket, github and gitlab (see below initial_setup_of_remotes)::
 
-    cd ~/opticks
-    git push all ## push code changes to all three remotes
+       cd ~/opticks
+       git push all ## push code changes to all three remotes
 
 4. run this tag add and pushing script, check output commands and run if correct::
 
@@ -52,24 +51,24 @@ Workflow for adding Opticks tags:
 
 5. after all code changes and tagging redo build to avoid stale build compared to code error from okdist--::
 
-   vip       ## check/set OPTICKS_CONFIG in ~/j/opticks_config.sh
-   lo        ## get into env
-   oid       ## check env
-   oo        ## update build - OPTICKS_PREFIX should be specific to the OPTICKS_CONFIG
-   opticks-t ## final test
+       vip       ## check/set OPTICKS_CONFIG in ~/j/opticks_config.sh
+       lo        ## get into env
+       oid       ## check env
+       oo        ## update build - OPTICKS_PREFIX should be specific to the OPTICKS_CONFIG
+       opticks-t ## final test
 
 * NB : MUST REBUILD AT LAST MOMENT OTHERWISE okdist-- DETECTS SOURCE STALENESS AND REFUSES TO CREATE TARBALL
 
 6. create distribution tarball for the build, now including vLatest symbolic link inside tarball::
 
-   okdist-;okdist--
+       okdist-;okdist--
 
 7. scp the okdist tarball to O:incoming/ where the crontab invoked O:cvmfs_ingest.sh ingests to cvmfs::
 
        okdist-;okdist-scp-to-stratum-zero
 
 If there are multiple OPTICKS_PREFIX builds to be installed, eg different Geant4 or other config
-repeat the above steps 0,5,6 from different sessions after getting into the corresponding environments.
+repeat the above steps 0,5,6,7 from different sessions after getting into the corresponding environments.
 
 
 EOU
