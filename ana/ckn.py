@@ -15,6 +15,11 @@ ckn.py : reproduce G4Cerenkov_modified::GetAverageNumberOfPhotons
 
 """
 import os, logging, numpy as np
+try:
+    from numpy import trapezoid as _trapz_impl
+except ImportError:
+    from numpy import trapz as _trapz_impl
+
 import matplotlib.pyplot as plt
 from opticks.ana.main import opticks_main
 from opticks.ana.key import keydir
@@ -81,9 +86,9 @@ class CKN(object):
 
     def BuildThePhysicsTable_2(self, dump=False):
         """
-        np.trapz does the same thing as above : applying composite trapezoidal integration
+        np.trapezoid does the same thing as above : applying composite trapezoidal integration
 
-        https://numpy.org/doc/stable/reference/generated/numpy.trapz.html
+        https://numpy.org/doc/stable/reference/generated/numpy.trapezoid.html
         """
         ri = self.ri
         en = ri[:,0]
@@ -91,7 +96,7 @@ class CKN(object):
 
         cai2 = np.zeros(len(ri))
         for i in range(len(ri)):
-            cai2[i] = np.trapz( ir2[:i+1], en[:i+1] ) 
+            cai2[i] = _trapz_impl( ir2[:i+1], en[:i+1] ) 
         pass
         self.cai2 = cai2
 
@@ -108,7 +113,7 @@ class CKN(object):
         en = ri[:,0]
         s2i = np.zeros(len(ri))
         for i in range(len(ri)):
-            s2i[i] = np.trapz( s2[:i+1], en[:i+1] ) 
+            s2i[i] = _trapz_impl( s2[:i+1], en[:i+1] ) 
         pass
         return s2i
 
@@ -198,7 +203,7 @@ class CKN(object):
             fs2[1:-1] = s2_sel
             fs2[-1] = [en1, 0.]
 
-            s2integral += np.trapz( fs2[:,1], fs2[:,0] )   # trapezoidal integration
+            s2integral += _trapz_impl( fs2[:,1], fs2[:,0] )   # trapezoidal integration
         pass
         Rfact =  369.81   #  (eV * cm)^-1
         Rfact *= 0.1      # cm to mm ?  Geant4: mm = 1. cm = 10.  

@@ -861,7 +861,7 @@ class SeqAna(object):
     def seq_any_(self, co="RE"):
         code = self.af.code(co)
         aseq = self.aseq
-        wk = np.zeros( (len(aseq), 16), dtype=np.bool )
+        wk = np.zeros( (len(aseq), 16), dtype=bool )
         for n in range(16): wk[:, n] = ( aseq & ( 0xf << (n*4) ) == ( code << (n*4) ))
         return wk
 
