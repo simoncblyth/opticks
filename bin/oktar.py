@@ -36,7 +36,37 @@ Convention for common prefix of all items in the archive::
 
 
 """
-import os, logging, sys, tarfile, argparse, shutil, textwrap
+from pathlib import Path
+import os, logging, sys, tarfile, argparse, shutil, textwrap, time
+import getpass
+import grp
+import pwd
+
+# Resolve current runtime user and group metadata once
+CURRENT_UID = os.getuid()
+CURRENT_GID = os.getgid()
+CURRENT_UNAME = getpass.getuser()
+try:
+    CURRENT_GNAME = grp.getgrgid(CURRENT_GID).gr_name
+except KeyError:
+    CURRENT_GNAME = CURRENT_UNAME
+
+
+def get_uname_gname(uid, gid):
+    try:
+        uname = pwd.getpwuid(uid).pw_name
+    except KeyError:
+        uname = str(uid)  # Fallback to string representation if ID doesn't exist
+
+    try:
+        gname = grp.getgrgid(gid).gr_name
+    except KeyError:
+        gname = str(gid)  # Fallback to string representation if ID doesn't exist
+
+    return uname, gname
+
+
+
 log = logging.getLogger(__name__)
 
 class OKTar(object):
@@ -48,9 +78,9 @@ class OKTar(object):
     to be excluded from the archive by carefully selecting just what
     is needed.
     """
-    PREFIX = "Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg"
     BINARY_BASES = filter(None,textwrap.dedent(r"""
     envset.sh
+    ENV.bash
     bashrc
     metadata
     bin
@@ -116,10 +146,9 @@ class OKTar(object):
         """
         self.path = os.path.expanduser(path)
         self.name = os.path.basename(path)
-        self.stem = os.path.splitext(self.name)[0]
 
+        self.created_dirs = set()
         self.t = None
-        self.n = []
         self.pfx = "?"
         self.sztot = 0
         self.sz = {}
@@ -142,15 +171,10 @@ class OKTar(object):
         pass
         assert mode in ["BINARY", "CACHE"]
 
-        elem = prefix.split("/")
-        assert len(elem) == 2, "expecting prefix with two path elements : %s " % prefix
-        xstem = elem[1]
-        assert self.stem == xstem, "tarball name stem [%s] must match second elem of prefix [%s]" % (self.stem, xstem)
+        tarmode = self.TarMode(self.name) # just looks at filename suffix
+        base = os.path.realpath(os.getcwd())  # invoking directory
 
-        tarmode = self.TarMode(self.name)
-        base = os.path.realpath(os.getcwd())
-
-        outdir = os.path.dirname(self.path)
+        outdir = os.path.dirname(self.path)  # directory of the archive
         if not os.path.isdir(outdir):
             log.info("creating outdir %s " % outdir)
             os.makedirs(outdir)
@@ -165,12 +189,16 @@ class OKTar(object):
             path = os.path.join(base, name)
             if not os.path.exists(path): continue
             if os.path.isfile(path):  ## top level files such as bashrc
-                log.info("adding top level file %s " % path)
-                self.add(name)
+                log.debug("adding top level file %s " % path)
+                self.add_file(name)
             else:
+                log.debug("adding top level directory %s " % path)
                 self.recurse_(name, 0)
             pass
         pass
+        self.add_toplink(".", "Opticks-vLatest")
+
+
 
     def recurse_(self, relbase, depth ):
         """
@@ -191,16 +219,98 @@ class OKTar(object):
                     self.recurse_(relpath, depth+1)
                 pass
             else:
-                self.add(relpath)
+                self.add_file(relpath)
             pass
         pass
 
-    def add(self, relpath):
+    def ensure_parent_dirs(self, arcname):
         """
-        :param relpath: relative to invoking directory
+        Ensures all parent directories are explicitly written TO THE TAR STREAM
+        BEFORE child files are added.
+        """
+        arc_parents = list(Path(arcname).parents)
+
+        # Reverse to process top-most parent first (e.g., 'ok', then 'ok/releases', etc.)
+        for parent in reversed(arc_parents):
+            parent_str = os.fspath(parent)
+            if parent_str in (".", "/") or parent_str in self.created_dirs:
+                continue
+
+            # Ensure trailing slash for directory entry
+            dir_arcname = parent_str if parent_str.endswith("/") else parent_str + "/"
+
+            dir_info = tarfile.TarInfo(name=dir_arcname)
+            dir_info.type = tarfile.DIRTYPE
+            dir_info.mode = 0o755
+            dir_info.mtime = int(time.time())
+
+            self.t.addfile(dir_info)
+            self.created_dirs.add(parent_str)
+        pass
+
+
+    def ensure_parent_dirs(self, arcname):
+        """
+        Ensures all parent directories are explicitly written TO THE TAR STREAM
+        BEFORE child files are added.
+        Uses filesystem metadata if the directory exists locally.
+        """
+        prefix_path = Path(self.prefix)
+        arc_parents = list(Path(arcname).parents)
+
+        # Reverse to process top-most parent first (top-down)
+        for parent in reversed(arc_parents):
+            parent_str = os.fspath(parent)
+            if parent_str in (".", "/") or parent_str in self.created_dirs:
+                continue
+
+            # --- UNPREFIX TO RECOVER LOCAL FILESYSTEM PATH ---
+            try:
+                relpath = parent.relative_to(prefix_path)
+            except ValueError:
+                relpath = None
+
+            # Check if directory actually exists on the filesystem
+            fs_relpath = relpath if (relpath and relpath.exists()) else None
+            dir_arcname = parent_str if parent_str.endswith("/") else parent_str + "/"
+
+            dir_info = tarfile.TarInfo(name=dir_arcname)
+            dir_info.type = tarfile.DIRTYPE
+
+            if fs_relpath:
+                st = fs_relpath.stat()
+
+                uid, gid = st.st_uid, st.st_gid
+                uname, gname = get_uname_gname(uid, gid)
+
+                dir_info.uid = uid
+                dir_info.gid = gid
+                dir_info.uname = uname
+                dir_info.gname = gname
+                dir_info.mode = st.st_mode
+                dir_info.mtime = int(st.st_mtime)
+            else:
+                # Fallback defaults for purely synthetic directories
+                dir_info.mode = 0o755
+                dir_info.mtime = int(time.time())
+                dir_info.uid = CURRENT_UID
+                dir_info.gid = CURRENT_GID
+                dir_info.uname = CURRENT_UNAME
+                dir_info.gname = CURRENT_GNAME
+            pass
+
+            self.t.addfile(dir_info)
+            self.created_dirs.add(parent_str)
+
+
+
+
+    def add_file(self, relpath):
+        """
+        :param relpath: real filesystem path relative to invoking directory
         """
         arcname = os.path.join(self.prefix,relpath)
-        #log.info("arcname: %s " % arcname )
+        self.ensure_parent_dirs(arcname)
 
         self.t.add(relpath, arcname=arcname, recursive=False)
 
@@ -211,6 +321,35 @@ class OKTar(object):
         if sz > 1e6:
             print(" %10.3f : %10.3f M : %s " % ( self.sztot/1e6, sz/1e6, relpath ))
         pass
+
+
+    def add_toplink(self, relpath=".", linkname="Opticks-vLatest"):
+        """
+        :param relpath:
+        :param linkname:
+
+        Creates a sibling symlink inside the tar archive pointing to relpath.
+        """
+        arcname = Path(self.prefix) / relpath
+        # Inject directory headers into tarball for the non-existent local parents
+        self.ensure_parent_dirs(arcname)
+
+        symlink_in_tar = os.fspath(arcname.with_name(linkname)) # link path inside archive
+        link_target = arcname.name
+
+        link_info = tarfile.TarInfo(name=symlink_in_tar)
+        link_info.type = tarfile.SYMTYPE
+        link_info.linkname = link_target
+        # Set mtime from disk target (uses lstat to avoid following link if target is local link)
+        link_info.mtime = int(os.path.getmtime(relpath))
+
+        link_info.uid = CURRENT_UID
+        link_info.gid = CURRENT_GID
+        link_info.uname = CURRENT_UNAME
+        link_info.gname = CURRENT_GNAME
+
+        self.t.addfile(link_info)
+
 
     def extract(self, base):
         """
@@ -228,24 +367,37 @@ class OKTar(object):
         Note that because of the enforced use of a two level common prefix
         it is no problem to extract into the same directory as the creation,
         because this clears ahead.
+
+        * Historically commonprefix was the input two level prefix : el9_amd64_gcc15_g411/Opticks-v0.6.7
+
+        * But now that are adding symbolic link and full cvmfs base relative paths
+          inside the tarball, the common file prefix is "ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7"::
+
+            [lo] A[blyth@localhost opticks_Debug_g411]$ tar tvf /data1/blyth/local/opticks_Debug_g411/ok_releases_el9_amd64_gcc15_g411_Opticks_v0_6_7.tar | tail -4
+            -rw-r--r-- blyth/blyth     5952 2026-08-24 16:19 ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7/externals/share/bcm/cmake/BCMProperties.cmake
+            -rw-r--r-- blyth/blyth      367 2026-08-24 16:19 ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7/externals/share/bcm/cmake/version.hpp
+            -rw-r--r-- blyth/blyth     1406 2026-08-24 16:19 ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7/externals/share/bcm/cmake/BCMConfig.cmake
+            lrw-r--r-- blyth/blyth        0 2026-09-02 14:52 ok/releases/el9_amd64_gcc15_g411/Opticks-vLatest -> Opticks-v0.6.7
+
+
         """
         self.t = tarfile.open(self.path, "r")
-        self.n = self.t.getnames()
 
-        pfx = os.path.commonprefix(self.n)
-        assert pfx[-1] == os.sep, ("expect a trailing slash on common prefix", pfx)
-        pfx = pfx[:-1]
-        elem = pfx.split(os.sep)
-        assert len(elem) == 2, elem
-        assert self.stem == elem[1], ( self.stem, elem[1], "stem of tarball name must match the 2nd level prefix element inside" )
-        self.pfx = pfx
+        # Get names of regular files only (excludes directories, symlinks, etc.)
+        file_names = [m.name for m in self.t.getmembers() if m.isfile()]
+
+        # Calculate common path across files
+        self.pfx = os.path.commonpath(file_names) if file_names else ""
 
         if not os.path.isdir(base):
             log.info("creating base %s " % base)
             os.makedirs(base)
         pass
-        xdir = os.path.join(base, pfx)
-        if os.path.isdir(xdir):
+        xdir = Path(base) / self.pfx
+
+        log.info(f"commonpath prefix from file_names \"{self.pfx}\" base {base} xdir {xdir} ")
+
+        if xdir.is_dir():
             log.info("common prefix extraction dir exists already %s " % xdir)
             log.info("removing xdir %s " % xdir )
             shutil.rmtree(xdir)
@@ -266,15 +418,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
 
-    base = "/tmp/cvmfs/opticks.ihep.ac.cn/ok/releases"
-    prefix = OKTar.PREFIX
-
     parser.add_argument( "path",  nargs=1, help="Path of distribution tarball, eg ~/Opticks-0.0.0_alpha.tar " )
     parser.add_argument( "verb", choices=["create","extract","dump"] )
 
     parser.add_argument( "--mode", choices=["BINARY", "CACHE" ], default="BINARY" )
     parser.add_argument( "--base",  default=os.getcwd(), help="Path at which to extract tarballs %(default)s ")
-    parser.add_argument( "--prefix", default=prefix, help="Two elem prefix prepended to all paths added to archive" )
+    parser.add_argument( "--prefix", default=None, help="sythetic prefix to all paths added to archive (ie relative to cvmfs root: /cvmfs/opticks.ihep.ac.cn/PREFIX)" )
 
     desc = { 'extract':"Extract tarball contents into base" ,
              'create':"Create with contents of current directory or --base argument if specified",
@@ -282,6 +431,7 @@ if __name__ == '__main__':
 
     parser.add_argument( "--level", default="info", help="logging level" )
     args = parser.parse_args()
+
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -292,6 +442,7 @@ if __name__ == '__main__':
     if args.verb == "dump":
         t.dump()
     elif args.verb == "create":
+        assert(args.prefix.startswith("ok/releases"))
         t.create(args.prefix, args.mode)
     elif args.verb == "extract":
         t.extract(args.base)

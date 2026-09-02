@@ -191,12 +191,23 @@ okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-de
 
 okdist-title(){   echo Opticks ; }
 okdist-version(){ opticks-tag ; }   # eg "v0.6.6"
-okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing
-okdist-prefix-old(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }
-okdist-prefix(){ echo $(opticks-okdist-dirlabel)/$(okdist-stem) ; }
 okdist-stem(){   echo $(okdist-title)-$(okdist-version) ; }
-okdist-name(){   echo $(okdist-stem)$(okdist-ext) ; }
+okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing
+
+okdist-prefix-old(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }
+okdist-prefix-prev(){ echo $(opticks-okdist-dirlabel)/$(okdist-stem) ; }         # eg             el9_amd64_gcc15_g411/Opticks-v0.6.7
+okdist-prefix(){ echo ok/releases/$(opticks-okdist-dirlabel)/$(okdist-stem) ; }  # eg ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7
+okdist-slug(){   echo $(okdist-slugify $(okdist-prefix)) ; }
+okdist-name(){   echo $(okdist-slug)$(okdist-ext) ; }
 okdist-path(){   echo $(okdist-release-dir)/$(okdist-name) ; }
+
+okdist-slugify() {
+  if [ -z "${1:-}" ]; then
+    echo "$BASH_SOURCE - ERROR - slugify requires an argument" >&2
+    return 1
+  fi
+  printf '%s\n' "$1" | tr './-' '___'
+}
 
 
 okdist-release-prefix(){ echo $(okdist-release-dir)/$(okdist-prefix) ; }
@@ -213,6 +224,7 @@ $FUNCNAME
 
    okdist-ext    : $(okdist-ext)
    okdist-prefix : $(okdist-prefix)
+   okdist-slug   : $(okdist-slug)
    opticks-tag   : $(opticks-tag)
    okdist-name   : $(okdist-name)
    okdist-path   : $(okdist-path)
@@ -263,6 +275,18 @@ okdist-install-metadata()
 }
 
 
+okdist-install-ENV-(){ cat << EOE
+# $BASH_SOURCE $FUNCNAME $LINENO
+export OK_CVMFS_REPO=opticks.ihep.ac.cn
+export OK_CVMFS_FULL=/cvmfs/opticks.ihep.ac.cn/ok/releases/$(okdist-prefix)
+EOE
+}
+
+okdist-install-ENV()
+{
+    okdist-install-ENV- > $(opticks-dir)/ENV.bash
+}
+
 
 okdist-install-update()
 {
@@ -290,6 +314,7 @@ okdist-install-extras()
 
    echo $msg write metadata
    okdist-install-metadata
+   okdist-install-ENV
 
    cd $iwd
 }
@@ -343,22 +368,6 @@ okdist-tarball-extract(){
    $(opticks-home)/bin/oktar.py $(okdist-path) extract --base $(okdist-release-dir) ;
 }
 
-okdist-tarball-extract-plant-latest-link()
-{
-    local pfx=$(okdist-release-prefix) ## eg /data/blyth/opticks_Debug/el7_amd64_gcc1120/Opticks-v0.3.5
-    local nam=$(basename $pfx)    ## eg Opticks-v0.3.5
-    local dir=$(dirname $pfx)     ## eg /data/blyth/opticks_Debug/el7_amd64_gcc1120
-    local LNK=Opticks-vLatest
-    local iwd=$PWD
-    cd $dir && ln -sfn $nam $LNK
-    [ $? -ne 0 ] && echo $FUNCNAME - ERROR PLANTING LINK && return 1
-
-    pwd
-    ls -alst .
-
-    cd $iwd
-    return 0
-}
 
 
 okdist-tarball-dump(){
@@ -413,6 +422,10 @@ okdist-stamp(){
 }
 
 
+okdist-stale--(){
+   # only appropriate to use this during dev of tarball machinery
+   OKDIST_STALE_PROCEED=1 okdist--
+}
 
 okdist--(){
 
@@ -422,7 +435,10 @@ okdist--(){
    fi
 
    local tdel=$(okdist-stamp-delta)
-   if [ "${tdel:0:1}" == "-" ]; then
+
+   if [[ -n "$OKDIST_STALE_PROCEED" ]]; then
+       echo "$BASH_SOURCE : $FUNCNAME : $LINENO - OKDIST_STALE_PROCEED $OKDIST_STALE_PROCEED - IGNORING POSSIBLE STALENESS"
+   elif [[ "${tdel:0:1}" == "-" ]]; then
        echo "$BASH_SOURCE : ABORT AS tdel $tdel IS NEGATIVE : SHOWS THE BUILD IS STALE RELATIVE TO SOURCE"
        okdist-stamp
        return 1
@@ -433,7 +449,6 @@ okdist--(){
    okdist-install-extras
    okdist-tarball-create
    okdist-tarball-extract
-   okdist-tarball-extract-plant-latest-link
    okdist-ls
 
    #echo $msg okdist-deploy-opticks-site
@@ -474,50 +489,27 @@ okdist-deploy-opticks-site()
 
 
 
-okdist-path-prefix-notes(){ cat << EON
-
-Examples of path prefix::
-
-    ok/releases/el9_amd64_gcc11
-    ok/releases/el9_amd64_gcc15_g411
-
-The prefix distinguish builds with different configs
-such as against different Geant4 versions.
-
-EON
-}
-
-okdist-path-prefix()
+okdist-relp()
 {
+    : use path to envset.sh within tarball to yield full relative path prefix eg ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7
     local dist=$(okdist-path)
-    [ ! -f "$dist" ] && echo "$FUNCNAME - File not found: $dist" && return 1
-    local dirlabel=$(tar tf "$dist" | head -n 1 | sed 's|^\./||' | cut -d'/' -f1)
-
-    if [ -z "$dirlabel" ]; then
-        echo "$FUNCNAME - FAILED to determine dirlabel from tarball $dist"
-        return 1
-    fi
-    local prefix="ok/releases/$dirlabel"
-    echo $prefix
+    tar tf "$dist" --wildcards '*/envset.sh' --transform='s|/envset\.sh$||' --show-transformed-names
 }
 
 okdist-deploy-to-cvmfs()
 {
+    : NOW JUST SCP TO STRATUM-ZERO WHERE CRONTAB INVOKED SCRIPT cvmfs_ingest.sh ADDS TO CVMFS
     local dist=$(okdist-path)
-    local name=$(basename "$dist")
-    local prefix=$(okdist-path-prefix)
-    [ $? -ne 0 ] && echo $FUNCNAME FAILED TO GET prefix FROM dist && return 1
+    local name=$(basename "$dist")    # assuming tarball naming
+    local target="incoming"
 
-    echo "$FUNCNAME === Deploying dist $dist to $prefix ==="
-    [ -n "$DRY" ] && echo $FUNCNAME - DRY RUN && return 0
+    echo "$FUNCNAME === Deploying dist $dist to $target ==="
 
-    if ssh O "mkdir -p $prefix" && \
-       scp "$dist" "O:$prefix/" && \
-       ssh O "./ok_deploy_to_cvmfs.sh $prefix/$name"; then
-        echo "$FUNCNAME - SUCCESS"
+    if ssh O "mkdir -p $target" && scp "$dist" "O:$target/" ; then
+       echo "$FUNCNAME - SUCCESS - COPIED $name TO O:$target"
     else
-        echo "$FUNCNAME - FAILED"
-        return 1
+       echo "$FUNCNAME - FAILED"
+       return 1
     fi
 }
 
