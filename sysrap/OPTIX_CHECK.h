@@ -2,10 +2,9 @@
 #pragma once
 
 #include <optix.h>
-
-
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 
 //------------------------------------------------------------------------------
@@ -14,18 +13,42 @@
 //
 //------------------------------------------------------------------------------
 
-#define OPTIX_CHECK( call )                                                    \
-    do                                                                         \
-    {                                                                          \
-        OptixResult res = call;                                                \
-        if( res != OPTIX_SUCCESS )                                             \
-        {                                                                      \
-            std::stringstream ss;                                              \
-            ss << "Optix call '" << #call << "' failed: " __FILE__ ":"         \
-               << __LINE__ << ")\n";                                           \
-            throw OPTIX_Exception( res, ss.str().c_str() );                   \
-        }                                                                      \
+
+#define OPTIX_CHECK( call )                                                     \
+    do                                                                          \
+    {                                                                           \
+        OptixResult res = call;                                                 \
+        if( res != OPTIX_SUCCESS )                                              \
+        {                                                                       \
+            std::stringstream ss;                                               \
+            ss << "OPTIX_CHECK "                                                \
+               << " call : '" << #call << "' failed: "                          \
+               << "(" << __FILE__ ":" << __LINE__ << ")\n"                      \
+               << optixGetErrorName(res) << "\n"                                \
+               << "\n" ;                                                        \
+            throw OPTIX_Exception( res, ss.str().c_str() );                     \
+        }                                                                       \
     } while( 0 )
+
+
+// NOTHOW variant can be used from dtor to avoid warnings
+#define OPTIX_CHECK_NOTHROW( call )                                             \
+    do                                                                          \
+    {                                                                           \
+        OptixResult res = call;                                                 \
+        if( res != OPTIX_SUCCESS )                                              \
+        {                                                                       \
+            std::stringstream ss;                                               \
+            ss << "OPTIX_CHECK_NOTHROW call '" << #call << "' failed: "         \
+               << "(" << __FILE__ ":" << __LINE__ << ")\n"                      \
+               << optixGetErrorName(res) << "\n"                                \
+               << "\n" ;                                                        \
+            std::cerr << ss.str();                                              \
+        }                                                                       \
+    } while( 0 )
+
+
+
 
 
 #define OPTIX_CHECK_LOG( call )                                                \
