@@ -423,8 +423,10 @@ okdist-stamp(){
 
 
 okdist-stale--(){
-   # only appropriate to use this during dev of tarball machinery
-   OKDIST_STALE_PROCEED=1 okdist--
+   : only appropriate to use this during dev of tarball creation and deployment
+   export OKDIST_STALE_PROCEED=1
+   okdist--
+   okdist-scp-with-hash "$(okdist-path)" "testing" "O"
 }
 
 okdist--(){
@@ -496,21 +498,79 @@ okdist-relp()
     tar tf "$dist" --wildcards '*/envset.sh' --transform='s|/envset\.sh$||' --show-transformed-names
 }
 
+
+
+okdist-scp-with-hash() {
+    : expects cvmfs_ingest.sh on stratum-zero to act on incoming .md5 - and clean those up
+    local dist_path=${1:-/path/to/archive.tar}
+    local target=${2:-incoming}
+    local remote=${3:-O}
+
+    if [ ! -f "$dist_path" ]; then
+        echo "$FUNCNAME - ABORT: Local file $dist_path DOES NOT EXIST"
+        return 1
+    fi
+
+    local dist_name
+    dist_name=$(basename "$dist_path")
+    local hash_name="${dist_name}.md5"
+
+    # 1. Pre-check: Ensure neither the final files nor progress files exist on remote
+    if ssh "$remote" "test -e \"${target}/${dist_name}\" || test -e \"${target}/${hash_name}\" || test -e \"${target}/${dist_name}.scp_in_progress\"" 2>/dev/null; then
+        echo "$FUNCNAME - ABORT: Target files or in-progress transfers already exist on $remote"
+        return 0
+    fi
+
+    # 2. Local MD5 hash generation using mktemp to prevent local clutter
+    local dist_hash
+    dist_hash=$(md5sum "$dist_path" | awk '{print $1}')
+
+    local tmp_hash_file
+    tmp_hash_file=$(mktemp)
+    trap "rm -f '${tmp_hash_file:-}'" RETURN
+
+    echo "$dist_hash" > "$tmp_hash_file"
+
+    echo "$FUNCNAME - Start copying ${dist_name} to ${remote}:${target} at $(date)"
+
+    # 3. Create target directory and upload files
+    if ssh "$remote" "mkdir -p \"${target}\"" && \
+       scp "$dist_path" "${remote}:${target}/${dist_name}.scp_in_progress" && \
+       scp "$tmp_hash_file" "${remote}:${target}/${hash_name}.scp_in_progress" && \
+       ssh "$remote" "mv \"${target}/${dist_name}.scp_in_progress\" \"${target}/${dist_name}\" && mv \"${target}/${hash_name}.scp_in_progress\" \"${target}/${hash_name}\""; then
+        echo "$FUNCNAME - SUCCESS - COPIED $dist_name TO $remote:$target at $(date)"
+        return 0
+    else
+        echo "$FUNCNAME - FAILED"
+        # Optional: Attempt cleanup of orphan temporary files on failure
+        ssh "$remote" "rm -f \"${target}/${dist_name}.scp_in_progress\" \"${target}/${hash_name}.scp_in_progress\"" 2>/dev/null
+        return 1
+    fi
+}
+
 okdist-scp-to-stratum-zero()
 {
+    okdist-scp-with-hash "$(okdist-path)" "incoming" "O"
+}
+
+okdist-scp-to-stratum-zero-simple()
+{
     : NOW JUST SCP TO STRATUM-ZERO WHERE CRONTAB INVOKED SCRIPT cvmfs_ingest.sh ADDS TO CVMFS
-    local dist=$(okdist-path)
-    local name=$(basename "$dist")    # assuming tarball naming
     local target="incoming"
+    local tar_path=$(okdist-path)
+    local tar_name=$(basename "$tar_path")
 
-    echo "$FUNCNAME === Deploying dist $dist to $target ==="
+    echo "$FUNCNAME === Deploying dist $tar_name to $target "
 
-    if ssh O "mkdir -p $target" && scp "$dist" "O:$target/" ; then
-       echo "$FUNCNAME - SUCCESS - COPIED $name TO O:$target"
+    if date && \
+       ssh O "mkdir -p ${target}" && \
+       scp "${tar_path}" "O:${target}/${tar_name}.scp_in_progress" && \
+       ssh O "mv            ${target}/${tar_name}.scp_in_progress ${target}/${tar_name}" && \
+       date ; then
+       echo "$FUNCNAME - SUCCESS - COPIED $tar_name TO O:$target"
     else
        echo "$FUNCNAME - FAILED"
        return 1
     fi
 }
-
 
