@@ -3242,14 +3242,15 @@ const char* CSGFoundry::ResolveCFBase()
     const char* GEOM_NOTE = ssys::getenvvar("GEOM_NOTE", "no-GEOM_NOTE");
 
     LOG_IF(fatal, !readable)
-        << " cfbase/CSGFoundry directory [" << ( cfbase ? cfbase : "-" ) << "]/CSGFoundry"
-        << " IS NOT READABLE " << "\n"
+        << " ERROR - cfbase directory IS NOT READABLE " << "\n"
+        << " cfbase [" << ( cfbase ? cfbase : "-" ) << "]\n"
         << " CHECK GEOM RELATED ENVVARS " << "\n"
-        << " GEOM_NOTE [" << ( GEOM_NOTE ? GEOM_NOTE : "-" ) << "] "
+        << " GEOM_NOTE [" << ( GEOM_NOTE ? GEOM_NOTE : "-" ) << "]"
+        << "\n"
+        << spath::desc_CFBaseFromGEOM()
         ;
     return readable ? cfbase : nullptr ;
 }
-
 
 
 

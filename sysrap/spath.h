@@ -132,6 +132,8 @@ public:
 
 
     static char* CFBaseFromGEOM(const char* _geom=nullptr);
+    static std::string desc_CFBaseFromGEOM(const char* _geom=nullptr);
+
     static bool  has_CFBaseFromGEOM(const char* _geom=nullptr);
 
     static char* GDMLPathFromGEOM(const char* _geom=nullptr);
@@ -1065,20 +1067,40 @@ This functionality was formerly provided by SOpticksResource
 inline char* spath::CFBaseFromGEOM(const char* _geom)
 {
     const char* geom = GEOM(_geom);
-    char* name = spath::Name_(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ;
-    char* path = geom == nullptr ? nullptr : getenv(name) ;
+    char* ekey = spath::Name_(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ;
+    char* eval = geom == nullptr ? nullptr : getenv(ekey) ;
 
     if(VERBOSE) std::cout
-        << "spath::CFBaseFromGEOM"
-        << " geom " << ( geom ? geom : "-" )
-        << " name " << ( name ? name : "-" )
-        << " path " << ( path ? path : "-" )
-        << "\n"
-        ;
-    return path  ;
+       << "[spath::CFBaseFromGEOM\n"
+       << " _geom                         : " << ( _geom ? _geom : "-" ) << "\n"
+       << " geom (GEOM)                   : " << ( geom ? geom : "-" ) << "\n"
+       << " ekey (${GEOM}_CFBaseFromGEOM) : " << ( ekey ? ekey : "-" ) << "\n"
+       << " eval (getenv(ekey))           : : " << ( eval ? eval : "-" ) << "\n"
+       << "]spath::CFBaseFromGEOM\n"
+       ;
+
+    return eval  ;
 }
 
+inline std::string spath::desc_CFBaseFromGEOM(const char* _geom)
+{
+    const char* geom = GEOM(_geom);
+    char* ekey = spath::Name_(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ;
+    char* eval = geom == nullptr ? nullptr : getenv(ekey) ;
 
+    std::stringstream ss;
+    ss
+       << "[spath::desc_CFBaseFromGEOM\n"
+       << " _geom                         : " << ( _geom ? _geom : "-" ) << "\n"
+       << " geom (GEOM)                   : " << ( geom ? geom : "-" ) << "\n"
+       << " ekey (${GEOM}_CFBaseFromGEOM) : " << ( ekey ? ekey : "-" ) << "\n"
+       << " eval (getenv(ekey))           : " << ( eval ? eval : "-" ) << "\n"
+       << "]spath::desc_CFBaseFromGEOM\n"
+       ;
+
+    std::string str = ss.str();
+    return str ;
+}
 
 
 
