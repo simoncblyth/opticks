@@ -513,7 +513,7 @@ okdist-scp-with-hash() {
 
     local dist_name
     dist_name=$(basename "$dist_path")
-    local hash_name="${dist_name}.md5"
+    local hash_name="${dist_name}.sha256"
 
     # 1. Pre-check: Ensure neither the final files nor progress files exist on remote
     if ssh "$remote" "test -e \"${target}/${dist_name}\" || test -e \"${target}/${hash_name}\" || test -e \"${target}/${dist_name}.scp_in_progress\"" 2>/dev/null; then
@@ -523,7 +523,7 @@ okdist-scp-with-hash() {
 
     # 2. Local MD5 hash generation using mktemp to prevent local clutter
     local dist_hash
-    dist_hash=$(md5sum "$dist_path" | awk '{print $1}')
+    dist_hash=$(sha256sum "$dist_path" | awk '{print $1}')
 
     local tmp_hash_file
     tmp_hash_file=$(mktemp)

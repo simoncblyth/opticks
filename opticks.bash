@@ -622,9 +622,9 @@ TMP(){
 
 
 
-MOI_source(){
+MOI_(){
   : opticks/opticks.bash
-  source $HOME/.opticks/GEOM/MOI.sh
+  source $HOME/.opticks/GEOM/MOI.sh $*
 }
 
 MOI(){
@@ -645,9 +645,9 @@ MOI(){
 }
 
 
-EVT_source(){
+EVT_(){
   : opticks/opticks.bash
-  source $HOME/.opticks/GEOM/EVT.sh
+  source $HOME/.opticks/GEOM/EVT.sh  $*
 }
 
 EVT(){
@@ -667,9 +667,9 @@ EVT(){
   eval $cmd
 }
 
-ELV_source(){
+ELV_(){
   : opticks/opticks.bash
-  source $HOME/.opticks/GEOM/ELV.sh
+  source $HOME/.opticks/GEOM/ELV.sh $*
 }
 ELV(){
   : opticks/opticks.bash
@@ -847,9 +847,9 @@ TEST(){
 
 
 
-GEOM_source(){
+GEOM_(){
   : opticks/opticks.bash
-  source $HOME/.opticks/GEOM/GEOM.sh
+  source $HOME/.opticks/GEOM/GEOM.sh $*
 }
 
 GEOM(){
@@ -3614,7 +3614,7 @@ opticks-t-()
    local s1=$(date -d "$t1" +%s)
    local seconds=$(( s1 - s0 ))
 
-   printf "test_secs  :  %s                       ## small GEOM like RaindropRockAirWater are ~5x faster that full ones \n" "$seconds"
+   printf "test_secs  :  %s                       ## small GEOM like RaindropRockAirWater take ~15 seconds - full GEOM ~60 seconds  \n" "$seconds"
    printf "test_start :  %s \n" "$t0"
    printf "test_end   :  %s \n\n" "$t1"
 
