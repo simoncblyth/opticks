@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.7.1  | 71  | 2026/09/08 | Yet another expedient release following bug fix in J and OJ packaging fix                                                                                     |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.7.0  | 70  | 2026/09/04 | Expedient release to check fix to OJ envset.sh                                                                                                                |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.9  | 69  | 2026/09/02 | Fix OK_CVMFS_FULL repeated ok/releases in crucial okdist generated ENV.bash                                                                                   |
@@ -107,6 +109,20 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+
+
+
+v0.7.1 2026/09/08  : Yet another expedient release following bug fix in J and OJ packaging fix
+-----------------------------------------------------------------------------------------------
+
+* 2026-09-08 009adbbf7 - avoid directory paths in the .sha256 hash file by invoking sha256sum from the directory of the archive - enabling portable use of : sha256sum --check
+* 2026-09-07 671c18923 - switch to sha256 digests, bash convenience funcs GEOM\_ ELV\_ MOI\_ etc
+* 2026-09-07 70c7c7df4 - improve GEOM config error reporting
+* 2026-09-07 fbc14711b - investigate undefined vector filling after clear bug that fails only in gcc15 Debug build, not Release and not with gcc11 in Debug or Release
+
 
 v0.7.0 2026/09/04  : Expedient release to check fix to OJ envset.sh
 --------------------------------------------------------------------
