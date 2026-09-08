@@ -501,7 +501,7 @@ okdist-relp()
 
 
 okdist-scp-with-hash() {
-    : expects cvmfs_ingest.sh on stratum-zero to act on incoming .md5 - and clean those up
+    : expects cvmfs_ingest.sh on stratum-zero to act on incoming .sha256 - and clean those up
     local dist_path=${1:-/path/to/archive.tar}
     local target=${2:-incoming}
     local remote=${3:-O}
@@ -511,8 +511,7 @@ okdist-scp-with-hash() {
         return 1
     fi
 
-    local dist_name
-    dist_name=$(basename "$dist_path")
+    local dist_name=$(basename "$dist_path")
     local hash_name="${dist_name}.sha256"
 
     # 1. Pre-check: Ensure neither the final files nor progress files exist on remote
@@ -521,15 +520,9 @@ okdist-scp-with-hash() {
         return 0
     fi
 
-    # 2. Local MD5 hash generation using mktemp to prevent local clutter
-    local dist_hash
-    dist_hash=$(sha256sum "$dist_path" | awk '{print $1}')
-
-    local tmp_hash_file
-    tmp_hash_file=$(mktemp)
+    local tmp_hash_file=$(mktemp)
     trap "rm -f '${tmp_hash_file:-}'" RETURN
-
-    echo "$dist_hash" > "$tmp_hash_file"
+    ( cd "$(dirname "$dist_path")" && sha256sum "$dist_name" ) > "$tmp_hash_file"
 
     echo "$FUNCNAME - Start copying ${dist_name} to ${remote}:${target} at $(date)"
 
