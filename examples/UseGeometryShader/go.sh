@@ -3,6 +3,8 @@ usage(){ cat << EOU
 go.sh
 =====
 
+Running this should pop up an SGLFW.h window with animmated expanding circles
+
 See also build.sh which doesnt use cmake
 
 TODO: time scrubbing control
@@ -22,7 +24,7 @@ idir=/tmp/$USER/opticks/$name/install
 PREFIX=$idir
 bin=$PREFIX/lib/$name
 
-source ~/.opticks_config
+#source ~/j/opticks_config.sh  ## WHY? DONT THIS NEED THE ENV?
 
 export SHADER_FOLD=$sdir/rec_flying_point
 

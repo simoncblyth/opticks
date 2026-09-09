@@ -191,8 +191,7 @@ cat << EOC | sed "s/^/$pfx/"
 
 git tag -a $vntag -m "OPTICKS_VERSION_NUMBER ${ntag_num}"
 git push all --tags
-
-# origin looks to be $origin
+git fetch origin   ## as git treats all and origin separately need this sync to keep status clean
 
 EOC
 

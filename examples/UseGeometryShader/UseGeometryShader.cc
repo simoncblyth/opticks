@@ -208,7 +208,7 @@ int main(int argc, char** argv)
         if(Param_location > -1 ) prog.Uniform4fv(      Param_location, glm::value_ptr(Param), false );
         prog.updateMVP();
 
-        GLenum mode = prog.geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;
+        GLenum mode = prog.has_geometry_shader() ? GL_LINE_STRIP : GL_POINTS ;
         glDrawArrays(mode, a_first, a_count);
 
 
