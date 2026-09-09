@@ -85,6 +85,11 @@ struct sseq
     SSEQ_METHOD std::string seqhis_() const ;
     SSEQ_METHOD bool operator< (const sseq& other) const ;
     SSEQ_METHOD bool operator==(const sseq& other) const ;
+
+    SSEQ_METHOD void set_history(const char* abbseq, char delim=' ');
+    SSEQ_METHOD unsigned last_nibble() const ;
+    SSEQ_METHOD unsigned last_nibble_and_slot(int& slot) const ;
+    SSEQ_METHOD unsigned last_nibble_and_slot_fallback(int& slot) const;
 #endif
 };
 
@@ -237,6 +242,84 @@ SSEQ_METHOD bool sseq::operator==(const sseq& other) const
     return seqhis[1] == other.seqhis[1] && seqhis[0] == other.seqhis[0] ;
 }
 
+SSEQ_METHOD void sseq::set_history(const char* abbseq, char delim)
+{
+    OpticksPhoton::AbbrevToFlagSequenceArray( &seqhis[0], NSEQ, abbseq, delim );
+}
+
+
+SSEQ_METHOD unsigned sseq::last_nibble() const
+{
+    for (int iseq = NSEQ - 1; iseq >= 0; --iseq)
+    {
+        ULL val = seqhis[iseq];
+        if (val == 0ull) continue;
+
+#if defined(__CUDACC__)
+        int lz = __clzll(val);
+#elif defined(_MSC_VER)
+        unsigned long lz;
+        _BitScanReverse64(&lz, val);
+        lz = 63 - lz;
+#else
+        int lz = __builtin_clzll(val);
+#endif
+        unsigned highest_bit = 63 - lz;
+        unsigned nibble_idx = highest_bit / BITS; // 0..15
+
+        //int slot = iseq * SLOTMAX + nibble_idx;
+        return (val >> (nibble_idx * BITS)) & MASK;
+    }
+    return 0; // Empty sequence
+}
+
+
+SSEQ_METHOD unsigned sseq::last_nibble_and_slot(int& slot) const
+{
+    slot = -1;
+    for (int iseq = NSEQ - 1; iseq >= 0; --iseq)
+    {
+        ULL val = seqhis[iseq];
+        if (val == 0ull) continue;
+
+#if defined(__CUDACC__)
+        int lz = __clzll(val);
+#elif defined(_MSC_VER)
+        unsigned long lz;
+        _BitScanReverse64(&lz, val);
+        lz = 63 - lz;
+#else
+        int lz = __builtin_clzll(val);
+#endif
+        unsigned highest_bit = 63 - lz;
+        unsigned nibble_idx = highest_bit / BITS; // 0..15
+
+        slot = iseq * SLOTMAX + nibble_idx;
+        return (val >> (nibble_idx * BITS)) & MASK;
+    }
+    return 0; // Empty sequence
+}
+
+
+
+SSEQ_METHOD unsigned sseq::last_nibble_and_slot_fallback(int& slot) const
+{
+    for (slot = SLOTS - 1; slot >= 0; --slot)
+    {
+        unsigned iseq = slot / SLOTMAX;
+        unsigned nibble_shift = BITS * (slot - iseq * SLOTMAX);
+        unsigned f = (seqhis[iseq] >> nibble_shift) & MASK;
+        if (f != 0) return f;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
 
 
 
@@ -253,10 +336,6 @@ struct std::hash<sseq>
         return h1 ^ (h2 << 1);
     }
 };
-
-
-
-
 
 
 #endif

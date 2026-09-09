@@ -39,59 +39,6 @@ const char* OpticksPhoton::flag2color = R"LITERAL(
 
 
 
-unsigned OpticksPhoton::EnumFlag(unsigned bitpos)
-{
-    return bitpos == 0 ? 0 : 0x1 << (bitpos - 1) ;
-}
-
-unsigned OpticksPhoton::BitPos(unsigned flag)
-{
-    return SBit::ffs(flag)  ;
-}
-
-/**
-OpticksPhoton::AbbrevToFlag
-----------------------------
-
-Returns lowest flag which has an abbreviation matching the argument or zero if not found.
-
-**/
-unsigned OpticksPhoton::AbbrevToFlag( const char* abbrev )
-{
-    unsigned flag = 0 ;
-    if(!abbrev) return flag ;
-
-    for(unsigned f=0 ; f < 32 ; f++)
-    {
-        flag = EnumFlag(32-1-f) ; // <-- reverse order so unfound -> 0
-        if(strcmp(Abbrev(flag), abbrev) == 0) break ;
-    }
-    return flag ;
-}
-
-/**
-OpticksPhoton::AbbrevToFlagSequence
--------------------------------------
-
-Converts seqhis string eg "TO SR SA" into bigint 0x8ad
-
-**/
-
-unsigned long long OpticksPhoton::AbbrevToFlagSequence( const char* abbseq, char delim)
-{
-   std::vector<std::string> elem ;
-   sstr::Split(abbseq,  delim, elem );
-
-   unsigned long long seqhis = 0 ;
-   for(unsigned i=0 ; i < elem.size() ; i++)
-   {
-       unsigned flag = AbbrevToFlag( elem[i].c_str() );
-       unsigned bitpos = BitPos(flag) ;
-       unsigned long long shift = i*4 ;
-       seqhis |= ( bitpos << shift )  ;
-   }
-   return seqhis ;
-}
 
 
 /**

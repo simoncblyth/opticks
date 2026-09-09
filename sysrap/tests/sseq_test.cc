@@ -24,6 +24,7 @@ struct sseq_test
     static int add_nibble_1();
     static int add_nibble_2();
     static int truncation();
+    static int last_nibble_and_slot();
 };
 
 
@@ -180,6 +181,59 @@ int sseq_test::truncation()
     }
     return 0;
 }
+
+
+
+int sseq_test::last_nibble_and_slot()
+{
+    sseq seq ;
+    seq.zero();
+
+    unsigned flag = SURFACE_DETECT ;  // NB flag uses eg 0x1 << 0 upto 0x1 << 15
+    unsigned ffs_flag = FFS(flag);    // up to 15
+
+    for(int i=0 ; i < 32 ; i++)
+    {
+        seq.set_flag(i, flag);
+
+        int slot_0 = -1 ;
+        unsigned last_0 = seq.last_nibble_and_slot(slot_0);
+
+        int slot_1 = -1 ;
+        unsigned last_1 = seq.last_nibble_and_slot(slot_1);
+
+        assert( slot_0 == slot_1 );
+        assert( last_0 == last_1 );
+
+        int slot = slot_0 ;
+        unsigned last = last_0 ;
+
+
+        std::cout
+             << " i " << std::setw(2) << i
+             << " last " << std::setw(2) << std::hex << last  << std::dec
+             << " slot " << std::setw(2) << slot
+             << "\n"
+             ;
+
+        assert(last == ffs_flag);
+        assert(slot == i);
+    }
+    return 0 ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -493,6 +547,7 @@ int main()
     if(ALL||0==strcmp(TEST,"add_nibble_1")) rc += sseq_test::add_nibble_1();
     if(ALL||0==strcmp(TEST,"add_nibble_2")) rc += sseq_test::add_nibble_2();
     if(ALL||0==strcmp(TEST,"truncation"))   rc += sseq_test::truncation();
+    if(ALL||0==strcmp(TEST,"last_nibble_and_slot"))   rc += sseq_test::last_nibble_and_slot();
 
     return rc ;
 }

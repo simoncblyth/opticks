@@ -13,12 +13,15 @@ The STANDALONE subset of methods can be used header only.
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <cstring>
 
 #ifdef WITH_SLOG
 #include "plog/Severity.h"
 #endif
 
 #include "OpticksPhoton.h"
+#include "sbit.h"
+#include "sstr.h"
 
 #ifdef STANDALONE
 struct OpticksPhoton
@@ -94,15 +97,16 @@ struct SYSRAP_API OpticksPhoton
     // added the underscore as distinguishing by value or pointer is asking for confusion
 
     static std::string FlagMaskLabel(const unsigned mskhis, bool abbrev=true);
+    static unsigned BitPos(unsigned flag);
+    static unsigned EnumFlag(unsigned bitpos);
+    static unsigned AbbrevToFlag( const char* abbrev );
+    static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
+    static void               AbbrevToFlagSequenceArray( unsigned long long* seqhis, unsigned nseq, const char* abbseq, char delim=' ');
 
 #ifdef STANDALONE
 #else
     static const char* flag2color ;
 
-    static unsigned EnumFlag(unsigned bitpos);
-    static unsigned BitPos(unsigned flag);
-    static unsigned AbbrevToFlag( const char* abbrev );
-    static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
 
     static unsigned GetFlagMask(const char* abbrseq, char delim=',');
     static unsigned AbbrevSequenceToMask( const char* abbseq, char delim=' ');
@@ -329,6 +333,82 @@ inline std::string OpticksPhoton::FlagMaskLabel(const unsigned mskhis, bool abbr
     return ss.str();
 }
 
+
+
+
+inline unsigned OpticksPhoton::BitPos(unsigned flag)
+{
+    return sbit::ffs(flag)  ;
+}
+
+
+inline unsigned OpticksPhoton::EnumFlag(unsigned bitpos)
+{
+    return bitpos == 0 ? 0 : 0x1 << (bitpos - 1) ;
+}
+
+/**
+OpticksPhoton::AbbrevToFlag
+----------------------------
+
+Returns lowest flag which has an abbreviation matching the argument or zero if not found.
+
+**/
+inline unsigned OpticksPhoton::AbbrevToFlag( const char* abbrev )
+{
+    unsigned flag = 0 ;
+    if(!abbrev) return flag ;
+
+    for(unsigned f=0 ; f < 32 ; f++)
+    {
+        flag = EnumFlag(32-1-f) ; // <-- reverse order so unfound -> 0
+        if(strcmp(Abbrev(flag), abbrev) == 0) break ;
+    }
+    return flag ;
+}
+
+/**
+OpticksPhoton::AbbrevToFlagSequence
+-------------------------------------
+
+Converts seqhis string eg "TO SR SA" into bigint 0x8ad
+
+**/
+
+inline unsigned long long OpticksPhoton::AbbrevToFlagSequence( const char* abbseq, char delim)
+{
+   std::vector<std::string> elem ;
+   sstr::Split(abbseq,  delim, elem );
+
+   unsigned long long seqhis = 0 ;
+   for(unsigned i=0 ; i < elem.size() ; i++)
+   {
+       unsigned flag = AbbrevToFlag( elem[i].c_str() );
+       unsigned bitpos = BitPos(flag) ;
+       unsigned long long shift = i*4 ;
+       seqhis |= ( bitpos << shift )  ;
+   }
+   return seqhis ;
+}
+
+inline void OpticksPhoton::AbbrevToFlagSequenceArray( unsigned long long* seqhis, unsigned nseq, const char* abbseq, char delim)
+{
+   std::vector<std::string> elem ;
+   sstr::Split(abbseq,  delim, elem );
+
+   unsigned BITS = 4 ;
+   unsigned SLOTMAX = 16 ;
+   unsigned long long MASK = ( 0x1ull << BITS ) - 1ull ;
+
+   for(unsigned slot=0 ; slot < elem.size() ; slot++)
+   {
+       unsigned flag = AbbrevToFlag( elem[slot].c_str() );
+       unsigned bitpos = BitPos(flag) ;
+       unsigned iseq = slot/SLOTMAX ;
+       // cf sseq::set_flag
+       if(iseq < nseq) seqhis[iseq] |= (( bitpos & MASK ) << BITS*(slot - iseq*SLOTMAX) )  ;
+   }
+}
 
 
 

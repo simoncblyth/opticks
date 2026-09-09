@@ -21,8 +21,13 @@ struct sseq_array
     std::vector<int64_t> selection_indices ;
 
     sseq_array( const NP* seq );
-    void find_selection_indices(const char* q_startswith);
-    NP*  create_selection(const char* q_startswith);
+    sseq_array( const char* lines );
+
+    NP*  create_selection(const char* q_spec);
+    void find_selection_indices(const char* q_spec);
+    void find_selection_indices_ending(  const char* q_endswith);
+    void find_selection_indices_starting(const char* q_startswith);
+
     std::string desc() const ;
 };
 
@@ -30,6 +35,26 @@ inline sseq_array::sseq_array(const NP* seq)
 {
     NPX::VecFromArray<sseq>(qq, seq );
 }
+
+inline sseq_array::sseq_array(const char* lines)
+{
+    std::stringstream ss;
+    ss.str(lines)  ;
+    std::string str ;
+    while (std::getline(ss, str, '\n'))
+    {
+        if(str.empty()) continue ;
+        const char* l = str.c_str();
+
+        sseq sq ;
+        sq.zero();
+        sq.set_history(l);
+        qq.push_back(sq);
+    }
+}
+
+
+
 
 /**
 sseq_array::create_selection
@@ -59,7 +84,78 @@ inline NP* sseq_array::create_selection(const char* q_spec)
     NP* sel = NPX::Make<int64_t>(selection_indices);
     return sel ;
 }
+
 inline void sseq_array::find_selection_indices(const char* q_spec)
+{
+    bool has_wildcard_0 = q_spec && strlen(q_spec) > 1 && q_spec[0] == '*' ;
+    if(has_wildcard_0)
+    {
+        find_selection_indices_ending(q_spec);
+    }
+    else
+    {
+        find_selection_indices_starting(q_spec);
+    }
+}
+
+
+inline void sseq_array::find_selection_indices_ending(const char* q_spec)
+{
+    assert(q_spec[0] == '*');
+    const char* q_spec_1 = q_spec + 1;
+
+    selection_indices.clear();
+
+    char* q_endswith = nullptr ;
+    char* sli = nullptr ;
+    bool has_slice = sstr::prefix_suffix(&q_endswith, &sli, "[", q_spec_1);
+
+    NP_slice<int64_t>* slice = nullptr ;
+    if(has_slice)
+    {
+        slice = new NP_slice<int64_t>();
+        int rc = slice->parse(sli, true);
+        if(rc!=0) std::cerr
+            << "sseq_array::find_selection_indices_ending"
+            << " FAILED TO PARSE sli {" << ( sli ? sli : "-" ) << "}\n"
+            ;
+        assert(rc == 0);
+    }
+
+    std::vector<std::string> q_ews ;
+    sstr::Split(q_endswith, ',', q_ews );
+    assert( q_ews.size() == 1 ); // only one endswith string supported currently
+    const char* q_ew = q_ews[0].c_str();
+
+    unsigned flag = OpticksPhoton::AbbrevToFlag(q_ew);
+    assert( flag != 0 );
+    unsigned ffs_flag = FFS(flag);
+
+    size_t nqq = qq.size(); // number of seq histories
+
+    int64_t sliced_count = 0 ;
+    int64_t unsliced_count = 0 ;
+
+    for(size_t i=0 ; i < nqq ; i++)
+    {
+        const sseq& q = qq[i] ;
+        bool match = q.last_nibble() == ffs_flag ;
+        if(match)
+        {
+            bool select = slice ? slice->contains(unsliced_count) : true ;
+            unsliced_count += 1 ;
+
+            if(select)
+            {
+                sliced_count += 1 ;
+                selection_indices.push_back(i);
+            }
+        }
+    }
+}
+
+
+inline void sseq_array::find_selection_indices_starting(const char* q_spec)
 {
     selection_indices.clear();
 
@@ -100,6 +196,8 @@ inline void sseq_array::find_selection_indices(const char* q_spec)
             bool startswith = 0==strncmp(his.c_str(), q_sw, strlen(q_sw));
             if(startswith) match += 1;
         }
+
+
         if(match > 0)
         {
             bool select = slice ? slice->contains(unsliced_count) : true ;

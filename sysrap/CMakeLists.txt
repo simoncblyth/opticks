@@ -358,8 +358,11 @@ set(HEADERS
     SASCII.hh
     SAbbrev.hh
     SPack.hh
+
+    sbit.h
     SBit.hh
     SBitSet.h
+
     SEnabled.hh
     SRand.hh
 
