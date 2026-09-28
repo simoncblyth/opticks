@@ -1106,6 +1106,8 @@ QEvt::gatherHit_
 5. free *evt.hit* on device
 
 
+HMM: could do these with PerLaunchMerge with timewindow 0.f to switch off the merging
+
 **/
 
 
@@ -1165,6 +1167,18 @@ Canonical usage from::
     QEvt::gatherHitLiteMerged
 
 Where those get invoked from SEvt::gather called from QSim::simulate
+
+* photon      -> hitmerged
+* photonlite  -> hitmergedlite
+
+NB there is no intermediate use of hit OR hitlite - the hitmerged(hitlitemerged) comes
+directly from photon(photonlite), as typical production usage is to choose one of the below arrays hit arrays:
+
+0. hit
+1. hitmerged
+2. hitlite
+3. hitlitemerged
+
 
 **/
 

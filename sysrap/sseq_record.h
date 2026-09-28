@@ -20,7 +20,7 @@ struct sseq_record
 {
     static constexpr const char* sseq_record__level = "sseq_record__level" ;
     static int level ;
-    static constexpr const char* QQ = "TO,CK,SI" ;
+    static constexpr const char* Q_START = "TO,CK,SI,*SD,*SA,*AB,*EC,*EX" ;
     const NP* seq ;
     const char* record_path ;
     const NP* record ;
@@ -42,14 +42,14 @@ int sseq_record::level = ssys::getenvint(sseq_record__level,0 );
 inline bool sseq_record::LooksLikeRecordSeqSelection(const char* _q )
 {
     const char* q = sstr::StartsWith(_q, "$") ? spath::Resolve(_q) : _q ;
-    bool q_valid = sstr::StartsWithElem(q, QQ);
+    bool q_valid = sstr::StartsWithElem(q, Q_START);
 
     if(!q_valid && level > 0) std::cerr
        << "sseq_record::LooksLikeRecordSeqSelection"
        << " level " << level
        << " _q [" << ( _q ? _q : "-" ) << "]"
        << " q [" << ( q ? q : "-" ) << "]"
-       << " QQ " << QQ
+       << " Q_START " << Q_START
        << " q_valid " << ( q_valid ? "YES" : "NO " )
        << "\n"
        ;
@@ -70,14 +70,14 @@ Canonical usage from SRecord::LoadArray
 inline NP* sseq_record::LoadRecordSeqSelection(const char* _fold, const char* _q)
 {
     const char* q = sstr::StartsWith(_q, "$") ? spath::Resolve(_q) : _q ;
-    bool q_valid = sstr::StartsWithElem(q, QQ);
+    bool q_valid = sstr::StartsWithElem(q, Q_START);
 
     if(!q_valid) std::cerr
         << "sseq_record::LoadRecordSeqSelection"
         << " _fold{" << ( _fold ? _fold : "-" ) << "}"
         << " q{" << ( q ? q : "-" ) << "}"
         << " q_valid " << ( q_valid ? "YES" : "NO ")
-        << " -- EXPECTING q TO START WITH ONE OF {" << QQ << "}"
+        << " -- EXPECTING q TO START WITH ONE OF {" << Q_START << "}"
         << "\n"
         ;
 

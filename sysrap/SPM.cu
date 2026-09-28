@@ -63,6 +63,19 @@ https://github.com/NVIDIA/thrust/discussions/1616
 
 using namespace thrust::placeholders;
 
+/**
+SPM::merge_partial_select_async
+--------------------------------
+
+This is used from:
+
+0. QEvt::PerLaunchMerge
+1. QEvt::FinalMerge_async
+
+
+**/
+
+
 template<typename T>
 SPM_future<T> SPM::merge_partial_select_async(
     const T*          d_in,
@@ -105,6 +118,8 @@ template SPM_future<sphoton>     SPM::merge_partial_select_async( const sphoton*
 /**
 SPM::merge_partial_select
 -------------------------
+
+This is used from SPM::merge_partial_select_async
 
 Flagmask select hits from input photons and merge the hits by (id,timebucket)
 with incremented counts. Obviously this requires the photons and hits to

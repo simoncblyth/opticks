@@ -95,6 +95,18 @@ inline G4MaterialPropertyVector* U4MaterialPropertyVector::Make_V(double value) 
     return mpt ;
 }
 
+/**
+G4MaterialPropertyVector* U4MaterialPropertyVector::Make_V
+------------------------------------------------------------
+
+Special cased argument strings::
+
+    swater_RINDEX__N
+    swater_RINDEX__K
+
+
+**/
+
 
 inline G4MaterialPropertyVector* U4MaterialPropertyVector::Make_V(const char* value) // static
 {
