@@ -593,6 +593,24 @@ struct NP
     template<typename T>
     static NP* MakePConst( T dl, T dr, T vc );
 
+    template<typename T>
+    static NP* MakePRamp(int ni_, T dom0, T dom1, T val0, T val1);
+
+    static NP* MakePLikeWithValue(const NP* a, double value);
+    static NP* MakePInverse(const NP* a);
+
+
+    template<typename T>
+    static NP* MakePRatio_(const NP* a, const NP* b);
+    static NP* MakePRatio( const NP* a, const NP* b);
+
+
+    template<typename... Args> static NP* MakePSum(Args ... args);  // PSum_ellipsis
+    template<typename... Args> static NP* MakePStack(Args ... args);  // PStack_ellipsis
+
+    static bool AllSameShapeAndDomain(const std::vector<const NP*>& zz);
+    static NP* MakePSum_(  const std::vector<const NP*>& zz);
+    static NP* MakePStack_(const std::vector<const NP*>& zz);
 
     static NP* MakePCopyStripZeroPadding(const NP* a);
 
@@ -4986,6 +5004,305 @@ inline NP* NP::MakePCopyStripZeroPadding(const NP* a) // static
     }
     return b;
 }
+
+template<typename T>
+inline NP* NP::MakePRamp(int ni_, T dom0, T dom1, T val0, T val1) // static
+{
+    INT ni = ni_ ;
+    INT nj = 2 ;
+
+    NP* a = NP::Make<T>(ni, nj) ;
+    T* aa = a->values<T>();
+
+    for(INT i=0 ; i < ni ; i++)
+    {
+        T frac = T(i)/T(ni-1);
+        aa[nj*i + 0] = dom0 + frac*(dom1 - dom0) ;
+        aa[nj*i + 1] = val0 + frac*(val1 - val0) ;
+    }
+    return a ;
+}
+
+
+
+inline NP* NP::MakePLikeWithValue(const NP* a, double value) // static
+{
+    assert( a->is_pshaped()) ;
+    INT ni = a->shape[0] ;
+    INT nj = a->shape[1] ;
+    NP* b = NP::MakeLike(a);
+
+    if( a->ebyte == 4 )
+    {
+        const float* aa = a->cvalues<float>();
+        float* bb = b->values<float>();
+        for(INT i=0 ; i < ni ; i++)
+        {
+            bb[nj*i + 0] = aa[nj*i + 0] ;
+            bb[nj*i + 1] = value ;
+        }
+    }
+    else if( a->ebyte == 8)
+    {
+        const double* aa = a->cvalues<double>();
+        double* bb = b->values<double>();
+        for(INT i=0 ; i < ni ; i++)
+        {
+            bb[nj*i + 0] = aa[nj*i + 0] ;
+            bb[nj*i + 1] = value ;
+        }
+    }
+    return b ;
+}
+
+
+
+inline NP* NP::MakePInverse(const NP* a) // static
+{
+    assert( a->ebyte == 4 || a->ebyte == 8  );
+    assert( a && a->is_pshaped() );
+    INT ni = a->shape[0] ;
+    INT nj = a->shape[1] ;
+    assert( nj == 2 && ni > 1 );
+
+    NP* b = MakeLike(a);
+
+    if( a->ebyte == 4 )
+    {
+        const float* aa = a->cvalues<float>();
+        float* bb = b->values<float>();
+        float one(1.f);
+
+        for(INT i=0 ; i < ni ; i++)
+        {
+            float dom = aa[i*nj + 0];
+            float val = aa[i*nj + 1];
+            bb[i*nj + 0] = dom ;
+            bb[i*nj + 1] = val == 0.f ? 0.f : one/val ;
+        }
+    }
+    else if ( a->ebyte == 8 )
+    {
+        const double* aa = a->cvalues<double>();
+        double* bb = b->values<double>();
+        double one(1.);
+
+        for(INT i=0 ; i < ni ; i++)
+        {
+            double dom = aa[i*nj + 0];
+            double val = aa[i*nj + 1];
+            bb[i*nj + 0] = dom ;
+            bb[i*nj + 1] = val == 0. ? 0. : one/val ;
+        }
+    }
+    return b ;
+}
+
+
+
+
+template<typename T>
+inline NP* NP::MakePRatio_(const NP* a, const NP* b) // static
+{
+    assert( a && a->is_pshaped() );
+    assert( b && b->is_pshaped() );
+    assert( a->ebyte == b->ebyte );
+    assert( a->shape == b->shape );
+
+    INT ni = a->shape[0] ;
+    INT nj = a->shape[1] ;
+    assert( nj == 2 && ni > 1 );
+
+    NP* c = MakeLike(a);
+
+    const T* aa = a->cvalues<T>();
+    const T* bb = b->cvalues<T>();
+    T* cc = c->values<T>();
+
+    for(INT i=0 ; i < ni ; i++)
+    {
+        T a_dom = aa[i*nj + 0];
+        T b_dom = bb[i*nj + 0];
+        T& c_dom = cc[i*nj + 0];
+        assert( a_dom == b_dom );
+        c_dom = a_dom;
+
+        T a_val = aa[i*nj + 1];
+        T b_val = bb[i*nj + 1];
+        T& c_val = cc[i*nj + 1];
+        c_val = a_val / b_val ;
+    }
+    return c ;
+}
+
+inline NP* NP::MakePRatio(const NP* a, const NP* b) // static
+{
+    assert( a->ebyte == b->ebyte );
+    assert( a->ebyte == 4 || a->ebyte == 8  );
+    NP* c = nullptr ;
+    if( a->ebyte == 4 )
+    {
+        c = NP::MakePRatio_<float>(a, b);
+    }
+    else if ( a->ebyte == 8 )
+    {
+        c = NP::MakePRatio_<double>(a, b);
+    }
+    return c ;
+}
+
+
+
+
+template<typename... Args> inline NP* NP::MakePSum(Args ... args)  // PSum_ellipsis
+{
+    std::vector<const NP*> aa = {args...};
+    return MakePSum_(aa);
+}
+
+template<typename... Args> inline NP* NP::MakePStack(Args ... args)  // PStack_ellipsis
+{
+    std::vector<const NP*> aa = {args...};
+    return MakePStack_(aa);
+}
+
+
+
+
+inline bool NP::AllSameShapeAndDomain(const std::vector<const NP*>& zz) // static
+{
+    assert( zz.size() > 0 );
+    const NP* z0 = zz[0];
+    assert( z0 && z0->is_pshaped() );
+    INT ni = z0->shape[0] ;
+    INT nj = z0->shape[1] ;
+    assert( ni > 1 && nj == 2);
+
+    const char* dtype0 = z0->dtype ;
+    INT ebyte0 = z0->ebyte ;
+
+    INT mismatch = 0;
+
+    for(size_t z=1 ; z < zz.size() ; z++)
+    {
+        const NP* a = zz[z];
+        bool dtype_expect = strcmp( a->dtype, z0->dtype ) == 0  ;
+        if(!dtype_expect) std::cerr << "NP::MakePSum : input arrays must all have same dtype " << std::endl;
+        assert( dtype_expect );
+
+        assert( a->ebyte == z0->ebyte );
+        assert( a->shape.size() == 2 );
+        assert( a->shape[0] == z0->shape[0] );
+        assert( a->shape[1] == z0->shape[1] );
+
+        if( a->ebyte == 4 )
+        {
+            const float* vv = z0->cvalues<float>();
+            const float* aa = a->cvalues<float>();
+            for(INT i=0 ; i < ni ; i++) if(aa[nj*i + 0] != vv[nj*i+0]) mismatch += 1 ;
+        }
+        else if( a->ebyte == 8 )
+        {
+            const double* vv = z0->cvalues<double>();
+            const double* aa = a->cvalues<double>();
+            for(INT i=0 ; i < ni ; i++) if(aa[nj*i + 0] != vv[nj*i+0]) mismatch += 1 ;
+        }
+    }
+    assert( mismatch == 0 );
+    return mismatch == 0 ;
+}
+
+
+
+
+
+
+
+inline NP* NP::MakePSum_(const std::vector<const NP*>& zz) // static
+{
+    bool compatible = AllSameShapeAndDomain(zz);
+    assert(compatible);
+
+    const NP* z0 = zz[0];
+    INT ni = z0->shape[0] ;
+    INT nj = z0->shape[1] ;
+    assert( ni > 1 && nj == 2);
+
+    NP* sum = NP::MakeLike(z0);
+
+    for(size_t z=0 ; z < zz.size() ; z++)
+    {
+        const NP* a = zz[z];
+        if( a->ebyte == 4 )
+        {
+            const float* aa = a->cvalues<float>();
+            float* ss = sum->values<float>();
+
+            for(INT i=0 ; i < ni ; i++)
+            {
+                if(z == 0) ss[i*nj + 0] = aa[i*nj + 0] ;  // copy domain
+                ss[i*nj + 1] += aa[i*nj + 1] ;            // accumulate values
+            }
+        }
+        else if( a->ebyte == 8 )
+        {
+            const double* aa = a->cvalues<double>();
+            double* ss = sum->values<double>();
+            for(INT i=0 ; i < ni ; i++)
+            {
+                if(z == 0) ss[i*nj + 0] = aa[i*nj + 0] ;  // copy domain
+                ss[i*nj + 1] += aa[i*nj + 1] ;            // accumulate values
+            }
+        }
+    }
+    return sum ;
+}
+
+
+/**
+NP::MakePStack_
+----------------
+
+For property arrays with the same domain stack values together,
+for example with 4 arrays of shape (761,2) combine the values
+into an array of shape (761,4) where the domain is assumed
+standard enough to be treated implicitly.
+
+**/
+
+
+inline NP* NP::MakePStack_(const std::vector<const NP*>& zz) // static
+{
+    bool compatible = AllSameShapeAndDomain(zz);
+    assert(compatible);
+
+    const NP* z0 = zz[0];
+    INT ni = z0->shape[0] ;
+    INT nj = zz.size();
+    NP* hstack = new NP(z0->dtype, ni, nj );
+
+    for(INT i=0 ; i < ni ; i++)
+    {
+        for(INT j=0 ; j < nj ; j++)
+        {
+            const NP* a = zz[j];
+            if( z0->ebyte == 4 )
+            {
+                 const float* aa = a->cvalues<float>();
+                 float* kk = hstack->values<float>();
+                 kk[i*nj+j] = aa[i*2+1];
+            }
+            else if( z0->ebyte == 8 )
+            {
+                 const double* aa = a->cvalues<double>();
+                 double* kk = hstack->values<double>();
+                 kk[i*nj+j] = aa[i*2+1];
+            }
+        }
+    }
+    return hstack ;
+}
+
 
 
 
