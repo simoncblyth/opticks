@@ -294,7 +294,7 @@ class CFH(Ctx):
             return False 
 
         paths = self.paths()
-        a = np.zeros(len(paths), dtype=np.bool)
+        a = np.zeros(len(paths), dtype=bool)
         for i,path in enumerate(paths):
             a[i] = os.path.exists(path)
         return np.all(a[i] == True)
