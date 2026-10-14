@@ -5178,9 +5178,6 @@ inline bool NP::AllSameShapeAndDomain(const std::vector<const NP*>& zz) // stati
     INT nj = z0->shape[1] ;
     assert( ni > 1 && nj == 2);
 
-    const char* dtype0 = z0->dtype ;
-    INT ebyte0 = z0->ebyte ;
-
     INT mismatch = 0;
 
     for(size_t z=1 ; z < zz.size() ; z++)

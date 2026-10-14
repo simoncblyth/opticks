@@ -62,11 +62,14 @@ When comparing with digests from files beware of the newline::
 
 struct sdigest_test
 {
+    static constexpr const char* hello_DIGEST = "5d41402abc4b2a76b9719d911017c592" ;
+
     static int compare(const char* label, const std::vector<std::string>& dig, const char* known=nullptr );
     static int hello();
     static int int_();
     static int Desc();
     static int Hit();
+    static int DescRaw();
 
     static int main();
 
@@ -105,7 +108,6 @@ int sdigest_test::hello()
     dat[5] = '\0' ;
 
     const char* m = "hello" ;
-    const char* hello_digest = "5d41402abc4b2a76b9719d911017c592" ;
 
     std::string msg = "hello" ;
 
@@ -113,7 +115,7 @@ int sdigest_test::hello()
 #ifdef __APPLE__
     ss << "md5 -q -s " << m ;
 #else
-    ss << "echo " << hello_digest ;
+    ss << "echo " << hello_DIGEST ;
     // kludge as Linux equivalent "echo -n hello | md5sum" needs a pipe
 #endif
     std::string cmd = ss.str();
@@ -147,7 +149,7 @@ int sdigest_test::hello()
     sstr::Write(path, m );
     dig[9] = sdigest::Path(path) ;
 
-    return compare("hello", dig, hello_digest );
+    return compare("hello", dig, hello_DIGEST );
 }
 
 int sdigest_test::int_()
@@ -192,6 +194,22 @@ int sdigest_test::Hit()
 }
 
 
+int sdigest_test::DescRaw()
+{
+    sdigest u0 ;
+    u0.add("hello");
+
+    std::array<unsigned char,16> dig16 = {} ;
+    unsigned char* digest_16 = dig16.data() ;
+    sdigest::FinalizeRaw_(digest_16, u0.ctx );
+    std::string dig = sdigest::DescRaw(digest_16);
+    std::cout << "sdigest_test::DescRaw " << dig << "\n" ;
+    assert( strcmp( dig.c_str(), hello_DIGEST) == 0 );
+
+    return 0;
+}
+
+
 
 int sdigest_test::main()
 {
@@ -203,6 +221,7 @@ int sdigest_test::main()
     if(ALL||strcmp(TEST, "int_")==0)  rc += int_();
     if(ALL||strcmp(TEST, "Desc")==0)  rc += Desc();
     if(ALL||strcmp(TEST, "Hit")==0)   rc += Hit();
+    if(ALL||strcmp(TEST, "DescRaw")==0)  rc += DescRaw();
 
     std::cout << "sdigest_test::main rc:" << rc << "\n" ;
     return rc ;

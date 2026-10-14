@@ -22,17 +22,20 @@ case $(uname) in
 esac
 
 
+opt="$opt -O2 -D_FORTIFY_SOURCE=2 -Wstringop-overflow"
+
+
 defarg=info_build_run
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE defarg arg name bin"
+vars="BASH_SOURCE defarg arg name bin opt"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done 
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then
-   gcc $name.cc -std=c++11 -Wall -lstdc++ $opt -I.. -o $bin
+   gcc $name.cc -std=c++17 -Wall -lstdc++ $opt -I.. -o $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi
 
