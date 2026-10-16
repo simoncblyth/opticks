@@ -78,6 +78,11 @@ struct __align__(16) Params // Force 16-byte structural alignment boundary
     float      DEBUG_zdepth ;
     uint32_t   _pad2;
 
+    unsigned   SER_coherenceHintBits ;
+    unsigned   SER_bounceInterval ;
+    unsigned   _pad3 ;
+    unsigned   _pad4 ;
+
 };
 
 
@@ -115,6 +120,9 @@ struct Params_Helper
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering
     void setPIDXYZ(unsigned x, unsigned y, unsigned z, unsigned w);
     void set_photon_slot_offset(unsigned long long _photon_slot_offset);
+
+    void setSER( unsigned coherenceHintBits,  unsigned bounceInterval );
+
 
 };
 #endif

@@ -156,6 +156,7 @@ private:
     static constexpr const char* _prepareParamRender_DEBUG_zdepth = "CSGOptiX__prepareParamRender_DEBUG_zdepth" ;
     void prepareParamRender();
     void prepareParamSimulate();
+    void prepareParamSimulate_SER();
     void prepareParam();
 
  private:

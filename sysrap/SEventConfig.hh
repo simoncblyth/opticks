@@ -258,6 +258,8 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kModeMerge     = "OPTICKS_MODE_MERGE" ;
     static constexpr const char* kMergeWindow   = "OPTICKS_MERGE_WINDOW" ; // ns
 
+    static constexpr const char* kSER           = "OPTICKS_SER" ;
+
     static constexpr const char* kMaxExtentDomain    = "OPTICKS_MAX_EXTENT_DOMAIN" ;
     static constexpr const char* kMaxTimeDomain      = "OPTICKS_MAX_TIME_DOMAIN" ;
 
@@ -340,6 +342,8 @@ struct SYSRAP_API SEventConfig
     static int64_t ModeSave();
     static const char* ModeSaveLabel();
 
+
+
     static int64_t ModeClient();
     static int64_t ModeLite();
     static int64_t ModeMerge();
@@ -348,6 +352,7 @@ struct SYSRAP_API SEventConfig
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
 
+    static const char* SER();
     static const char* OutFold();
     static const char* OutName();
     static const char* EventReldir();
@@ -556,6 +561,7 @@ struct SYSRAP_API SEventConfig
     static float _MaxExtentDomainDefault ;
     static float _MaxTimeDomainDefault  ;
 
+    static const char* _SERDefault ;
     static const char* _OutFoldDefault ;
     static const char* _OutNameDefault ;
     static const char* _EventReldirDefault ;
@@ -639,6 +645,7 @@ struct SYSRAP_API SEventConfig
     static float _MaxExtentDomain ;
     static float _MaxTimeDomain  ;
 
+    static const char* _SER ;
     static const char* _OutFold ;
     static const char* _OutName ;
     static const char* _EventReldir ;

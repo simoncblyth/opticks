@@ -15,6 +15,8 @@ WLS addition. The sphoton-related changes are mostly for LArSoft
 BNL : Gabor (Simphony, formerly EIC-Opticks)
 ------------------------------------------------
 
+* https://github.com/BNLNPPS/simphony
+
 
 
 

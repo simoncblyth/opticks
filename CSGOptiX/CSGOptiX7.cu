@@ -476,6 +476,17 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
     while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
+
+#ifdef WITH_SER
+#if OPTIX_VERSION >= 80000
+        if( params.SER_coherenceHintBits > 0u && params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        {
+            unsigned coherenceHint = bounce / params.SER_bounceInterval ;
+            optixReorder( coherenceHint , params.SER_coherenceHintBits);  // // SER: regroup live threads into warps
+        }
+#endif
+#endif
+
         float tmin = ( ctx.p.orient_boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
         // intersect query filling (quad2)prd

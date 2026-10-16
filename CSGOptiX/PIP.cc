@@ -123,6 +123,11 @@ const char* PIP::desc() const
 #else
        << " NOT_WITH_PRD "
 #endif
+#ifdef WITH_SER
+       << " WITH_SER "
+#else
+       << " NOT_WITH_SER "
+#endif
        << " "
        ;
 

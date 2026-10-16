@@ -78,6 +78,9 @@ float SEventConfig::_MergeWindowDefault = 0.f ;  // ns
 float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
 float SEventConfig::_MaxTimeDomainDefault = 10.f ; // ns
 
+const char* SEventConfig::_SERDefault = "coherenceHintBits:0,bounceInterval:0" ;
+//const char* SEventConfig::_SERDefault   = "coherenceHintBits:4,bounceInterval:4" ;
+
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ;
 const char* SEventConfig::_OutNameDefault = nullptr ;
 const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-no_opticks_event_name}" ; // coordinate with kEventName
@@ -308,6 +311,7 @@ float SEventConfig::_MergeWindow = ssys::getenvfloat(kMergeWindow,  _MergeWindow
 float SEventConfig::_MaxExtentDomain  = ssys::getenvfloat(kMaxExtentDomain, _MaxExtentDomainDefault );
 float SEventConfig::_MaxTimeDomain    = ssys::getenvfloat(kMaxTimeDomain,   _MaxTimeDomainDefault );    // ns
 
+const char* SEventConfig::_SER     = ssys::getenvvar(kSER, _SERDefault );
 const char* SEventConfig::_OutFold = ssys::getenvvar(kOutFold, _OutFoldDefault );
 const char* SEventConfig::_OutName = ssys::getenvvar(kOutName, _OutNameDefault );
 const char* SEventConfig::_EventReldir = ssys::getenvvar(kEventReldir, _EventReldirDefault );
@@ -430,6 +434,7 @@ float   SEventConfig::MergeWindow(){   return _MergeWindow ; }
 float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
 float SEventConfig::MaxTimeDomain(){   return _MaxTimeDomain ; }
 
+const char* SEventConfig::SER(){       return _SER ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 

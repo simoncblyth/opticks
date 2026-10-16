@@ -1,3 +1,12 @@
+/**
+Params.cc
+===========
+
+* CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods
+
+**/
+
+
 #include "SRG.h"
 #include "Params.h"
 
@@ -73,6 +82,12 @@ void Params_Helper::init()
     params->PropagateRefine = 0u ;
     params->DEBUG_zdepth = 0.f ;
     params->_pad2 = 0 ;
+
+    params->SER_coherenceHintBits = 0u ;
+    params->SER_bounceInterval = 0u ;
+    params->_pad3 = 0u ;
+    params->_pad4 = 0u ;
+
 }
 
 void Params_Helper::setCenterExtent(float x, float y, float z, float w)  // used for "simulation" planar rendering
@@ -208,6 +223,12 @@ std::string Params_Helper::desc() const
        << std::setw(10) << std::fixed << std::setprecision(6) << params->WNORM.z
        << std::setw(10) << std::fixed << std::setprecision(6) << params->WNORM.w
        << ")\n"
+       << std::setw(20) << "SER_bounceInterval"
+       << std::setw(10) << params->SER_bounceInterval
+       << "\n"
+       << std::setw(20) << "SER_coherenceHintBits"
+       << std::setw(10) << params->SER_coherenceHintBits
+       << "\n"
        ;
 
     std::string str = ss.str();
@@ -269,6 +290,49 @@ void Params_Helper::set_photon_slot_offset(unsigned long long photon_slot_offset
 }
 
 
+/**
+Params_Helper::setSER
+-----------------------
+
+* https://arxiv.org/abs/2608.21396
+* Mitigating warp divergence in GPU optical photon Monte Carlo: an order of
+  magnitude speedup with Shader Execution Reordering, Gabor Galgoczi
+
+Change SER (Shader Execution Reordering) config with eg::
+
+   export OPTICKS_SER="coherenceHintBits:4,bounceInterval:4"
+
+coherenceHintBits (eg 3 or 4 - expected that using more will not help TODO:measure)
+   used as numCoherenceHintBitsFromLSB in optixReorder call
+
+bounceInterval (eg 4)
+   used with bounce integer to form *coherenceHint = bounce/bounceInterval* used in optixReorder call
+
+
+For values of 4 and 4, bounce indices up to 64 would not clock the coherenceHint::
+
+
+    In [10]: (np.arange(64, dtype=np.int32)/4).astype(np.int32) & 0xf
+    Out[10]:
+    array([ 0,  0,  0,  0,  1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  3,  4,
+            4,  4,  4,  5,  5,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,
+            8,  8,  9,  9,  9,  9, 10, 10, 10, 10, 11, 11, 11, 11, 12, 12, 12,
+           12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15], dtype=int32)
+
+
+Alternates to try for the coherenceHint:
+
+1. ctx.p.time based time_bins ?
+2. 3-bit boundary group combined with 3-bit temporal bin ?
+
+
+**/
+
+void Params_Helper::setSER( unsigned coherenceHintBits, unsigned bounceInterval )
+{
+    params->SER_coherenceHintBits = coherenceHintBits ;
+    params->SER_bounceInterval = bounceInterval ;
+}
 
 void Params_Helper::device_alloc()
 {

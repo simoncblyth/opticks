@@ -9,6 +9,9 @@ TEST=ParseIntSpecList32   ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseIntSpecList64   ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 
+TEST=ParseDict ~/opticks/sysrap/tests/sstr_test.sh
+
+
 **/
 
 #include <string>
@@ -605,6 +608,7 @@ struct sstr_test
     static int StartsWithElem();
     static int split();
     static int ParseInt();
+    static int ParseDict();
     static int ExtractSize();
 
 
@@ -735,6 +739,24 @@ int sstr_test::ParseInt()
     return 0 ;
 }
 
+
+int sstr_test::ParseDict()
+{
+    const char* ser_config = "bounceInterval:4,coherenceHintBits:4" ;
+    std::map<std::string, int> ser ;
+    sstr::ParseDict(ser_config, ser );
+
+    std::cout << "ser[\"bounceInterval\"]     : " << ser["bounceInterval"]    << "\n" ;
+    std::cout << "ser[\"coherenceHintBits\"]  : " << ser["coherenceHintBits"] << "\n" ;
+
+    return 0 ;
+}
+
+
+
+
+
+
 int sstr_test::ExtractSize()
 {
     std::vector<std::string> src = {{
@@ -813,6 +835,7 @@ int sstr_test::Main()
     if(ALL||0==strcmp(TEST,"StartsWithElem")) rc += StartsWithElem();
     if(ALL||0==strcmp(TEST,"split"))          rc += split();
     if(ALL||0==strcmp(TEST,"ParseInt"))       rc += ParseInt();
+    if(ALL||0==strcmp(TEST,"ParseDict"))      rc += ParseDict();
     if(ALL||0==strcmp(TEST,"ExtractSize"))    rc += ExtractSize();
 
 

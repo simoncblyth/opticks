@@ -14,6 +14,11 @@
 #include <charconv> // std::from_chars
 #include <type_traits>
 
+#include <map>
+#include <string_view>
+#include <algorithm>
+#include <cctype>
+
 
 struct sstr
 {
@@ -127,6 +132,9 @@ struct sstr
 
     template<typename T>
     static void ParsePair( const char* txt, T& x, T& y, char delim=':' );
+
+    static void ParseDict( const char* txt, std::map<std::string, int>& mp );
+
 
     static bool IsInteger(const char* str);
     static bool IsWhitespace(const std::string& s );
@@ -969,6 +977,62 @@ inline const char* sstr::ParseStringIntInt( const char* triplet, int& y, int& z,
     y = AsInt( elem[1].c_str() );
     z = AsInt( elem[2].c_str() );
     return strdup(elem[0].c_str());
+}
+
+/**
+sstr::ParseDict
+----------------
+
+Parse a string like the below into a map keyed by std::string with int values::
+
+    bounceInterval:4,coherenceHintBits:4
+
+**/
+
+inline void sstr::ParseDict(const char* txt, std::map<std::string, int>& mp) // static
+{
+    if (!txt) return;
+
+    std::string_view sv(txt);
+    size_t start = 0;
+
+    while (start < sv.size()) {
+        // Find the next comma delimiter
+        size_t end = sv.find(',', start);
+        if (end == std::string_view::npos) {
+            end = sv.size();
+        }
+
+        std::string_view token = sv.substr(start, end - start);
+        size_t colon = token.find(':');
+
+        if (colon != std::string_view::npos) {
+            std::string key(token.substr(0, colon));
+            std::string valStr(token.substr(colon + 1));
+
+            // Helper lambda to trim leading/trailing whitespace
+            auto trim = [](std::string& s) {
+                s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+                    return !std::isspace(ch);
+                }));
+                s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+                    return !std::isspace(ch);
+                }).base(), s.end());
+            };
+
+            trim(key);
+            trim(valStr);
+
+            if (!key.empty()) {
+                try {
+                    mp[key] = std::stoi(valStr);
+                } catch (...) {
+                    // Skip or handle malformed integer values gracefully
+                }
+            }
+        }
+        start = end + 1;
+    }
 }
 
 
