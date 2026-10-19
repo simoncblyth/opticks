@@ -1040,35 +1040,12 @@ void CSGOptiX::prepareParamSimulate()
 CSGOptiX::prepareParamSimulate_SER
 ------------------------------------
 
-* https://arxiv.org/abs/2608.21396
-* Mitigating warp divergence in GPU optical photon Monte Carlo: an order of
-  magnitude speedup with Shader Execution Reordering, Gabor Galgoczi
-
-Change SER (Shader Execution Reordering) config with eg::
-
-   export OPTICKS_SER="bounceInterval:4,coherenceHintBits:4"
-
 **/
 
 void CSGOptiX::prepareParamSimulate_SER()
 {
-    std::map<std::string, int> ser ;
-    sstr::ParseDict(SEventConfig::SER(), ser );
-
-    unsigned bounceInterval    = ser["bounceInterval"] ;
-    unsigned coherenceHintBits = ser["coherenceHintBits"] ;
-
-    LOG(info)
-        << "[CSGOptiX::prepareParamSimulate_SER\n"
-        << " SEventConfig::kSER         : " << SEventConfig::kSER        << "\n"
-        << " SEventConfig::_SERDefault  : " << SEventConfig::_SERDefault << "\n"
-        << " SEventConfig::SER()        : " << SEventConfig::SER()       << "\n"
-        << " bounceInterval             : " << bounceInterval            << "\n"
-        << " coherenceHintBits          : " << coherenceHintBits         << "\n"
-        << "]CSGOptiX::prepareParamSimulate_SER\n"
-        ;
-
-    params_helper->setSER( coherenceHintBits, bounceInterval );
+    const char* SER = SEventConfig::SER();
+    params_helper->set_SER( SER );
 }
 
 

@@ -25,18 +25,7 @@ For persisting srec arrays use::
 #    define SSEQ_METHOD inline
 #endif
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#define FFS(x)   (__ffs(x))
-#define FFSLL(x) (__ffsll(x))
-#else
-#define FFS(x)   (ffs(x))
-#define FFSLL(x) (ffsll(x))
-#endif
-
-#define rFFS(x)   ( x == 0 ? 0 : 0x1 << (x - 1) )
-#define rFFSLL(x) ( x == 0 ? 0 : 0x1ull << (x - 1) )
-// use rFFSLL when values of x exceed about 31
-
+#include "sFFS.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else

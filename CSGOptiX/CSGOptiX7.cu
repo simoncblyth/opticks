@@ -479,10 +479,15 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
 #ifdef WITH_SER
 #if OPTIX_VERSION >= 80000
-        if( params.SER_coherenceHintBits > 0u && params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
         {
-            unsigned coherenceHint = bounce / params.SER_bounceInterval ;
-            optixReorder( coherenceHint , params.SER_coherenceHintBits);  // // SER: regroup live threads into warps
+            unsigned coherenceHint = 0u ;
+            switch( params.SER_hintMethod )
+            {
+                case 1: coherenceHint = bounce / params.SER_bounceInterval ; break ;
+                case 2: coherenceHint = ctx.p.flagidx()                    ; break ;
+            }
+            optixReorder( coherenceHint , params.SER_coherenceHintBits);  // regroup live threads into warps
         }
 #endif
 #endif

@@ -5,6 +5,7 @@ sphoton_test.cc
 ::
 
      ~/o/sysrap/tests/sphoton_test.sh
+     TEST=flagidx  ~/o/sysrap/tests/sphoton_test.sh
      TEST=set_lpos ~/o/sysrap/tests/sphoton_test.sh
 
      OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh
@@ -37,6 +38,7 @@ struct sphoton_test
     static int make_ephoton_array();
     static int sphoton_selector_();
     static int set_flag();
+    static int flagidx();
     static int addto_flagmask();
     static int change_flagmask();
     static int digest();
@@ -47,6 +49,7 @@ struct sphoton_test
     static int dot_pol_cross_mom_nrm();
     static int make_record_array();
     static int ChangeTimeInsitu();
+
 
     static int index();
     static int demoarray();
@@ -147,6 +150,33 @@ int sphoton_test::set_flag()
 
     return 0 ;
 }
+
+int sphoton_test::flagidx()
+{
+    sphoton p = {} ;
+    std::cout << "set_flag.0 : " << p.descFlag() << "\n" ;
+
+    for(unsigned i = 0 ; i < 32 ; i++ )
+    {
+        unsigned flag = 0x1 << i ;
+        p.set_flag(flag);
+        unsigned flagidx1 = p.flagidx1();
+        unsigned flagidx = p.flagidx();
+        std::cout
+            << std::setw(3)  << i
+            << std::setw(16) << flag
+            << std::setw(16) << std::hex << flag << std::dec
+            << " flagidx1" << std::setw(4)  << flagidx1
+            << " flagidx " << std::setw(4)  << flagidx
+            << " | "
+            << std::setw(10) << p.descFlag()
+            << "\n"
+            ;
+
+    }
+    return 0 ;
+}
+
 
 int sphoton_test::addto_flagmask()
 {
@@ -854,6 +884,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "make_ephoton_array"))    rc += make_ephoton_array();
     if(ALL||0==strcmp(TEST, "sphoton_selector_"))     rc += sphoton_selector_();
     if(ALL||0==strcmp(TEST, "set_flag"))              rc += set_flag();
+    if(ALL||0==strcmp(TEST, "flagidx"))               rc += flagidx();
     if(ALL||0==strcmp(TEST, "addto_flagmask"))        rc += addto_flagmask();
     if(ALL||0==strcmp(TEST, "change_flagmask"))       rc += change_flagmask();
     if(ALL||0==strcmp(TEST, "digest"))                rc += digest();

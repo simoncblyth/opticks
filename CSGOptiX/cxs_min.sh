@@ -121,6 +121,9 @@ EOU
 #test=input_photon_poolcover
 #test=input_photon_poolcover_refine
 
+
+test=medium_evt
+
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
@@ -133,7 +136,7 @@ EOU
 #test=vvvvvvlarge_evt
 #test=vvvvvvlarge_evt_merge
 
-test=medium_scan
+#test=medium_scan
 #test=medium_scan_first
 
 export TEST=${TEST:-$test}
@@ -231,6 +234,11 @@ knobs()
 
 
    #export NPFold__substamp_DUMP=1
+
+   local SER=hintMethod:2,coherenceHintBits:4,bounceInterval:1
+   export OPTICKS_SER=$SER
+
+   #export OPTICKS_MAX_BOUNCE=64
 
 
 }
@@ -445,6 +453,14 @@ elif [ "$TEST" == "medium_scan" ]; then
    # Remember multi-launch needs multiple gensteps in order to slice them up
    # such that each slice fits into VRAM.
    # So for big photon counts its vital to use multiple genstep.
+
+
+elif [ "$TEST" == "medium_evt" ]; then
+
+   opticks_running_mode=SRM_TORCH
+   opticks_num_event=1
+   opticks_num_photon=M100
+   opticks_num_genstep=10
 
 
 elif [ "$TEST" == "larger_scan" ]; then
