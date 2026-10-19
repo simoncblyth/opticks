@@ -430,6 +430,7 @@ set(HEADERS
     scarrier.h
     scerenkov.h
     sscint.h
+    sspecies.h
     sevent.h
     sstate.h
     sctx.h

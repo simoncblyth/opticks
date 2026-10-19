@@ -39,7 +39,8 @@ enum
     OpticksGenstep_G4Cerenkov_modified      = 18,
     OpticksGenstep_INPUT_PHOTON             = 19,
     OpticksGenstep_INPUT_PHOTON_SIMTRACE    = 20,
-    OpticksGenstep_NumType                  = 21
+    OpticksGenstep_DsG4ScintSimple          = 21,
+    OpticksGenstep_NumType                  = 22
 };
 
 
@@ -71,6 +72,7 @@ struct OpticksGenstep_
     static constexpr const char* G4Cerenkov_modified_     = "G4Cerenkov_modified" ;
     static constexpr const char* INPUT_PHOTON_            = "INPUT_PHOTON" ;
     static constexpr const char* INPUT_PHOTON_SIMTRACE_   = "INPUT_PHOTON_SIMTRACE" ;
+    static constexpr const char* DsG4ScintSimple_         = "DsG4ScintSimple" ;
 
     static unsigned Type(const char* name);
     static const char* Name(unsigned type);
@@ -115,6 +117,7 @@ inline unsigned OpticksGenstep_::Type(const char* name)
     if(strcmp(name,FRAME_)==0)                    type = OpticksGenstep_FRAME ;
     if(strcmp(name,INPUT_PHOTON_)==0)             type = OpticksGenstep_INPUT_PHOTON ;
     if(strcmp(name,INPUT_PHOTON_SIMTRACE_)==0)    type = OpticksGenstep_INPUT_PHOTON_SIMTRACE ;
+    if(strcmp(name,DsG4ScintSimple_)==0)          type = OpticksGenstep_DsG4ScintSimple ;
     return type ;
 }
 
@@ -144,6 +147,7 @@ inline const char* OpticksGenstep_::Name(unsigned type)
         case OpticksGenstep_FRAME:                   n = FRAME_                   ; break ;
         case OpticksGenstep_INPUT_PHOTON:            n = INPUT_PHOTON_            ; break ;
         case OpticksGenstep_INPUT_PHOTON_SIMTRACE:   n = INPUT_PHOTON_SIMTRACE_   ; break ;
+        case OpticksGenstep_DsG4ScintSimple:         n = DsG4ScintSimple_         ; break ;
         case OpticksGenstep_NumType:                 n = INVALID_                 ; break ;
         default:                                     n = INVALID_                 ; break ;
     }
@@ -171,7 +175,8 @@ inline bool OpticksGenstep_::IsScintillation(int gentype)  // static
    return gentype == OpticksGenstep_G4Scintillation_1042 ||
           gentype == OpticksGenstep_DsG4Scintillation_r3971 ||
           gentype == OpticksGenstep_DsG4Scintillation_r4695 ||
-          gentype == OpticksGenstep_SCINTILLATION
+          gentype == OpticksGenstep_SCINTILLATION ||
+          gentype == OpticksGenstep_DsG4ScintSimple
          ;
 }
 inline bool OpticksGenstep_::IsTorchLike(int gentype)   // static

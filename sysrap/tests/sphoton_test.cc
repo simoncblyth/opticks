@@ -612,7 +612,7 @@ int sphoton_test::index()
 
 
     uint64_t INDEX_MAX = 0xffffffffff ;  //  0xffffffffff/1e9 = 1099.511   1.099 trillion
-    unsigned IDENTITY_MAX = 0xffffffu ;  // 0xffffff/1e6 = 16.777215    16.7 million
+    unsigned IDENTITY_MAX = 0x3fffffu ;  // 22-bit sensor_identifier+1 4194303: 4 million
 
     for(size_t i=0 ; i < xx.size() ; i++)
     {
