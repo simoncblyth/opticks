@@ -2365,7 +2365,7 @@ inline void NP::set_shape(const std::vector<INT>& src_shape)
 }
 inline void NP::get_shape( std::vector<size_t>& sh ) const
 {
-    size_t sz = NPS::copy_shape(sh, shape);
+    [[maybe_unused]] size_t sz = NPS::copy_shape(sh, shape);
     assert( sz == size_t(size) );
 }
 
@@ -2412,7 +2412,7 @@ to the slicing.
 
 inline void NP::_change_shape_ni(INT ni, bool data_resize)
 {
-    unsigned ndim = shape.size() ;
+    [[maybe_unused]] unsigned ndim = shape.size() ;
     assert( ndim > 0 );
 
     if(!data_resize) // eg from NP::LoadSlice when the slice is larger than the array
@@ -4969,7 +4969,7 @@ inline NP* NP::MakePCopyStripZeroPadding(const NP* a) // static
     assert( a->ebyte == 4 || a->ebyte == 8  );
     assert( a && a->is_pshaped() );
     INT ni = a->shape[0] ;
-    INT nj = a->shape[1] ;
+    [[maybe_unused]] INT nj = a->shape[1] ;
     assert( nj == 2 && ni > 1 );
 
     // Find first and last index with non-zero value
@@ -5122,7 +5122,7 @@ inline NP* NP::MakePRatio_(const NP* a, const NP* b) // static
     for(INT i=0 ; i < ni ; i++)
     {
         T a_dom = aa[i*nj + 0];
-        T b_dom = bb[i*nj + 0];
+        [[maybe_unused]] T b_dom = bb[i*nj + 0];
         T& c_dom = cc[i*nj + 0];
         assert( a_dom == b_dom );
         c_dom = a_dom;
@@ -5217,7 +5217,7 @@ inline bool NP::AllSameShapeAndDomain(const std::vector<const NP*>& zz) // stati
 
 inline NP* NP::MakePSum_(const std::vector<const NP*>& zz) // static
 {
-    bool compatible = AllSameShapeAndDomain(zz);
+    [[maybe_unused]] bool compatible = AllSameShapeAndDomain(zz);
     assert(compatible);
 
     const NP* z0 = zz[0];
@@ -5270,7 +5270,7 @@ standard enough to be treated implicitly.
 
 inline NP* NP::MakePStack_(const std::vector<const NP*>& zz) // static
 {
-    bool compatible = AllSameShapeAndDomain(zz);
+    [[maybe_unused]] bool compatible = AllSameShapeAndDomain(zz);
     assert(compatible);
 
     const NP* z0 = zz[0];
@@ -7971,7 +7971,7 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
     if(oo) (*oo) << "[NP::Summarize_ranges_to_evsmry\n" ;
 
     assert( ranges->num_dim() == 2 );
-    size_t ni = ranges->shape[0] ;
+    [[maybe_unused]] size_t ni = ranges->shape[0] ;
     size_t nj = ranges->shape[1] ;
     assert( nj == 5 );
 
@@ -8049,7 +8049,7 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
     for(size_t i=0 ; i < num_lines ; i++ )
     {
         int64_t ta = rr[i*nj + 0];   // microsecond timestamps
-        int64_t tb = rr[i*nj + 1];
+        [[maybe_unused]] int64_t tb = rr[i*nj + 1];
         int64_t dt = rr[i*nj + 2];   // delta microsecond timestamps
         assert( dt == tb - ta );
 
@@ -9458,8 +9458,20 @@ inline int NP::load_meta(  const char* path ){  return load_string_( path, "_met
 inline int NP::load_names( const char* path ){  return load_strings_( path, "_names.txt", &names ) ; }
 inline int NP::load_labels( const char* path )
 {
-    labels = ExistsSidecar(path, "_labels.txt") ? new std::vector<std::string> : nullptr ;
-    return load_strings_( path, "_labels.txt", labels ) ;
+    bool with_labels = ExistsSidecar(path, "_labels.txt") ;
+
+    int rc = 0 ;
+    if( with_labels )
+    {
+        labels = new std::vector<std::string> {} ;
+        rc = load_strings_( path, "_labels.txt", labels ) ;
+    }
+    else
+    {
+        labels = nullptr ;
+        rc = 1 ;
+    }
+    return rc ;
 }
 
 
