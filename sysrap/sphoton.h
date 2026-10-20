@@ -846,7 +846,7 @@ SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
 
 SPHOTON_METHOD void sphoton::Get( std::vector<sphoton>& pp, const NP* a )
 {
-    bool is_f = IsPhotonArray<float>(a);
+    [[maybe_unused]] bool is_f = IsPhotonArray<float>(a);
     assert( is_f );
     unsigned num = a->shape[0] ;
     pp.resize(num);

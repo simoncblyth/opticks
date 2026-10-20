@@ -13,76 +13,76 @@ objects, modules may be destroyed with optixModuleDestroy.
 
 **/
 
-#include "SOPTIX_Options.h" 
+#include "SOPTIX_Options.h"
 #include "spath.h"
 #include "sstr.h"
 
 struct SOPTIX_Module
-{ 
-    static int Initialize(); 
+{
+    static int Initialize();
 
-    enum { UNKNOWN, PTX, OPTIXIR } ; 
-    static constexpr const char* UNKNOWN_ = "UNKNOWN" ; 
-    static constexpr const char* PTX_     = "PTX" ; 
-    static constexpr const char* OPTIXIR_ = "OPTIXIR" ; 
-    static const char* Type(int type) ; 
+    enum { UNKNOWN, PTX, OPTIXIR } ;
+    static constexpr const char* UNKNOWN_ = "UNKNOWN" ;
+    static constexpr const char* PTX_     = "PTX" ;
+    static constexpr const char* OPTIXIR_ = "OPTIXIR" ;
+    static const char* Type(int type) ;
 
-    int irc ; 
-    OptixDeviceContext& context ; 
-    const SOPTIX_Options& options ; 
-    const char* path ; 
-    int type ; 
-    std::vector<char> bin ; 
-    OptixModule module ; 
-    
+    int irc ;
+    OptixDeviceContext& context ;
+    const SOPTIX_Options& options ;
+    const char* path ;
+    int type ;
+    std::vector<char> bin ;
+    OptixModule module ;
+
     std::string desc() const ;
 
-    SOPTIX_Module( 
-        OptixDeviceContext& context, 
+    SOPTIX_Module(
+        OptixDeviceContext& context,
         const SOPTIX_Options& options,
         const char* _path
-        ); 
+        );
 
-    void init(); 
+    void init();
 };
 
 inline int SOPTIX_Module::Initialize()
 {
-    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Module::Initialize\n" ; 
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Module::Initialize\n" ;
     return 0 ;
 }
 
 inline const char* SOPTIX_Module::Type(int type)
 {
-    const char* str = nullptr ; 
+    const char* str = nullptr ;
     switch(type)
     {
-        case UNKNOWN: str = UNKNOWN_ ; break ; 
-        case PTX:     str = PTX_     ; break ; 
-        case OPTIXIR: str = OPTIXIR_ ; break ; 
+        case UNKNOWN: str = UNKNOWN_ ; break ;
+        case PTX:     str = PTX_     ; break ;
+        case OPTIXIR: str = OPTIXIR_ ; break ;
     }
-    return str ; 
+    return str ;
 
 }
 
-inline std::string SOPTIX_Module::desc() const 
+inline std::string SOPTIX_Module::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "[SOPTIX_Module::desc"  ;
-    ss << " path\n" << path << "\n" ; 
-    ss << " type\n" << type << "\n" ; 
-    ss << " Type\n" << Type(type) << "\n" ; 
-    ss << " bin.size\n" << bin.size() << "\n" ; 
-    ss << " options\n" << options.desc() << "\n" ; 
+    ss << " path\n" << path << "\n" ;
+    ss << " type\n" << type << "\n" ;
+    ss << " Type\n" << Type(type) << "\n" ;
+    ss << " bin.size\n" << bin.size() << "\n" ;
+    ss << " options\n" << options.desc() << "\n" ;
     ss << "]SOPTIX_Module::desc"  ;
-    std::string str = ss.str() ; 
-    return str ; 
+    std::string str = ss.str() ;
+    return str ;
 }
 
 
-inline SOPTIX_Module::SOPTIX_Module( 
-    OptixDeviceContext&   _context, 
-    const SOPTIX_Options& _options, 
+inline SOPTIX_Module::SOPTIX_Module(
+    OptixDeviceContext&   _context,
+    const SOPTIX_Options& _options,
     const char*           _path
     )
     :
@@ -100,25 +100,25 @@ inline SOPTIX_Module::SOPTIX_Module(
 SOPTIX_Module::init
 ---------------------
 
-HMM: in OptiX 7.5 seems the optixModuleCreateFromPTX 
-also does optixir ? 
+HMM: in OptiX 7.5 seems the optixModuleCreateFromPTX
+also does optixir ?
 
 **/
 
 inline void SOPTIX_Module::init()
 {
-    int level = SOPTIX_Options::Level() ; 
-    if(level>0) std::cout << "[SOPTIX_Module::init level " << level << "\n" ; 
-    if(      sstr::EndsWith(path, "ptx") )    type = PTX  ; 
-    else if( sstr::EndsWith(path, "optixir")) type = OPTIXIR ; 
+    int level = SOPTIX_Options::Level() ;
+    if(level>0) std::cout << "[SOPTIX_Module::init level " << level << "\n" ;
+    if(      sstr::EndsWith(path, "ptx") )    type = PTX  ;
+    else if( sstr::EndsWith(path, "optixir")) type = OPTIXIR ;
 
-    bool read_ok = spath::Read(bin, path );  // should work with PTX as well as OPTIXIR
-    if(level > 1) std::cout << "-SOPTIX_Module::init\n" << desc() << "\n" ; 
+    [[maybe_unused]] bool read_ok = spath::Read(bin, path );  // should work with PTX as well as OPTIXIR
+    if(level > 1) std::cout << "-SOPTIX_Module::init\n" << desc() << "\n" ;
 
-    assert(  read_ok );    
+    assert(  read_ok );
 
     size_t sizeof_log = 0 ;
-    char log[2048]; 
+    char log[2048];
 
 #if OPTIX_VERSION <= 70600
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
@@ -145,9 +145,9 @@ inline void SOPTIX_Module::init()
 
 #endif
 
-    std::string _log( log, log+sizeof_log ); 
+    std::string _log( log, log+sizeof_log );
     if(sizeof_log > 0) std::cout << "[optixModuleCreate _log \n" << _log  << "\n]optixModuleCreate _log\n" ;
-    assert( sizeof_log == 0 ); 
-    if(level > 0) std::cout << "]SOPTIX_Module::init\n" ; 
+    assert( sizeof_log == 0 );
+    if(level > 0) std::cout << "]SOPTIX_Module::init\n" ;
 }
 

@@ -776,6 +776,12 @@ See sysrap/tests/StringFormatTest.cc
 
 **/
 
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
 template<typename ... Args>
 inline std::string sstr::Format_( const char* fmt, Args ... args )
 {
@@ -785,6 +791,13 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
     std::snprintf( buf.data(), sz, fmt, args ... );
     return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
+
 
 template std::string sstr::Format_( const char*, const char*, int, int );
 template std::string sstr::Format_( const char*, int );

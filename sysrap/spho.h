@@ -23,6 +23,7 @@ resulting in potentially multiple reemission generations.
 
 #include <array>
 #include <string>
+#include <cstring>
 
 struct spho_uchar4 { unsigned char x,y,z,w ; };
 
@@ -198,6 +199,9 @@ inline const int* spho::cdata() const
 {
     return &gs ;
 }
+
+
+/*
 inline void spho::serialize( std::array<int, 4>& a ) const
 {
     assert( a.size() == N );
@@ -210,7 +214,21 @@ inline void spho::load( const std::array<int, 4>& a )
     int* ptr = data() ;
     for(int i=0 ; i < N ; i++ ) ptr[i] = a[i] ;
 }
+*/
 
+inline void spho::serialize( std::array<int, 4>& a ) const
+{
+    assert( a.size() == N );
+    static_assert(sizeof(spho) == 16, "spho size mismatch");
+    std::memcpy(a.data(), this, sizeof(spho));
+}
+
+inline void spho::load( const std::array<int, 4>& a )
+{
+    assert( a.size() == N );
+    static_assert(sizeof(spho) == 16, "spho size mismatch");
+    std::memcpy(this, a.data(), sizeof(spho));
+}
 
 
 

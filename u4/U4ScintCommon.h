@@ -291,9 +291,9 @@ inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
     NP* icdf = NP::Make<double>(3, num_bins, 1);
     icdf->fill<double>(0.);
 
-    int ni = icdf->shape[0];
+    [[maybe_unused]] int ni = icdf->shape[0];
     int nj = icdf->shape[1];
-    int nk = icdf->shape[2];
+    [[maybe_unused]] int nk = icdf->shape[2];
 
     assert( ni == 3 );
     assert( nk == 1 );

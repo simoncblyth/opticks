@@ -5853,7 +5853,7 @@ template<typename T> inline T  NP::pdomain(const T value, INT item, bool dump ) 
     assert( val_expect );
 
     const T yv = value ;
-    T xv ;
+    T xv(0) ;
     bool xv_set = false ;
 
 

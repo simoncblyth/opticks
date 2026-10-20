@@ -215,7 +215,7 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
 template<typename T>
 void SEvent::FillGenstep( NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump )
 {
-    int num_gs = gs ? gs->shape[0] : 0 ;
+    [[maybe_unused]] int num_gs = gs ? gs->shape[0] : 0 ;
     assert( gs_start <  num_gs );
     assert( gs_stop  <= num_gs );
 

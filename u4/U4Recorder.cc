@@ -673,8 +673,8 @@ void U4Recorder::GetLabel( spho& ulabel, const G4Track* track )
     assert( C4Pho::N == spho::N );
 #endif
     std::array<int,spho::N> a_label ;
-    label->serialize(a_label) ;
 
+    label->serialize(a_label) ;
     ulabel.load(a_label);
 }
 
@@ -1271,7 +1271,7 @@ depending on eph enum communicated from Geant4 ProcessHits.
 unsigned U4Recorder::EPH_EFFICIENCY_COLLECT_OR_CULL(unsigned eph)  // static
 {
     bool eph_collect = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
-    bool eph_cull    = eph == EPH::NDECULL  ;
+    [[maybe_unused]] bool eph_cull = eph == EPH::NDECULL  ;
     assert( eph_collect ^ eph_cull ) ;
     return eph_collect ? EFFICIENCY_COLLECT : EFFICIENCY_CULL ;
 }

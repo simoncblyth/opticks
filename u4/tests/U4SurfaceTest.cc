@@ -1,7 +1,22 @@
 
 #include "OPTICKS_LOG.hh"
 #include "U4GDML.h"
+
+
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
 #include "U4Surface.h"
+
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
 
 const char* FOLD = getenv("FOLD") ; 
 
@@ -16,7 +31,20 @@ int main(int argc, char** argv)
 
 
 
+
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
     NPFold* fold = U4Surface::MakeFold() ;  
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
 
     LOG(info) << " fold " << fold ; 
 

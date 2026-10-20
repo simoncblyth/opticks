@@ -15,6 +15,7 @@ Based on:
 
 #include <cstdio>
 #include <cstdlib>
+#include <array>
 #ifdef OPTICKS_SYSRAP
 #include "sconfig.h"
 #endif
@@ -282,18 +283,33 @@ inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int h
     if(!valid) return rc ;
 
 
-    // black band with text annotation at base of image
-    int black[4] = {0,0,0,0} ;   // any color, so long as its black
-
     int margin_bkg = 0 ;
     int margin_txt = 1 ;
 
     int offset_bkg = bottom ? width*(height-line_height-margin_bkg)*channels : 0 ;
     int offset_txt = bottom ? width*(height-line_height-margin_txt)*channels : 0 ;
 
-    rc = render_background( bitmap+offset_bkg, channels, width, line_height, black ) ;
+
+
+    // avoid a false positive "may be used uninitialized" in Release build
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
+    // black band with text annotation at base of image
+    std::array<int, 4> black{};
+    rc = render_background( bitmap+offset_bkg, channels, width, line_height, black.data() ) ;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
     rc = render_text(       bitmap+offset_txt, channels, width, line_height, text  ) ;
-    return rc ; 
+
+
+    return rc ;
 }
 
 

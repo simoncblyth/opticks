@@ -534,7 +534,7 @@ NP* SEvt::LoadInputPhoton_record(const char* spec)
 {
     bool is_simtrace = !SFrameGenstep::HasConfigEnv() && SEventConfig::IsRGModeSimtrace() ;
 
-    const char* spec2 = SEventConfig::InputPhoton();
+    [[maybe_unused]] const char* spec2 = SEventConfig::InputPhoton();
     const char* slice = SEventConfig::InputPhotonRecordSlice();
     const char* iprt = SEventConfig::InputPhotonRecordTime();
 
@@ -5159,7 +5159,7 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     unsigned iindex = lp.iindex() ;
     unsigned identity = lp.get_identity();
     assert( identity != 0 ); // identity:0 indicates not-a-sensor should never happen for hits
-    unsigned sensor_identifier = identity - 1 ;
+    [[maybe_unused]] unsigned sensor_identifier = identity - 1 ;
 
     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
 

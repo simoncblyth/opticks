@@ -3250,7 +3250,7 @@ inline int stree::get_frame_inst(sfr& f, int ii, std::ostream* out, VTR* t_stack
     int sensor_identifier = -1 ;
     int sensor_index = -1 ;
 
-    int rc = get_inst_identity( inst_idx, gas_idx, sensor_identifier, sensor_index, ii );
+    [[maybe_unused]] int rc = get_inst_identity( inst_idx, gas_idx, sensor_identifier, sensor_index, ii );
     assert( rc == 0 );
     assert( inst_idx == ii );
     f.set_identity( inst_idx, gas_idx, sensor_identifier, sensor_index );
@@ -3490,7 +3490,7 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
     sn::GetLVListnodes( lns, lvid );
     //int num_sub_total = sn::GetChildTotal( lns );
 
-    int ln = lns.size();
+    [[maybe_unused]] int ln = lns.size();
     assert( ln == 0 || ln == 1 ); // simplify initial impl  : see CSGImport::importPrim
 
     std::ostream* out = contrib_bb ? new std::stringstream : nullptr ;
@@ -4397,7 +4397,7 @@ inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream*
         assert(expect);
         if(!expect) std::raise(SIGINT);
 
-        std::array<double,6> nbb ;
+        std::array<double,6> nbb {} ;
         get_transformed_aabb( nbb.data(), node, nd, out, t_stack );
         s_bb::IncludeAABB( pbb.data(), nbb.data(), out );
     }
@@ -6598,7 +6598,7 @@ inline NPFold* stree::get_global_aabb_sibling_overlaps() const
 
     VBB gbb ;
     get_prim_aabb(gbb, gnd);
-    size_t num_gbb = gbb.size();
+    [[maybe_unused]] size_t num_gbb = gbb.size();
     assert( num_gbb == num_gnd );
 
     std::cout << "[stree::get_global_aabb_sibling_overlaps num_gnd " << num_gnd << "\n" ;
@@ -6622,7 +6622,7 @@ inline NPFold* stree::get_global_aabb_sibling_overlaps() const
             bool same_parent = a.parent == b.parent ;
             if(!same_parent) continue ;
 
-            bool same_depth = a.depth == b.depth ;
+            [[maybe_unused]] bool same_depth = a.depth == b.depth ;
             assert(same_depth);
 
             check += 1 ;
@@ -7664,7 +7664,7 @@ inline void stree::faux_importSolidGlobal(int ridx, char ridx_type )
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = (*src)[primIdx] ;
-        int globalPrimIdx = faux_importPrim( primIdx, node ) ;
+        [[maybe_unused]] int globalPrimIdx = faux_importPrim( primIdx, node ) ;
         assert( globalPrimIdx >= 0 );
     }
 }
@@ -7708,7 +7708,7 @@ inline void stree::faux_importSolidFactor(int ridx, char ridx_type )
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = nodes[primIdx] ;   // structural node
-        int globalPrimIdx = faux_importPrim( primIdx, node );
+        [[maybe_unused]] int globalPrimIdx = faux_importPrim( primIdx, node );
         assert( globalPrimIdx >= 0 );
     }
 }
@@ -7883,7 +7883,7 @@ inline void stree::check_nidx_prim() const
 {
     if(level > 0) std::cout << "[stree::check_nidx_prim\n" ;
     int num_nd = nds.size();
-    int num_nidx_prim = nidx_prim.size();
+    [[maybe_unused]] int num_nidx_prim = nidx_prim.size();
     assert( num_nd == num_nidx_prim );
 
     for(int nidx=0 ; nidx < num_nd ; nidx++)

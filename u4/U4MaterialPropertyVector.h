@@ -129,7 +129,7 @@ inline G4MaterialPropertyVector* U4MaterialPropertyVector::Make_V(const char* va
     const double* aa = a->cvalues<double>();
 
     int ni = a->shape[0] ;
-    int nj = a->shape[1] ;
+    [[maybe_unused]] int nj = a->shape[1] ;
     assert(nj == 2);
 
     int n = ni ;

@@ -124,7 +124,7 @@ inline std::string sprof::Desc(const sprof& p0, const sprof& p1)
 
 inline std::string sprof::Now()
 {
-    sprof now ;
+    sprof now {} ;
     Stamp(now);
     return Serialize(now);
 }

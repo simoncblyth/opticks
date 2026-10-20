@@ -507,7 +507,7 @@ inline int64_t sreportdb::_import_versionset(const NP* run)
         ");";
 
     NSQLiteStmt insertor(db->db, insert_or_ignore_sql);
-    bool insertor_success = insertor.execute(
+    [[maybe_unused]] bool insertor_success = insertor.execute(
                       opticks_version, geant4_version, custom4_version, optix_version,
                       compute_capability,
                       cuda_version, cuda_driver, nvidia_driver
@@ -616,7 +616,7 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
     // "NULLIF(?,''), NULLIF(?,-1), NULLIF(?,-1)"
 
     NSQLiteStmt inserter(db->db, sql);
-    bool success = inserter.execute(
+    [[maybe_unused]] bool success = inserter.execute(
                       versionset_id, run_timestamp,
                       fold, script, script_arg, executable,
                       test, gpu, geometry, tree_digest,
@@ -731,7 +731,7 @@ inline int64_t sreportdb::_import_evsmry(const NP* evsmry, int64_t run_id)
         int64_t dt_simulate     = row[simulate_idx];
         int64_t dt_download     = row[download_idx];
 
-        bool success = inserter.execute(run_id, event_index, event_timestamp, genstep_count,
+        [[maybe_unused]] bool success = inserter.execute(run_id, event_index, event_timestamp, genstep_count,
                                         photon_count, hit_count, launch_count, dt_upload,
                                         dt_simulate, dt_download);
         assert(success);

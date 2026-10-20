@@ -1564,7 +1564,7 @@ void QEvt::device_alloc_photon()
 
     bool with_photon     = evt->with_photon();
     bool with_photonlite = evt->with_photonlite();
-    bool noalloc = evt->no_photon_or_photonlite_alloc();
+    [[maybe_unused]] bool noalloc = evt->no_photon_or_photonlite_alloc();
 
 
     LOG(LEVEL)

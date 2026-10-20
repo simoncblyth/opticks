@@ -343,7 +343,7 @@ int SEvtTest::makeGenstepArrayFromVector()
     SEvt::Create_EGPU() ;
     SEvt* evt = SEvt::Get_EGPU();
 
-    NP* gs0 = evt->makeGenstepArrayFromVector(); // get array from the genstep vector
+    [[maybe_unused]] NP* gs0 = evt->makeGenstepArrayFromVector(); // get array from the genstep vector
     assert( gs0 == nullptr && "before adding genstep to vector expect null ") ;
 
     const NP* igs = SEvent::MakeDemoGenstep("torch");

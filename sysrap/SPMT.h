@@ -1337,8 +1337,8 @@ inline void SPMT::init_s_qescale()
 
         // pmtCat from _PMTParamData uses s_pmt.h "oldcontiguous" order : CD_LPMT, SPMT, WP
         int oldcontiguousidx = s_pmt::oldcontiguousidx_from_pmtid( pmtid );
-        int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
-        int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
+        [[maybe_unused]] int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
+        [[maybe_unused]] int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
         assert( copyno == pmtid );
         assert( cat == 2 );
 

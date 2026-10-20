@@ -217,7 +217,7 @@ Expected shape of record array like (10000, 10, 4, 4)
 inline void SRecord::init()
 {
     assert(record->shape.size() == 4);
-    bool is_compressed = record->ebyte == 2 ;
+    [[maybe_unused]] bool is_compressed = record->ebyte == 2 ;
     assert( is_compressed == false ); // old compressed records no longer supported
 
     record_first = 0 ;
