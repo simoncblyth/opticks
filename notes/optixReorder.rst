@@ -2,6 +2,129 @@ notes/optixReorder
 =====================
 
 
+
+
+Overview
+---------
+
+Using optixReorder reduces optical photon simulation time by about a third -
+but changing coherenceHint not seeming to make any difference.
+
+
+To try
+---------
+
+1. production build - reduce state to minimize reorder overhead
+2. DONE : increase OPTICKS_MAX_BOUNCE - no big effect
+3. DONE : decrease OPTICKS_MAX_SLOT for the M100 - little diff
+4. try speedup render ?
+5. try other hints - eg global CD radius
+
+
+cxs_min.sh "ser_medium_scan"
+------------------------------
+
+::
+
+    elif [ "$TEST" == "ser_medium_scan" ]; then 
+
+
+       ser_path=/tmp/$USER/opticks/$name/SER.txt
+       mkdir -p $(dirname $ser_path)
+       export OPTICKS_SER=filepath:$ser_path
+       cat << EOS > $ser_path
+    hintMethod:0,coherenceHintBits:4,bounceInterval:1   # optixReorder()
+    hintMethod:1,coherenceHintBits:4,bounceInterval:4   # optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits )
+    hintMethod:2,coherenceHintBits:4,bounceInterval:1   # optixReorder( ctx.p.flagidx()                   , params.SER_coherenceHintBits )
+    hintMethod:3,coherenceHintBits:4,bounceInterval:1   # optixReorder(0,0)
+    hintMethod:-1,coherenceHintBits:0,bounceInterval:0  # bounceInterval:0 disables the reorder
+    EOS
+
+       opticks_num_event=$(wc -l < $ser_path)
+       opticks_num_photon=M100x$opticks_num_event
+       opticks_num_genstep=1x$opticks_num_event
+       opticks_running_mode=SRM_TORCH
+
+
+When reorder is enabled get useful reduction in simulation time (from 32s to 22s) - but seems the coherence hints are doing nothing::
+
+    TEST=ser_medium_scan cxs_min.sh
+    ...
+
+    .sreport.desc_runprof.descTable 
+    [NP::descTable_ {runprof} no-DT (10, 3, )
+                                                  st[us]            vm[kb]            rs[kb]          TS_DELTA
+                   A000_SEvt__setIndex 1792482552.667707           8114384           1251460                 -               A000_SEvt__setIndex 
+                   A000_SEvt__endIndex 1792482574.815569          27798732           2592024         22.147862               A000_SEvt__endIndex 
+                   A001_SEvt__setIndex 1792482575.435044          26464464           1258076          0.619475               A001_SEvt__setIndex 
+                   A001_SEvt__endIndex 1792482598.002554          27798280           2592196         22.567510               A001_SEvt__endIndex 
+                   A002_SEvt__setIndex 1792482598.603818          26464464           1258508          0.601264               A002_SEvt__setIndex 
+                   A002_SEvt__endIndex 1792482620.664792          27798652           2592312         22.060974               A002_SEvt__endIndex 
+                   A003_SEvt__setIndex 1792482621.271955          26464464           1258148          0.607163               A003_SEvt__setIndex 
+                   A003_SEvt__endIndex 1792482644.211676          27798536           2592220         22.939721               A003_SEvt__endIndex 
+                   A004_SEvt__setIndex 1792482644.794806          26464464           1258148          0.583130               A004_SEvt__setIndex 
+                   A004_SEvt__endIndex 1792482677.400512          27798576           2592260         32.605706               A004_SEvt__endIndex 
+    num_timestamp 10 auto-offset from tmin 1792482552667707 2026-10-20T15:49:12.667
+                                TOTAL: 17924826107868433         252965016          19245352
+
+     0 :            st[us] : st[us]
+
+
+
+With max_slot M100 - little diff::
+
+    [NP::descTable_ {runprof} no-DT (10, 3, )
+                                                  st[us]            vm[kb]            rs[kb]          TS_DELTA
+                   A000_SEvt__setIndex 1792483522.121056           8114384           1255084                 -               A000_SEvt__setIndex 
+                   A000_SEvt__endIndex 1792483544.063875          16788684           2595112         21.942819               A000_SEvt__endIndex 
+                   A001_SEvt__setIndex 1792483553.850582          15454416           1260868          9.786707               A001_SEvt__setIndex 
+                   A001_SEvt__endIndex 1792483576.149978          16788232           2594684         22.299396               A001_SEvt__endIndex 
+                   A002_SEvt__setIndex 1792483585.433412          15454416           1260960          9.283434               A002_SEvt__setIndex 
+                   A002_SEvt__endIndex 1792483607.113480          16788604           2595580         21.680068               A002_SEvt__endIndex 
+                   A003_SEvt__setIndex 1792483616.618149          15454416           1261392          9.504669               A003_SEvt__setIndex 
+                   A003_SEvt__endIndex 1792483639.155299          16788488           2595760         22.537150               A003_SEvt__endIndex 
+                   A004_SEvt__setIndex 1792483648.833681          15454416           1261688          9.678382               A004_SEvt__setIndex 
+                   A004_SEvt__endIndex 1792483680.876128          16788528           2595800         32.042447               A004_SEvt__endIndex 
+    num_timestamp 10 auto-offset from tmin 1792483522121056 2026-10-20T16:05:22.121
+                                TOTAL: 17924835974215640         153874584          19276928
+
+
+With max_bounce 63 - no big effect::
+
+    .sreport.desc_runprof.descTable 
+    [NP::descTable_ {runprof} no-DT (10, 3, )
+                                                  st[us]            vm[kb]            rs[kb]          TS_DELTA
+                   A000_SEvt__setIndex 1792483860.665529           8114384           1256060                 -               A000_SEvt__setIndex 
+                   A000_SEvt__endIndex 1792483883.230971          16815564           2623680         22.565442               A000_SEvt__endIndex 
+                   A001_SEvt__setIndex 1792483893.776332          15454416           1262532         10.545361               A001_SEvt__setIndex 
+                   A001_SEvt__endIndex 1792483916.666100          16815196           2623336         22.889768               A001_SEvt__endIndex 
+                   A002_SEvt__setIndex 1792483926.636529          15454416           1262556          9.970429               A002_SEvt__setIndex 
+                   A002_SEvt__endIndex 1792483948.869227          16815440           2623580         22.232698               A002_SEvt__endIndex 
+                   A003_SEvt__setIndex 1792483958.439824          15454416           1262556          9.570597               A003_SEvt__setIndex 
+                   A003_SEvt__endIndex 1792483981.539297          16815312           2623452         23.099473               A003_SEvt__endIndex 
+                   A004_SEvt__setIndex 1792483991.124314          15454416           1262556          9.585017               A004_SEvt__setIndex 
+                   A004_SEvt__endIndex 1792484025.002064          16815404           2623544         33.877750               A004_SEvt__endIndex 
+    num_timestamp 10 auto-offset from tmin 1792483860665529 2026-10-20T16:11:00.665
+                                TOTAL: 17924839385950187         154008964          19423852
+
+     0 :            st[us] : st[us]
+     1 :            vm[kb] : vm[kb]
+     2 :            rs[kb] : rs[kb]
+     tmin 1792483860665529 2026-10-20T16:11:00.665
+     tmax 1792484025002064 2026-10-20T16:13:45.002
+     delt        164336535       164.336535
+
+
+
+
+
+
+
+
+
+
+
+
 API from OptiX 8
 -----------------
 
@@ -411,6 +534,50 @@ Now try::
      bounceInterval             : 4
      coherenceHintBits          : 4
     ]CSGOptiX::prepareParamSimulate_SER
+
+
+
+
+
+
+
+
+
+::
+
+                     OPTICKS_SER : hintMethod:0,coherenceHintBits:4,bounceInterval:1  
+
+
+    [sreport.desc_ranges ranges : (9, 5, )
+    .sreport.desc_ranges.descTable  ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )
+    [NP::descTable_ {ranges} no-DT (9, 5, )
+                                                      ta                tb                ab                ia                ib          TS_DELTA
+                                  init 1792411929.994416 1792411930.004949             10533                 0                 2          0.010533                              init 
+                             load_geom 1792411930.004949 1792411931.773797           1768848                 2                 3          1.768848                         load_geom 
+                           upload_geom 1792411931.773834 1792411940.230068           8456234                 4                 5          8.456234                       upload_geom 
+                         slice_genstep 1792411940.230444 1792411940.230484                40                 9                10          0.000040                     slice_genstep 
+                  upload genstep slice 1792411940.230490 1792411940.266175             35685                11                12          0.035685              upload genstep slice 
+                        simulate slice 1792411940.266175 1792411961.950564          21684389                12                13         21.684389                    simulate slice 
+                        download slice 1792411961.950564 1792411962.346294            395730                13                14          0.395730                    download slice 
+                        concat slices  1792411962.346362 1792411962.346385                23                15                16          0.000023                    concat slices  
+                          save arrays  1792411962.346410 1792411972.168704           9822294                17                22          9.822294                      save arrays  
+    num_timestamp 18 auto-offset from tmin 1792411929994416 2026-10-19T20:12:09.994
+                                TOTAL: 16131707499143644 16131707541317420          42173776                83                97
+
+     0 :                ta : ta
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

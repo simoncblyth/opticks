@@ -431,7 +431,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 #endif
     optixpath(_optixpath ? spath::Resolve(_optixpath) : nullptr),
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
-    kernel_count(0),
+    kernel_count(0u),
     raygenmode(SEventConfig::RGMode()),
     params_helper(InitParamsHelper(raygenmode,sglm)),
     ctx(nullptr),
@@ -920,7 +920,7 @@ using the Params_Helper.
 
 **/
 
-void CSGOptiX::prepareParamRender()
+void CSGOptiX::prepareParamRender(size_t idx)
 {
     int prepareParamRender_DEBUG = ssys::getenvint(_prepareParamRender_DEBUG, 0) ;
 
@@ -943,7 +943,7 @@ void CSGOptiX::prepareParamRender()
     float DEBUG_zdepth = ssys::getenvfloat(_prepareParamRender_DEBUG_zdepth, 0.f);
 
 
-    LOG_IF(info, prepareParamRender_DEBUG > 0 && kernel_count == 0)
+    LOG_IF(info, prepareParamRender_DEBUG > 0 && kernel_count == 0u)
         << _prepareParamRender_DEBUG << ":" << prepareParamRender_DEBUG
         << std::endl
         << std::setw(20) << " kernel_count " << kernel_count << std::endl
@@ -1028,12 +1028,12 @@ QSim::get_photon_slot_offset/QEvt::get_photon_slot_offset returns
 
 **/
 
-void CSGOptiX::prepareParamSimulate()
+void CSGOptiX::prepareParamSimulate(size_t idx)
 {
     LOG(LEVEL);
     params_helper->set_photon_slot_offset(sim->get_photon_slot_offset());
 
-    prepareParamSimulate_SER();
+    prepareParamSimulate_SER(idx);
 }
 
 /**
@@ -1042,9 +1042,9 @@ CSGOptiX::prepareParamSimulate_SER
 
 **/
 
-void CSGOptiX::prepareParamSimulate_SER()
+void CSGOptiX::prepareParamSimulate_SER(size_t idx)
 {
-    const char* SER = SEventConfig::SER();
+    const char* SER = SEventConfig::SER(idx);
     params_helper->set_SER( SER );
 }
 
@@ -1064,16 +1064,16 @@ A: not from device code it seems : only by using the hostside params to
 
 **/
 
-void CSGOptiX::prepareParam()
+void CSGOptiX::prepareParam(size_t idx)
 {
     const glm::tvec4<double>& ce = sglm->fr.ce ;
 
     params_helper->setCenterExtent(ce.x, ce.y, ce.z, ce.w);
     switch(raygenmode)
     {
-        case SRG_RENDER   : prepareParamRender()   ; break ;
-        case SRG_SIMTRACE : prepareParamSimulate() ; break ;
-        case SRG_SIMULATE : prepareParamSimulate() ; break ;
+        case SRG_RENDER   : prepareParamRender(idx)   ; break ;
+        case SRG_SIMTRACE : prepareParamSimulate(idx) ; break ;
+        case SRG_SIMULATE : prepareParamSimulate(idx) ; break ;
     }
 
     params_helper->upload();
@@ -1109,7 +1109,9 @@ double CSGOptiX::launch()
     bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("CSGOptiX__launch_DEBUG_SKIP_LAUNCH") ;
     bool DEBUG_PARAMS = ssys::getenvbool("CSGOptiX__launch_DEBUG_PARAMS") ;
 
-    prepareParam();
+    size_t idx = kernel_count ;   // maybe make sensitive to event offsets ? 
+    prepareParam(idx);
+
     if(raygenmode != SRG_RENDER) assert(qev) ;
 
     Params* params = params_helper->params ;

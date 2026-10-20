@@ -352,7 +352,7 @@ struct SYSRAP_API SEventConfig
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
 
-    static const char* SER();
+    static const char* SER(size_t idx=0);
     static const char* OutFold();
     static const char* OutName();
     static const char* EventReldir();
@@ -645,7 +645,11 @@ struct SYSRAP_API SEventConfig
     static float _MaxExtentDomain ;
     static float _MaxTimeDomain  ;
 
-    static const char* _SER ;
+
+    static std::vector<std::string>* _GetSER();
+    static std::vector<std::string>* _SER ;
+
+
     static const char* _OutFold ;
     static const char* _OutName ;
     static const char* _EventReldir ;

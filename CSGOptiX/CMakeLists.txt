@@ -329,6 +329,9 @@ set(INSTALLED_SCRIPTS
    cxt_min.py
 
    cxs_min.sh
+   cxs_min_scan.sh
+   cxs_min_ser.sh
+
    cxs_min.py
    cxs_min_AB.py
    cxs_min_lite.py

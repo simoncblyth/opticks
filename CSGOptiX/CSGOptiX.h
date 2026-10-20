@@ -88,7 +88,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     std::vector<unsigned>  solid_selection ;
     std::vector<double>    kernel_times ;
     std::vector<int64_t>   kernel_times_ ;
-    int                    kernel_count ;
+    size_t                 kernel_count ;
 
     int               raygenmode ;
     Params_Helper*    params_helper  ;
@@ -154,10 +154,11 @@ private:
 
     static constexpr const char* _prepareParamRender_DEBUG = "CSGOptiX__prepareParamRender_DEBUG" ;
     static constexpr const char* _prepareParamRender_DEBUG_zdepth = "CSGOptiX__prepareParamRender_DEBUG_zdepth" ;
-    void prepareParamRender();
-    void prepareParamSimulate();
-    void prepareParamSimulate_SER();
-    void prepareParam();
+
+    void prepareParamRender(size_t idx);
+    void prepareParamSimulate(size_t idx);
+    void prepareParamSimulate_SER(size_t idx);
+    void prepareParam(size_t idx);
 
  private:
     double launch();

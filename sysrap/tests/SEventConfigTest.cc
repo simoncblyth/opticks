@@ -1,3 +1,16 @@
+/**
+SEventConfigTest.cc
+====================
+
+::
+
+     lo;sy;om
+
+     TEST=SER SEventConfigTest
+
+
+**/
+
 #include <cstdlib>
 #include <iostream>
 
@@ -18,6 +31,7 @@ struct SEventConfigTest
     static int SetMinimal();
     static int Save();
     static int InputGenstep();
+    static int SER();
 
     static int main();
 
@@ -115,6 +129,30 @@ int SEventConfigTest::InputGenstep()
 }
 
 
+
+/**
+SEventConfigTest::SER
+----------------------
+
+::
+
+     export OPTICKS_SER=filepath:/tmp/ser.txt
+     TEST=SER SEventConfigTest
+
+**/
+
+int SEventConfigTest::SER()
+{
+    for(int idx=0 ; idx < 10 ; idx++)
+    {
+        const char* ser = SEventConfig::SER(idx) ;
+        std::cout << " idx " << std::setw(4) << idx <<  " ser " << ( ser ? ser : "-" ) << std::endl ;
+    }
+    return 0 ;
+}
+
+
+
 int SEventConfigTest::main()
 {
     SEventConfig::Initialize();
@@ -131,6 +169,7 @@ int SEventConfigTest::main()
     if(ALL||strcmp(TEST,"Save") == 0)             rc += Save();
     if(ALL||strcmp(TEST,"Desc") == 0)             rc += Desc();
     if(ALL||strcmp(TEST,"InputGenstep") == 0)     rc += InputGenstep();
+    if(ALL||strcmp(TEST,"SER") == 0)              rc += SER();
 
     return rc ;
 }

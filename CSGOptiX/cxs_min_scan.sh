@@ -3,15 +3,26 @@ usage(){ cat << EOU
 cxs_min_scan.sh
 =================
 
+* NB THIS APPROACH HAS INHERENT PROBLEM FROM MULTI-INVOKATION SCANNING
+  INTO THE SAME LOGDIR - WHICH OVERWRITES SProf.txt AND run_meta.txt
+
+* AS THIS CAUSES PROBLEMS FOR sreport - THIS SCANNING APPROACH IS DISFAVORED
+
+
 This does single event runs with OPTICKS_MAX_BOUNCE varied
 from from 0 to 31 with corresponding OPTICKS_START_INDEX
 such that the actually separate runs are all written
 into a common "run" folder without overwriting event folds.
 
-The run_meta.txt is however overwritten, so used "meta"
-command to copy that into the event folder. But thats in
-the wrong place so would need special casing to use that
-metadata.
+The run_meta.txt is however overwritten, so used purely
+bash level "meta" arg together with OPTICKS_SCAN_INDEX
+to adhoc copy run_meta.txt into the OPTICKS_SCAN_INDEX event folder.
+However that is the wrong place for run_meta.txt so would need
+special casing for automated use of that metadata.
+
+Nevertheless it is handy to keep a record of the run_meta.txt for each
+event in a scan.
+
 
 How to create plots of launch time vs MAX_BOUNCE
 -------------------------------------------------------

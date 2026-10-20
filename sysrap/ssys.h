@@ -216,6 +216,21 @@ inline bool ssys::value_is_path_prefixed(const char* val )
     return val && strlen(val) > strlen(GETENVVAR_PATH_PREFIX) && strncmp(val, GETENVVAR_PATH_PREFIX, strlen(GETENVVAR_PATH_PREFIX)) == 0 ;
 }
 
+/**
+ssys::get_replacement_path
+---------------------------
+
++---------------------------------+-------------------------+
+|  arg                            | return                  |
++=================================+=========================+
+| filepath:/some/path/hello.txt   | /some/path/hello.txt    |
++---------------------------------+-------------------------+
+| filepath:yo/hello.txt           | yo/hello.txt            |
++---------------------------------+-------------------------+
+
+**/
+
+
 inline const char* ssys::get_replacement_path(const char* val )
 {
     assert(value_is_path_prefixed(val)) ;
