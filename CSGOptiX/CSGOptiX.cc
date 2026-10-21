@@ -1226,7 +1226,9 @@ are retaining the distinct methods up here.
 double CSGOptiX::render_launch()
 {
     assert(raygenmode == SRG_RENDER) ;
-    return launch() ;
+    double dt = launch() ;
+    sglm->fr.set_kerneltime(dt);
+    return dt ;
 }
 double CSGOptiX::simtrace_launch()
 {

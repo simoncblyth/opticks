@@ -2161,7 +2161,9 @@ SGLM::updateTitle
 
 The *title* is set as the cxr_min.sh OpenGL window title by SGLFW::renderloop_tail
 
-To see this title run the renderer with FULLSCREEN=0
+To see this title run the renderer with FULLSCREEN=0, eg::
+
+    FULLSCREEN=0 cxr_min.sh
 
 **/
 
@@ -2175,6 +2177,7 @@ void SGLM::updateTitle()
        << " sglm.e(c2w*ori) [" << Present(e) << "]"
        << " " << briefTime()
        << " " << TITLE
+       << " " << fr.desc_kerneltime()
        ;
 
     if(interpolated_view_idx > -1) ss << " ifly_idx " << interpolated_view_idx ;

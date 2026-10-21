@@ -63,7 +63,7 @@ sfr Layout
      |            |             |             |                |
      +------------+-------------+-------------+----------------+
      |  ext0.x    |   ext0.y    |   ext0.z    |  ext0.w        |
-     |   eps      |   gridscale |             |                |
+     |   eps      |   gridscale | kerneltime  |                |
      +------------+-------------+-------------+----------------+
      |  ext1.x    |   ext1.y    |   ext1.z    |  ext1.w        |
      |            |             |             |                |
@@ -139,9 +139,13 @@ struct sfr
 
     void set_propagate_epsilon(double eps);
     void set_gridscale(double gsc);
+    void set_kerneltime(double kti);
+    void set_kti_smooth(double kts);
 
     double get_propagate_epsilon() const ;
     double get_gridscale() const ;
+    double get_kerneltime() const ;
+    double get_kti_smooth() const ;
 
     void set_hostside_simtrace();
     bool  is_hostside_simtrace() const ;
@@ -210,6 +214,7 @@ struct sfr
     std::string get_key() const ;
 
     std::string desc_ce() const ;
+    std::string desc_kerneltime() const ;
     std::string desc() const ;
     bool is_identity() const ;
 
@@ -432,7 +437,7 @@ inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, 
 sfr::MakeFromAxisQuat
 ----------------------
 
-Quaternion version avoids having to deal the degeneracies::
+Quaternion version avoids having to deal with the degeneracies::
 
     MOI=AXIS:0,90,0,20000 EYE=2,0,0 cxr_min.sh
     MOI=AXIS:0,-90,0,20000 EYE=2,0,0 cxr_min.sh
@@ -511,8 +516,37 @@ inline sfr::sfr()
 
 inline void sfr::set_propagate_epsilon(double eps){     ext0.x = eps ; }
 inline void sfr::set_gridscale(double gsc){             ext0.y = gsc ; }
+inline void sfr::set_kerneltime(double kti)
+{
+    ext0.z = kti ;
+    if(kti == 0.) return ;
+
+    static int kti_count = 0 ;
+
+    // EMA : Exponential Moving Average
+    double alpha = 0.1 ;  // lower alpha smooths more, higher reacts faster
+    double kts0 = get_kti_smooth() ;
+    double kts = kti_count == 0 ? kti : (1. - alpha)*kts0 + alpha*kti ;
+
+    if(0) std::cout
+       << " kti_count " << std::setw(7) << kti_count
+       << " kts0 " << std::fixed << std::setw(10) << std::setprecision(5) << kts0
+       << " kti " << std::fixed << std::setw(10) << std::setprecision(5) << kti
+       << " kts " << std::fixed << std::setw(10) << std::setprecision(5) << kts
+       << " (kts-kti) " << std::fixed << std::setw(10) << std::setprecision(5) << (kts-kti)
+       << "\n"
+       ;
+
+    kti_count += 1 ;
+
+    set_kti_smooth(kts);
+}
+inline void sfr::set_kti_smooth(double kts){            ext0.w = kts ; }
+
 inline double sfr::get_propagate_epsilon() const   {  return ext0.x ; }
-inline double sfr::get_gridscale() const   {         return ext0.y ; }
+inline double sfr::get_gridscale() const   {          return ext0.y ; }
+inline double sfr::get_kerneltime() const   {         return ext0.z ; }
+inline double sfr::get_kti_smooth() const   {         return ext0.w ; }
 
 inline void   sfr::set_hostside_simtrace(){     aux1.x = 1 ; }   // hss
 inline void   sfr::set_gasix( int gasix ){      aux1.y = gasix ; }
@@ -754,6 +788,22 @@ inline std::string sfr::desc_ce() const
     std::string str = ss.str();
     return str ;
 }
+
+inline std::string sfr::desc_kerneltime() const
+{
+    double kti = get_kerneltime();
+    double kts = get_kti_smooth();
+    double fps = kts == 0. ? -1. : 1./kts ;
+
+    std::stringstream ss ;
+    ss << " KTI: " << std::fixed << std::setw(10) << std::setprecision(4) << kti ;
+    ss << " KTS: " << std::fixed << std::setw(10) << std::setprecision(4) << kts ;
+    ss << " FPS: " << std::fixed << std::setw(7)  << std::setprecision(2) << fps ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 inline std::string sfr::desc() const
 {
