@@ -108,6 +108,7 @@ See __closesthit__ch to see where the payload p0-p7 comes from.
 
 template<bool refine>
 static __forceinline__ __device__ void trace(
+        int                    bounce,
         OptixTraversableHandle handle,
         float3                 ray_origin,
         float3                 ray_direction,
@@ -129,23 +130,8 @@ static __forceinline__ __device__ void trace(
 
     if(!refine)
     {
-        optixTrace(
-            handle,
-            ray_origin,
-            ray_direction,
-            tmin,
-            tmax,
-            rayTime,
-            visibilityMask,
-            rayFlags,
-            SBToffset,
-            SBTstride,
-            missSBTIndex,
-            p0, p1
-            );
-    }
-    else
-    {
+#if !defined(WITH_SER) || (OPTIX_VERSION < 80000)
+        // Trace : old monolithic way auto invokes CH
         optixTrace(
             handle,
             ray_origin,
@@ -161,10 +147,62 @@ static __forceinline__ __device__ void trace(
             p0, p1
             );
 
-        float t_approx = 0.99f*prd->distance() ;
+#else
+        // Traverse+Reorder+Invoke
+        optixTraverse(
+            handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            rayTime,
+            visibilityMask,
+            rayFlags,
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
+            p0, p1
+            );
+
+        // TODO: use optixHitObjectGetInstanceId() et al. to inform the coherenceHint
+
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        {
+            switch( params.SER_hintMethod )
+            {
+                case 0: optixReorder()                                                                   ; break ;
+                case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+                case 2: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+                case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+            }
+        }
+        optixInvoke(p0, p1);
+#endif
+    }
+    else
+    {
+#if !defined(WITH_SER) || (OPTIX_VERSION < 80000)
+        optixTrace(
+            handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            rayTime,
+            visibilityMask,
+            rayFlags,
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
+            p0, p1
+            );
+
+        float t_hit = prd->distance() ;
+        float t_approx = 0.99f*t_hit ;
+        bool do_refine = (t_approx > refine_distance && t_hit < tmax);
         // decrease to avoid imprecise first intersect from
         // leading to giving a miss or other intersect the 2nd time
-        if( t_approx > refine_distance )
+        if(do_refine)
         {
             float3 closer_ray_origin = ray_origin + t_approx*ray_direction ;
             optixTrace(
@@ -184,6 +222,63 @@ static __forceinline__ __device__ void trace(
 
             prd->distance_add( t_approx );
         }
+
+#else
+        // Traverse(+Traverse)+Reorder+Invoke
+        optixTraverse(
+            handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            rayTime,
+            visibilityMask,
+            rayFlags,
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
+            p0, p1
+            );
+
+        float t_hit = optixHitObjectGetRayTmax();
+        float t_approx = 0.99f*t_hit ;
+        bool do_refine = (t_approx > refine_distance && t_hit < tmax);
+
+        if(do_refine)
+        {
+            float3 closer_ray_origin = ray_origin + t_approx*ray_direction ;
+            optixTraverse(
+                handle,
+                closer_ray_origin,
+                ray_direction,
+                tmin,
+                tmax,
+                rayTime,
+                visibilityMask,
+                rayFlags,
+                SBToffset,
+                SBTstride,
+                missSBTIndex,
+                p0, p1
+                );
+
+        }
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        {
+            switch( params.SER_hintMethod )
+            {
+                case 0: optixReorder()                                                                   ; break ;
+                case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+                case 2: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+                case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+            }
+        }
+        optixInvoke(p0, p1);   // calls CH which sets prd->distance - from closer when do_refine:true
+        if(do_refine)
+        {
+            prd->distance_add( t_approx );
+        }
+#endif
     }
 
 }
@@ -252,6 +347,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     const float3 dxyUV = d.x * to_float3(params.U) + to_float3(params.V) * ( params.traceyflip ? -d.y : d.y ) ;  // offset from eye position within pixel plane
     const float3 origin    = cameratype == 0u ? to_float3(params.eye)                     : to_float3(params.eye) + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + to_float3(params.W) )  : normalize( to_float3(params.W) ) ;
+    int bounce = 0 ;
     //                                          cameratype 0u:perspective,                  1u:orthographic
 
 
@@ -260,10 +356,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     //     idx.x, idx.y, idx.z, cameratype, params.U.x, params.U.y, params.U.z, params.V.x, params.V.y, params.V.z, direction.x, direction.y, direction.z );
 #endif
 
-
-
-
     trace<false>(
+        bounce,
         params.handle,
         origin,
         direction,
@@ -277,9 +371,6 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 #if defined(DEBUG_PIDX)
     //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render prd.distance(%7.3f)  prd.lposcost(%7.3f)  \n", prd->distance(), prd->lposcost()  );
 #endif
-
-
-
 
 
     const float3* normal = prd->normal();
@@ -448,28 +539,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
 
-#ifdef WITH_SER
-#if OPTIX_VERSION >= 80000
-        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
-        {
-            switch( params.SER_hintMethod )
-            {
-                case 0: optixReorder()                                                                   ; break ;
-                case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-                case 2: optixReorder( ctx.p.flagidx()                   , params.SER_coherenceHintBits ) ; break ;
-                case 3: optixReorder(0,0)                                                                ; break ;
-            }
-        }
-#endif
-#endif
-
         float tmin = ( ctx.p.orient_boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
         // intersect query filling (quad2)prd
         switch(params.PropagateRefine)
         {
-            case 0u: trace<false>( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
-            case 1u: trace<true>(  params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+            case 0u: trace<false>( bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+            case 1u: trace<true>(  bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
         }
 
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
@@ -562,6 +638,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 #endif
 
     const quad6& gs = evt->genstep[genstep_idx] ;
+    int bounce = 0 ;
 
     qsim* sim = params.sim ;
     RNG rng ;
@@ -582,8 +659,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
     switch(params.PropagateRefine)
     {
-        case 0u: trace<false>( params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
-        case 1u: trace<true>(  params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+        case 0u: trace<false>( bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+        case 1u: trace<true>(  bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
     }
 
     evt->add_simtrace( idx, p, prd, params.tmin );  // sevent

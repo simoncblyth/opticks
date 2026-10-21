@@ -62,7 +62,9 @@
                << __LINE__ << ")\nLog:\n" << log                               \
                << ( sizeof_log > sizeof( log ) ? "<TRUNCATED>" : "" )          \
                << "\n";                                                        \
-            throw OPTIX_Exception( res, ss.str().c_str() );                   \
+            std::string err = ss.str();                                        \
+            std::cerr << err ;                                                 \
+            throw OPTIX_Exception( res, err.c_str() );                         \
         }                                                                      \
     } while( 0 )
 

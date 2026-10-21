@@ -286,9 +286,9 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
         << Desc_ModuleCompileOptions( module_compile_options )
         ;
 
-
-    size_t sizeof_log = 0 ;
     char log[2048]; // For error reporting from OptiX creation functions
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
 
 #if OPTIX_VERSION <= 70600
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
