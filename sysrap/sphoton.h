@@ -257,6 +257,59 @@ struct sphoton
     }
 
 
+    /**
+    pos_hash
+    --------
+
+    Choose EXTENT integer to make (coord + EXTENT) range [0->2*EXTENT]
+
+    AXIS_BITS        AXIS_MAX    cell_size
+       2 [0,1,2,3]      3        2.f*EXTENT/4
+       3 [0,...,7]      7        2.f*EXTENT/8
+
+
+        +ex +--------+
+            |        |
+            |   +    |
+            |        |
+        -ex +--------+
+           -ex      +ex
+
+            <--2ex-->
+    **/
+
+    template<int32_t AXIS_BITS, int32_t EXTENT>
+    SPHOTON_METHOD int32_t pos_hash() const
+    {
+        // Computed completely at compile time via template parameters
+        constexpr int32_t AXIS_MAX = (0x1 << AXIS_BITS) - 1;
+        constexpr float cell_size = 2.f * EXTENT / static_cast<float>(AXIS_MAX + 1);
+        constexpr float inv_cell_size = 1.0f / cell_size; // Multiplication is faster than division on GPU
+
+        // Robust floor-based conversion using the precomputed inverse cell size
+        int32_t x = clamp(static_cast<int32_t>(floorf((pos.x + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+        int32_t y = clamp(static_cast<int32_t>(floorf((pos.y + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+        int32_t z = clamp(static_cast<int32_t>(floorf((pos.z + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+
+        // Morton interleaving
+        uint32_t morton_code = splitBy3(x) | (splitBy3(y) << 1) | (splitBy3(z) << 2);
+
+        return static_cast<int32_t>(morton_code);
+    }
+
+    SPHOTON_METHOD static constexpr uint32_t splitBy3(uint32_t a)
+    {
+        a &= 0x3ff; // Ensure max 10 bits
+        a = (a | (a << 16)) & 0x030000ff;
+        a = (a | (a <<  8)) & 0x0300f00f;
+        a = (a | (a <<  4)) & 0x030c30c3;
+        a = (a | (a <<  2)) & 0x09249249;
+        return a;
+    }
+
+
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    /**
@@ -1024,15 +1077,6 @@ SPHOTON_METHOD NP* sphoton::MockupForMergeTest(size_t ni) // static
     }
     return a ;
 }
-
-
-
-
-
-
-
-
-
 
 
 

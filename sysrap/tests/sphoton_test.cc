@@ -7,6 +7,7 @@ sphoton_test.cc
      ~/o/sysrap/tests/sphoton_test.sh
      TEST=flagidx  ~/o/sysrap/tests/sphoton_test.sh
      TEST=set_lpos ~/o/sysrap/tests/sphoton_test.sh
+     TEST=pos_hash ~/o/sysrap/tests/sphoton_test.sh
 
      OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh
      OFFSET=1000,1000,1000 ~/o/sysrap/tests/sphoton_test.sh
@@ -49,6 +50,7 @@ struct sphoton_test
     static int dot_pol_cross_mom_nrm();
     static int make_record_array();
     static int ChangeTimeInsitu();
+    static int pos_hash();
 
 
     static int index();
@@ -613,6 +615,25 @@ int sphoton_test::ChangeTimeInsitu()
     return 0 ;
 }
 
+
+int sphoton_test::pos_hash()
+{
+    std::vector<sphoton> pp(3) ;
+    pp[0].pos = {-100.f, -100.f, -100.f };
+    pp[1].pos = {   0.f,    0.f,    0.f };
+    pp[2].pos = { 100.f,  100.f,  100.f };
+
+    for(size_t i=0 ; i < pp.size() ; i++)
+    {
+        const sphoton& p = pp[i];
+        int32_t h2 = p.pos_hash<2,100>() ;
+        std::cout << " i " << std::setw(2) << i << " h2 " << h2 << "\n" ;
+    }
+
+    return 0 ;
+}
+
+
 int sphoton_test::index()
 {
     sphoton p = {} ;
@@ -895,6 +916,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "dot_pol_cross_mom_nrm")) rc += dot_pol_cross_mom_nrm();
     if(ALL||0==strcmp(TEST, "make_record_array"))     rc += make_record_array();
     if(ALL||0==strcmp(TEST, "ChangeTimeInsitu"))      rc += ChangeTimeInsitu();
+    if(ALL||0==strcmp(TEST, "pos_hash"))              rc += pos_hash();
     if(ALL||0==strcmp(TEST, "index"))                 rc += index();
     if(ALL||0==strcmp(TEST, "demoarray"))             rc += demoarray();
     if(ALL||0==strcmp(TEST, "set_lpos"))              rc += set_lpos();
