@@ -30,9 +30,6 @@ simtrace
 __raygen__rg
     calls one of the above raygen functions depending on params.raygenmode
 
-setPayload
-    mechanics of communication when not using WITH_PRD
-
 __miss_ms
     default quad2 prd OR payload for rays that miss
 
@@ -78,14 +75,10 @@ __intersection__is
 #include "Binding.h"
 #include "Params.h"
 
-#ifdef WITH_PRD
 #include "scuda_pointer.h"
 #include "SOPTIX_getPRD.h"
-#endif
 
-//extern "C" { __constant__ Params params ;  }
 extern "C"  __constant__ Params params ;
-//extern "C" __device__ Params params ;   // DEBUG: Gemini debug suggestion
 
 /**
 trace : pure function, with no use of params, everything via args
@@ -102,9 +95,13 @@ refine:true
 
 
 Outcome of trace is to populate *prd* by payload and attribute passing.
-When WITH_PRD macro is defined only 2 32-bit payload values are used to
-pass the 64-bit  pointer, otherwise more payload and attributes values
-are used to pass the contents IS->CH->RG.
+
+* The former WITH_PRD macro packPointer approach is now the only approach implemented
+  - as the old way has not been used in years.
+
+* The packPointer approach 2 32-bit payload values to pass the 64-bit pointer
+  as opposed to the old way that used more payload and attributes values
+  to play pass the parcel from IS->CH->RG.
 
 See __closesthit__ch to see where the payload p0-p7 comes from.
 **/
@@ -126,7 +123,7 @@ static __forceinline__ __device__ void trace(
     const unsigned SBToffset = 0u ;
     const unsigned SBTstride = 1u ;
     const unsigned missSBTIndex = 0u ;
-#ifdef WITH_PRD
+
     uint32_t p0, p1 ;
     packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload
 
@@ -189,32 +186,6 @@ static __forceinline__ __device__ void trace(
         }
     }
 
-#else
-    uint32_t p0, p1, p2, p3, p4, p5, p6, p7  ;
-    optixTrace(
-            handle,
-            ray_origin,
-            ray_direction,
-            tmin,
-            tmax,
-            rayTime,
-            visibilityMask,
-            rayFlags,
-            SBToffset,
-            SBTstride,
-            missSBTIndex,
-            p0, p1, p2, p3, p4, p5, p6, p7
-            );
-    // unclear where the uint_as_float CUDA device function is defined, seems CUDA intrinsic without header ?
-    prd->q0.f.x = __uint_as_float( p0 );
-    prd->q0.f.y = __uint_as_float( p1 );
-    prd->q0.f.z = __uint_as_float( p2 );
-    prd->q0.f.w = __uint_as_float( p3 );
-    prd->set_identity(p4) ;
-    prd->set_globalPrimIdx_boundary_(p5) ;
-    prd->set_lposcost(__uint_as_float(p6)) ;   // trace.not-WITH_PRD
-    prd->set_iindex(p7) ;
-#endif
 }
 
 //#if !defined(PRODUCTION) && defined(WITH_RENDER)
@@ -657,32 +628,6 @@ extern "C" __global__ void __raygen__rg()
 }
 
 
-#ifdef WITH_PRD
-#else
-/**
-*setPayload* is used from __closesthit__ and __miss__ providing communication to __raygen__ optixTrace call
-
-NB THESE QWN NEED NOT BE THE SAME AS THE ATTRIB USED TO COMMUNICATE BETWEEN __intersection__is and __closesthit__ch
-
-**/
-static __forceinline__ __device__ void setPayload(
-     float    normal_x,        float normal_y,                  float normal_z, float distance,
-     unsigned iindex_identity, unsigned globalPrimIdx_boundary, float lposcost, float lposfphi )
-{
-    optixSetPayload_0( __float_as_uint( normal_x ) );
-    optixSetPayload_1( __float_as_uint( normal_y ) );
-    optixSetPayload_2( __float_as_uint( normal_z ) );
-    optixSetPayload_3( __float_as_uint( distance ) );
-    optixSetPayload_4( iindex_identity );
-    optixSetPayload_5( globalPrimIdx_boundary );
-    optixSetPayload_6( lposcost );
-    optixSetPayload_7( lposfphi );
-
-    // num_payload_values PIP::PIP must match the payload slots used up to maximum of 8
-    // NB : payload is distinct from attributes
-}
-#endif
-
 /**
 __miss__ms
 -------------
@@ -703,7 +648,6 @@ extern "C" __global__ void __miss__ms()
     const float lposcost = 0.f ;
     const float lposfphi = 0.f ;
 
-#ifdef WITH_PRD
     quad2* prd = SOPTIX_getPRD<quad2>();
 
     prd->q0.f.x = ms->r ;
@@ -718,10 +662,7 @@ extern "C" __global__ void __miss__ms()
 
     prd->set_iindex_identity_(ii_id);
     prd->set_globalPrimIdx_boundary_(gp_bd);
-    prd->set_lpos(lposcost, lposfphi);   // __miss__ms.WITH_PRD
-#else
-    setPayload( ms->r, ms->g, ms->b, 0.f, ii_id, gp_bd, lposcost, lposfphi );  // communicate from ms->rg
-#endif
+    prd->set_lpos(lposcost, lposfphi);
 }
 
 /**
@@ -840,7 +781,6 @@ extern "C" __global__ void __closesthit__ch()
         float lposfphi = normalize_fphi(P);
 
 
-#ifdef WITH_PRD
         quad2* prd = SOPTIX_getPRD<quad2>();
 
         prd->q0.f.x = N.x ;
@@ -850,42 +790,17 @@ extern "C" __global__ void __closesthit__ch()
 
         prd->set_iindex_identity_( iindex_identity ) ;
         prd->set_globalPrimIdx_boundary_(  globalPrimIdx_boundary ) ;
-        prd->set_lpos(lposcost, lposfphi);   // __closesthit__ch.WITH_PRD.TRIANGLE
+        prd->set_lpos(lposcost, lposfphi);
 
-#else
-        setPayload( N.x, N.y, N.z, t, iindex_identity, globalPrimIdx_boundary, lposcost, lposfphi );  // communicate from ch->rg
-#endif
     }
     else if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
     {
-        //const CustomPrim& cpr = hg->prim ;
-#ifdef WITH_PRD
         quad2* prd = SOPTIX_getPRD<quad2>();
 
         prd->set_iindex_identity_( iindex_identity ) ;
 
         float3* normal = prd->normal();
         *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;
-#else
-
-        // NB SEE
-        const float3 local_normal =    // geometry object frame normal at intersection point
-            make_float3(
-                    __uint_as_float( optixGetAttribute_0() ),
-                    __uint_as_float( optixGetAttribute_1() ),
-                    __uint_as_float( optixGetAttribute_2() )
-                    );
-
-        const float distance = __uint_as_float(  optixGetAttribute_3() ) ;
-        unsigned globalPrimIdx_boundary = optixGetAttribute_4() ;
-        const float lposcost = __uint_as_float( optixGetAttribute_5() ) ;
-        const float lposfphi = 0.f ; // NOT IMPL WHEN NOT:WITH_PRD
-
-        float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;
-
-        setPayload( normal.x, normal.y, normal.z, distance, iindex_identity, globalPrimIdx_boundary, lposcost, lposfphi );  // communicate from ch->rg
-                //   p0       p1        p2        p3        p4               p5                      p6        p7
-#endif
     }
 }
 
@@ -951,29 +866,13 @@ extern "C" __global__ void __intersection__is()
         const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary
         const unsigned globalPrimIdx_boundary = (( globalPrimIdx & 0xffffu ) << 16 ) | ( boundary & 0xffffu ) ;
 
-#ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
             quad2* prd = SOPTIX_getPRD<quad2>(); // access prd addr from RG program
             prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one
             prd->set_globalPrimIdx_boundary_(globalPrimIdx_boundary) ;
-            prd->set_lpos(lposcost, lposfphi);    // __intersection__is.WITH_PRD.CUSTOM
+            prd->set_lpos(lposcost, lposfphi);
         }
-#else
-       // TODO: REMOVE NOT:WITH_PRD
-        unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP
-        a0 = __float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point
-        a1 = __float_as_uint( isect.y );
-        a2 = __float_as_uint( isect.z );
-        a3 = __float_as_uint( isect.w ) ;
-        a4 = globalPrimIdx_boundary ;
-        a5 = __float_as_uint( lposcost );
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5 );
-
-        // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs
-        // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch
-#endif
-
    }
 
 #if defined(DEBUG_PIDXYZ)

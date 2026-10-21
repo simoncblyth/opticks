@@ -148,6 +148,7 @@ See ana/p.py for python accessors such as::
 
 #include <cstdint>
 #include "sFFS.h"
+#include "sfunc.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -287,9 +288,9 @@ struct sphoton
         constexpr float inv_cell_size = 1.0f / cell_size; // Multiplication is faster than division on GPU
 
         // Robust floor-based conversion using the precomputed inverse cell size
-        int32_t x = clamp(static_cast<int32_t>(floorf((pos.x + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
-        int32_t y = clamp(static_cast<int32_t>(floorf((pos.y + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
-        int32_t z = clamp(static_cast<int32_t>(floorf((pos.z + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+        int32_t x = sclamp(static_cast<int32_t>(floorf((pos.x + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+        int32_t y = sclamp(static_cast<int32_t>(floorf((pos.y + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
+        int32_t z = sclamp(static_cast<int32_t>(floorf((pos.z + static_cast<float>(EXTENT)) * inv_cell_size)), 0, AXIS_MAX);
 
         // Morton interleaving
         uint32_t morton_code = splitBy3(x) | (splitBy3(y) << 1) | (splitBy3(z) << 2);

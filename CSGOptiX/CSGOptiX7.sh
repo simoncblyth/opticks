@@ -12,7 +12,6 @@ usage(){ cat << EOU
      -DDEBUG_PIDXYZ 
      -DOPTICKS_CSGOPTIX 
      -DRNG_PHILOX 
-     -DWITH_PRD 
      -DWITH_RENDER 
      -DWITH_SIMTRACE 
      -DWITH_SIMULATE 

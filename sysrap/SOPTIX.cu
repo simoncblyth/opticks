@@ -18,9 +18,6 @@ render
 __raygen__rg
     calls one of the above raygen functions depending on params.raygenmode
 
-setPayload
-    mechanics of communication when not using WITH_PRD
-
 __miss_ms
     default quad2 prd OR payload for rays that miss
 
@@ -48,9 +45,9 @@ trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
 Outcome of trace is to populate *prd* by payload and attribute passing.
-When WITH_PRD macro is defined only 2 32-bit payload values are used to
-pass the 64-bit  pointer, otherwise more payload and attributes values
-are used to pass the contents IS->CH->RG.
+Two 32-bit payload values are used to pass the 64-bit  pointer
+(old approach used more payload and attributes values
+to pass-the-parcel IS->CH->RG)
 
 See __closesthit__ch to see where the payload p0-p7 comes from.
 **/

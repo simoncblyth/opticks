@@ -118,11 +118,6 @@ const char* PIP::desc() const
        << " td:" << max_trace_depth
        << " pv:" << num_payload_values
        << " av:" << num_attribute_values
-#ifdef WITH_PRD
-       << " WITH_PRD "
-#else
-       << " NOT_WITH_PRD "
-#endif
 #ifdef WITH_SER
        << " WITH_SER "
 #else
@@ -150,13 +145,8 @@ PTX read from *ptx_path_* is used to CreateModule
 PIP::PIP(const char* ptx_path_, const Properties* properties_ )
     :
     max_trace_depth(MAX_TRACE_DEPTH),
-#ifdef WITH_PRD
-    num_payload_values(2),     // see trace
-    num_attribute_values(2),   // see __intersection__is
-#else
-    num_payload_values(8),     // see trace and setPayload
-    num_attribute_values(6),   // see __intersection__is
-#endif
+    num_payload_values(2),     // see trace                  (prior to packPointer approach used 8)
+    num_attribute_values(2),   // see __intersection__is     (prior to packPointer approach used 6)
     properties(properties_),
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),

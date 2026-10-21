@@ -9,6 +9,24 @@ Using optixReorder reduces optical photon simulation time by about a third -
 but changing coherenceHint not seeming to make any difference.
 
 
+Docs
+-----
+
+* https://forums.developer.nvidia.com/t/optix-8-0-release/263140
+* https://www.nvidia.com/en-us/on-demand/session/other2023-optix8/
+
+This small change from the optixTrace to the new optixTraverse, optixReorder,
+optixInvoke device functions for SER, where the shader ID is given as coherency
+hint bits to optixReorder, results in a 55% performance improvement (88 fps to
+137 fps) of the scene_mdl_vMaterials.txt scene.  (Benchmarked under Windows 10
+and 535.98 drivers on RTX 6000 Ada with interop 0 inside the
+system_mdl_vMaterials.txt and the application’s benchmark mode (command line
+option -m 1) measuring the raw raytracing performance without display.)
+
+
+* https://github.com/NVIDIA/OptiX_Apps/blob/master/apps/MDL_renderer/shaders/raygeneration.cu#L177
+
+
 To try
 ---------
 
@@ -17,6 +35,7 @@ To try
 3. DONE : decrease OPTICKS_MAX_SLOT for the M100 - little diff
 4. try speedup render ?
 5. try other hints - eg global CD radius
+6. try : optixTraverse + optixReorder + optixInvoke
 
 
 cxs_min.sh "ser_medium_scan" : all events are M100 torch photons from CD center - using Ada 5000 on workstation

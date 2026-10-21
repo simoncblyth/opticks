@@ -133,7 +133,6 @@ set(CSGOptiX_COMPILE_DEFINITIONS_PUBLIC
 
 set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
 
-    WITH_PRD
     WITH_SER
     WITH_THRUST
 )
@@ -180,11 +179,6 @@ Note that for ptx generation must specify a single GPU architecture otherwise::
 Compile Definition Notes
 ----------------------------
 
-
-WITH_PRD
-~~~~~~~~~
-
-using Pointer trick means can reduce attrib and payload to 2
 
 
 WITH_THRUST

@@ -398,6 +398,7 @@ set(HEADERS
     squad.h
     squadx.h
 
+    sfunc.h
     sphoton.h
     sphotonlite.h
     sutil.h

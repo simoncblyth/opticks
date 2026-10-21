@@ -139,7 +139,7 @@ u:identity
 
     808         prd->set_iindex_identity_( iindex_identity ) ;
     809         prd->set_globalPrimIdx_boundary_(  globalPrimIdx_boundary ) ;
-    810         prd->set_lpos(lposcost, lposfphi);   // __closesthit__ch.WITH_PRD.TRIANGLE
+    810         prd->set_lpos(lposcost, lposfphi);
     811
 
 

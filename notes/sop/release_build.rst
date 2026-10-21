@@ -67,7 +67,7 @@ How to flip the config with the local.sh machinery ? ~/j/opticks_config.sh
 2. get into environmnent and do full build::
 
    lo
-   echo $OPTICKS_PREFIX   ## check
+   oid          ## dump identity vars including OPTICKS_PREFIX
    opticks-full
 
 3. to avoid confusion (such as building a pkg in an old tab and not impacting the downstream pkg in new tab)
