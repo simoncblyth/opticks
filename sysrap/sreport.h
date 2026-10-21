@@ -51,9 +51,11 @@ struct sreport
     static constexpr const char* sreport__LEVEL = "sreport__LEVEL" ;
     static constexpr const char* sreport__VERBOSE = "sreport__VERBOSE" ;
     static constexpr const char* sreport__CONFIG = "sreport__CONFIG" ;
+    static constexpr const char* sreport__DEBUG = "sreport__DEBUG" ;
     int     LEVEL ;
     bool    VERBOSE ;
     const char* CONFIG ;
+    const char* DEBUG ;
 
     NP*       run ;       // dummy array that exists just to hold metadata
     NP*       runprof ;   // "prof" would be a better name now : but awkward to change
@@ -82,7 +84,8 @@ struct sreport
     static sreport* Load(const char* dir) ;
 
     bool        is_config(const char* method, char delim=',') const;
-    static bool IsConfig(const char* config, const char* label, char delim=',');
+    bool        is_debug( const char* method, char delim=',') const;
+    static bool IsListed(const char* config, const char* label, char delim=',', bool def=true);
 
     std::string desc() const ;
     std::string desc_run() const ;
@@ -101,6 +104,7 @@ inline sreport::sreport()
     LEVEL(U::GetEnvInt(sreport__LEVEL,0)),
     VERBOSE(getenv(sreport__VERBOSE) != nullptr),
     CONFIG(U::GetEnv(sreport__CONFIG,"")),
+    DEBUG(U::GetEnv(sreport__DEBUG,"")),
     run( nullptr ),
     runprof( nullptr ),
     ranges( nullptr ),
@@ -233,23 +237,28 @@ This allows the output to be controlled eg::
 **/
 inline bool sreport::is_config(const char* label, char delim) const
 {
-    return IsConfig(CONFIG, label, delim);
+    return IsListed(CONFIG, label, delim, true);
 }
 
-inline bool sreport::IsConfig(const char* config, const char* label, char delim) // static
+inline bool sreport::is_debug(const char* label, char delim) const
 {
-    if( config == nullptr || 0 == strcmp(config,"") || label == nullptr ) return true ;
+    return IsListed(DEBUG, label, delim, false);
+}
+
+inline bool sreport::IsListed(const char* list, const char* label, char delim, bool def ) // static
+{
+    if( list == nullptr || 0 == strcmp(list,"") || list == nullptr ) return def ;
 
     std::string target = label ;
 
     std::vector<std::string> tokens;
-    std::stringstream ss(config);
+    std::stringstream ss(list);
     std::string token;
     while (std::getline(ss, token, delim)) tokens.push_back(token);
 
     auto it = std::find(tokens.begin(), tokens.end(), target);
-    bool in_config = it != tokens.end() ;
-    return in_config ;
+    bool in_list = it != tokens.end() ;
+    return in_list ;
 }
 
 /**
@@ -365,6 +374,34 @@ is the same as the start of the next range.
 
 inline std::string sreport::desc_ranges() const
 {
+    bool dbg = is_debug("ranges");
+    if(dbg)
+    {
+         std::cout
+             << "[sreport::desc_ranges DEBUG\n"
+             << " ranges : " << ( ranges ? ranges->sstr() : "-" ) << "\n"
+             << " ranges.names.size() " << ( ranges ? ranges->names.size() : 0 ) << "\n"
+             << " ranges.labels.size() " << ( ranges && ranges->labels ? ranges->labels->size() : 0 ) << "\n"
+             << "]sreport::desc_ranges DEBUG\n"
+             ;
+
+         if(ranges)
+         {
+             std::cout << "[ranges.names\n";
+             for(size_t i=0 ; i < ranges->names.size() ; i++ )  std::cout << ranges->names[i] << "\n" ;
+             std::cout << "]ranges.names\n";
+
+             if(ranges->labels)
+             {
+                 std::cout << "[ranges.labels\n";
+                 for(size_t i=0 ; i < ranges->labels->size() ; i++ )  std::cout << (*(ranges->labels))[i] << "\n" ;
+                 std::cout << "]ranges.labels\n";
+             }
+         }
+    }
+
+
+
     std::stringstream ss ;
     ss << "[sreport.desc_ranges"
        << " ranges : " << ( ranges ? ranges->sstr() : "-" ) << std::endl

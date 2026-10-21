@@ -81,7 +81,7 @@ template<> void QRng::initStates<Philox>()
 
 template<> void QRng::initStates<XORWOW>()
 {
-    bool is_XORWOW = strcmp( srng<XORWOW>::NAME, "XORWOW") == 0 ;
+    [[maybe_unused]] bool is_XORWOW = strcmp( srng<XORWOW>::NAME, "XORWOW") == 0 ;
     assert( is_XORWOW );
 
     LOG_IF(info, LIFECYCLE)

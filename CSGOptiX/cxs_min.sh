@@ -121,6 +121,9 @@ EOU
 #test=input_photon_poolcover
 #test=input_photon_poolcover_refine
 
+
+test=medium_evt
+
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
@@ -133,7 +136,7 @@ EOU
 #test=vvvvvvlarge_evt
 #test=vvvvvvlarge_evt_merge
 
-test=medium_scan
+#test=medium_scan
 #test=medium_scan_first
 
 export TEST=${TEST:-$test}
@@ -231,6 +234,11 @@ knobs()
 
 
    #export NPFold__substamp_DUMP=1
+
+   local opticks_ser=hintMethod:0,coherenceHintBits:4,bounceInterval:0
+   export OPTICKS_SER=${OPTICKS_SER:-$opticks_ser}
+
+   #export OPTICKS_MAX_BOUNCE=64
 
 
 }
@@ -332,6 +340,11 @@ vars="$vars opticks_event_mode"
 opticks_mode_lite=0
 opticks_mode_merge=0
 opticks_merge_window=0
+
+opticks_max_bounce=31
+#opticks_max_bounce=63
+
+
 
 if [ "$TEST" == "debug" ]; then
 
@@ -446,6 +459,35 @@ elif [ "$TEST" == "medium_scan" ]; then
    # such that each slice fits into VRAM.
    # So for big photon counts its vital to use multiple genstep.
 
+
+elif [ "$TEST" == "medium_evt" ]; then
+
+   opticks_running_mode=SRM_TORCH
+   opticks_num_event=1
+   opticks_num_photon=M100
+   opticks_num_genstep=10
+
+
+elif [ "$TEST" == "ser_medium_scan" ]; then
+
+
+   ser_path=/tmp/$USER/opticks/$name/SER.txt
+   mkdir -p $(dirname $ser_path)
+   export OPTICKS_SER=filepath:$ser_path
+   cat << EOS > $ser_path
+hintMethod:0,coherenceHintBits:4,bounceInterval:1   # optixReorder()
+hintMethod:1,coherenceHintBits:4,bounceInterval:4   # optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits )
+hintMethod:2,coherenceHintBits:4,bounceInterval:1   # optixReorder( ctx.p.flagidx()                   , params.SER_coherenceHintBits )
+hintMethod:3,coherenceHintBits:4,bounceInterval:1   # optixReorder(0,0)
+hintMethod:-1,coherenceHintBits:0,bounceInterval:0  # bounceInterval:0 disables the reorder
+EOS
+
+   opticks_num_event=$(wc -l < $ser_path)
+   opticks_num_photon=M100x$opticks_num_event
+   opticks_num_genstep=1x$opticks_num_event
+   opticks_running_mode=SRM_TORCH
+   opticks_max_slot=M100  ## avoid creating big buffer
+   opticks_max_bounce=63
 
 elif [ "$TEST" == "larger_scan" ]; then
 
@@ -624,8 +666,7 @@ vars="$vars opticks_num_event opticks_num_genstep opticks_num_photon opticks_run
 
 
 opticks_start_index=0
-opticks_max_bounce=31
-#opticks_max_bounce=63
+
 opticks_integration_mode=1
 
 
@@ -843,22 +884,39 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 fi
 
 # "meta" ARG MAY BE OUTDATED ? REVIEW THIS ON NEXT USE OF :  cxs_min_scan.sh
+# copies run_meta.txt from current directory to OPTICKS_SCAN_INDEX directory
 if [ "${arg/meta}" != "$arg" ]; then
-   if [ -f "run_meta.txt" -a -n "$OPTICKS_SCAN_INDEX"  -a -d "$OPTICKS_SCAN_INDEX" ] ; then
-       cp run_meta.txt $OPTICKS_SCAN_INDEX/run_meta.txt
+
+   if [ -n "$OPTICKS_SCAN_INDEX"  -a -d "$OPTICKS_SCAN_INDEX" ] ; then
+
+       if [ -f "run_meta.txt" ] ; then
+           cp run_meta.txt $OPTICKS_SCAN_INDEX/run_meta.txt
+       fi
+       if [ -f "SProf.txt" ] ; then
+           cp SProf.txt $OPTICKS_SCAN_INDEX/SProf.txt
+       fi
    fi
+
    [ $? -ne 0 ] && echo $BASH_SOURCE meta error && exit 1
 fi
 
 
 if [ "${arg/deport}" != "$arg" ]; then
+   echo $BASH_SOURCE - $arg - RUNNING FROM LOGDIR $LOGDIR - PWD $PWD
    source dbg__.sh
+
+   #export sreport__CONFIG=creator
+   unset sreport__CONFIG
+
+   export sreport__DEBUG=ranges
+   #unset sreport__DEBUG
+
    dbg__ sreport
    [ $? -ne 0 ] && echo $BASH_SOURCE deport error && exit 1
 fi
 
 if [ "${arg/report}" != "$arg" ]; then
-   echo $BASH_SOURCE - RUNNING FROM LOGDIR $LOGDIR - PWD $PWD
+   echo $BASH_SOURCE - $arg - RUNNING FROM LOGDIR $LOGDIR - PWD $PWD
    sreport   ## NB running from LOGDIR
    [ $? -ne 0 ] && echo $BASH_SOURCE report error && exit 1
 fi

@@ -125,7 +125,7 @@ inline NPFold* U4Mesh::MakeFold(
 {
     NPFold* mesh = new NPFold ;
     int num_solid = solids.size();
-    int num_key = keys.size();
+    [[maybe_unused]] int num_key = keys.size();
     assert( num_solid == num_key );
 
     for(int i=0 ; i < num_solid ; i++)
@@ -433,7 +433,7 @@ inline std::string U4Mesh::desc_vtx_face_count() const
     {
         int iv = it->first ;
         int fc = it->second ;
-        int vfc = getVertexFaceCount(iv) ;
+        [[maybe_unused]] int vfc = getVertexFaceCount(iv) ;
         assert( fc == vfc );
         ss << iv << ":" << fc << std::endl ;
     }

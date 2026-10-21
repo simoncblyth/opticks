@@ -52,6 +52,7 @@ boundary (16 bit)
     (omat,osur,isur,imat)
 
     [HMM, does not need 16bit]
+    [HMM, how to lookup omat/osur/isur/imat from the boundary?]
 
 flag (16 bit)
     OpticksPhoton.h history flag enum eg: TO CK SI BT BR SR AB RE ...
@@ -161,8 +162,10 @@ See ana/p.py for python accessors such as::
 #else
 #    define SPHOTON_METHOD inline
 #endif
+
 #include <cstdint>
 #include "sspecies.h"
+#include "sFFS.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -222,6 +225,9 @@ struct sphoton
     SPHOTON_METHOD unsigned flag() const {     return (orient_boundary_flag & 0x0000ffffu) >>  0 ; } // flag___     = lambda p:(p.view(np.uint32)[...,3,0] & 0xffff)
     SPHOTON_METHOD unsigned boundary() const { return (orient_boundary_flag & 0x7fff0000u) >> 16 ; } // boundary___ = lambda p:(p.view(np.uint32)[...,3,0] & 0x7fff0000) >> 16
     SPHOTON_METHOD float    orient() const {   return (orient_boundary_flag & 0x80000000u) ? -1.f : 1.f ; }
+
+    SPHOTON_METHOD unsigned flagidx1() const { return FFS(flag())      ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx1 range 1 -> 16 (subtract one to fit in 4 bits, after check non-zero)
+    SPHOTON_METHOD unsigned flagidx() const  { return FFS(flag()) - 1u ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx  range 0 -> 15 for valid flag
 
     // bit manipulation approach of setters: clear bit(s) for flag/boundary/orient and then set them
     SPHOTON_METHOD void     set_flag(unsigned flag) {         orient_boundary_flag = ( orient_boundary_flag & 0xffff0000u ) | (( flag     & 0xffffu         ) <<  0 ) ; flagmask |= flag ; }
@@ -864,7 +870,7 @@ SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
 
 SPHOTON_METHOD void sphoton::Get( std::vector<sphoton>& pp, const NP* a )
 {
-    bool is_f = IsPhotonArray<float>(a);
+    [[maybe_unused]] bool is_f = IsPhotonArray<float>(a);
     assert( is_f );
     unsigned num = a->shape[0] ;
     pp.resize(num);

@@ -60,6 +60,93 @@ Also it makes it fast to change between the build types.::
 
 
 
+How to flip the config with the local.sh machinery ? ~/j/opticks_config.sh
+-----------------------------------------------------------------------------
+
+1. change default config in ~/j/opticks_config.sh to "Release_g411"
+2. get into environmnent and do full build::
+
+   lo
+   echo $OPTICKS_PREFIX   ## check
+   opticks-full
+
+3. to avoid confusion (such as building a pkg in an old tab and not impacting the downstream pkg in new tab)
+   exit all tabs with the old config
+
+
+::
+
+     01 # .bash_profile > .bashrc > .opticks_config   (workstation/simon)
+      2 usage(){ cat << EOU
+      3 ~/j/opticks_config.sh
+      4 ========================
+      5 
+      6 Caution this is now sourced first - with almost no environment - it constitutes
+      7 the inputs that control the opticks build
+      8 
+      9 Build and usage config, build config should provide the environment to complete opticks-full.
+     10 Note how sourcing the bashrc rather than using opticks-prepend-prefix
+     11 allows more intuitive ordering.
+     12 
+     13 Q: What sources this ?
+     14 A: ~/j/local.sh:local_OPTICKS_CONFIG bash func which is used from local_ok_build and local_oj_build_setup
+     15 
+     16 EOU
+     17 }
+     18 
+     19 
+     20 ### TOP CONFIG RELEVANT TO BOTH BUILD AND USAGE ###
+     21 
+     22 export OPTICKS_HOME=$HOME/opticks
+     23 
+     24 ## HOP : TO DIFFERENT CONFIG/BUILD_DIR/INSTALL_DIR BY CHANGING THIS - AND OPENING NEW SESSION
+     25 #config=Debug        ## gcc11
+     26 config=Debug_g411   ## gcc15
+     27 
+     28 export OPTICKS_CONFIG=${OPTICKS_CONFIG:-$config}
+     29 : NB THIS ALSO CONTROLS JUNO_OPTICKS_CONFIG SEE ~/j/local.sh:local_oj_build_setup
+     30 
+     31 buildtype=Debug
+     32 
+     33 if [[ "$OPTICKS_CONFIG" =~ Debug ]]; then
+     34     buildtype=Debug
+     35 elif [[ "$OPTICKS_CONFIG" =~ Client ]]; then
+     36     buildtype=Debug
+     37 elif [[ "$OPTICKS_CONFIG" =~ Release ]]; then
+     38     buildtype=Release
+     39 else
+     40     buildtype=ERROR_UNEXPECTED_OPTICKS_CONFIG
+     41 fi
+     42 
+     43 
+     44 [   -z "$VIP_LOCAL_BASE" ] && echo $BASH_SOURCE - FATAL MISSING VIP_LOCAL_BASE $VIP_LOCAL_BASE && return 1
+     45 [ ! -d "$VIP_LOCAL_BASE" ] && echo $BASH_SOURCE - FATAL NON-EXISTING VIP_LOCAL_BASE $VIP_LOCAL_BASE && return 1
+     46 
+     47 export OPTICKS_BUILDTYPE=$buildtype
+     48 export OPTICKS_PREFIX=$VIP_LOCAL_BASE/local/opticks_${OPTICKS_CONFIG}    # Apr23 2026 : Generalized from OPTICKS_BUILDTYPE to OPTICKS_CONFIG
+     49 
+
+
+
+::
+
+    [lo] A[blyth@localhost sop]$ t opticks-buildtype
+    opticks-buildtype () 
+    { 
+        echo ${OPTICKS_BUILDTYPE:-Debug}
+    }
+
+    [lo] A[blyth@localhost sop]$ t opticks-prefix
+    opticks-prefix () 
+    { 
+        echo ${OPTICKS_PREFIX:-/usr/local/opticks}
+    }
+
+
+
+
+
+
 Whats the difference between Debug and Release builds
 ------------------------------------------------------
 

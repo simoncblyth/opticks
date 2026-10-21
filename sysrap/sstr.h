@@ -161,6 +161,12 @@ struct sstr
     static std::vector<T>* ParseIntSpecList( const char* spec, char delim=',' ) ;
 
 
+    static std::vector<std::string>* ParseStringList( const char* list, char delim='\n' ) ;
+
+
+
+
+
     static void truncated_copy( char* dst, const char* src, int dst_size );
     static void Extract( std::vector<long>& vals, const char* s );
 
@@ -770,6 +776,12 @@ See sysrap/tests/StringFormatTest.cc
 
 **/
 
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
 template<typename ... Args>
 inline std::string sstr::Format_( const char* fmt, Args ... args )
 {
@@ -779,6 +791,13 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
     std::snprintf( buf.data(), sz, fmt, args ... );
     return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+
+
 
 template std::string sstr::Format_( const char*, const char*, int, int );
 template std::string sstr::Format_( const char*, int );
@@ -1246,6 +1265,39 @@ inline std::vector<T>* sstr::ParseIntSpecList( const char* spec, char delim )
     ParseIntSpecList<T>( *ls, spec, delim );
     return ls ;
 }
+
+
+inline std::vector<std::string>* sstr::ParseStringList( const char* list, char delim )
+{
+    std::vector<std::string>* ls = new std::vector<std::string> ;
+    std::stringstream ss(list);
+    std::string elem;
+    while (std::getline(ss, elem, delim))
+    {
+        // 1. Ignore content after '#' (comments)
+        size_t comment_pos = elem.find('#');
+        if (comment_pos != std::string::npos) {
+            elem = elem.substr(0, comment_pos);
+        }
+
+        // 2. Trim leading whitespace
+        size_t start = elem.find_first_not_of(" \t\r\n");
+        if (start == std::string::npos) {
+            continue; // Skip empty lines or lines with only whitespace/comments
+        }
+
+        // 3. Trim trailing whitespace
+        size_t end = elem.find_last_not_of(" \t\r\n");
+        elem = elem.substr(start, end - start + 1);
+
+        // 4. Add to vector if non-empty
+        if (!elem.empty()) {
+            ls->push_back(elem);
+        }
+    }
+    return ls;
+}
+
 
 inline void sstr::truncated_copy( char* dst, const char* src, int dst_size )
 {

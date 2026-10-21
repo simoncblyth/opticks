@@ -9,6 +9,7 @@ Params.cc
 
 #include "SRG.h"
 #include "Params.h"
+#include "sstr.h"
 
 #ifndef __CUDACC__
 
@@ -83,9 +84,9 @@ void Params_Helper::init()
     params->DEBUG_zdepth = 0.f ;
     params->_pad2 = 0 ;
 
+    params->SER_hintMethod = 0u ;
     params->SER_coherenceHintBits = 0u ;
     params->SER_bounceInterval = 0u ;
-    params->_pad3 = 0u ;
     params->_pad4 = 0u ;
 
 }
@@ -300,17 +301,26 @@ Params_Helper::setSER
 
 Change SER (Shader Execution Reordering) config with eg::
 
-   export OPTICKS_SER="coherenceHintBits:4,bounceInterval:4"
+   export OPTICKS_SER="hintMethod:1,coherenceHintBits:4,bounceInterval:4"
+   export OPTICKS_SER="hintMethod:2,coherenceHintBits:4,bounceInterval:4"
 
-coherenceHintBits (eg 3 or 4 - expected that using more will not help TODO:measure)
+
+hintMethod
+   1 : coherenceHint = bounce/bounceInterval
+   2 : coherenceHint = ctx.p.flagidx()
+
+coherenceHintBits (eg 3 or 4 - much bigger than that will probably overbin)
    used as numCoherenceHintBitsFromLSB in optixReorder call
 
 bounceInterval (eg 4)
-   used with bounce integer to form *coherenceHint = bounce/bounceInterval* used in optixReorder call
+   does two things:
+
+   1. controls how often to call optixReorder
+   2. for hintMethod:1 also scales the bounce integer to form *coherenceHint = bounce/bounceInterval*
 
 
-For values of 4 and 4, bounce indices up to 64 would not clock the coherenceHint::
-
+hitMethod:1,bounceInterval:4,coherenceHintBits:4
+    bounce indices up to 64 would not clock the coherenceHint::
 
     In [10]: (np.arange(64, dtype=np.int32)/4).astype(np.int32) & 0xf
     Out[10]:
@@ -320,18 +330,33 @@ For values of 4 and 4, bounce indices up to 64 would not clock the coherenceHint
            12, 13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15], dtype=int32)
 
 
-Alternates to try for the coherenceHint:
+hitMethod:2,bounceInterval:4,coherenceHintBits:4
+    using p.flagidx()
 
-1. ctx.p.time based time_bins ?
-2. 3-bit boundary group combined with 3-bit temporal bin ?
 
+See ~/o/notes/optixReorder.rst
 
 **/
 
-void Params_Helper::setSER( unsigned coherenceHintBits, unsigned bounceInterval )
+void Params_Helper::set_SER( const char* SER )
 {
-    params->SER_coherenceHintBits = coherenceHintBits ;
-    params->SER_bounceInterval = bounceInterval ;
+    std::map<std::string, int> ser ;
+    sstr::ParseDict(SER, ser );
+
+    params->SER_hintMethod        = ser["hintMethod"] ;
+    params->SER_coherenceHintBits = ser["coherenceHintBits"] ;
+    params->SER_bounceInterval    = ser["bounceInterval"] ;
+
+    std::cout
+        << "[Params_Helper::set_SER\n"
+        << " SER                        : " << SER                                   << "\n"
+        << " hintMethod                 : " << params->SER_hintMethod                << "\n"
+        << " bounceInterval             : " << params->SER_bounceInterval            << "\n"
+        << " coherenceHintBits          : " << params->SER_coherenceHintBits         << "\n"
+        << "]Params_Helper::set_SER\n"
+        ;
+
+
 }
 
 void Params_Helper::device_alloc()

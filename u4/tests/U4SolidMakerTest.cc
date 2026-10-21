@@ -186,7 +186,7 @@ inline int U4SolidMakerTest::Convert()
     fold->set_meta<std::string>("desc","placeholder-desc");
     fold->save("$FOLD", SOLID );
 
-    s_csg* _csg = new s_csg ;  // hold pools (normally stree holds _csg)
+    [[maybe_unused]] s_csg* _csg = new s_csg ;  // hold pools (normally stree holds _csg)
     assert( _csg );
 
     sn* nd = Convert_(solid);

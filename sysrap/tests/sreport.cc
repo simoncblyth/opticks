@@ -73,7 +73,7 @@ output with where it comes from to speedup understanding+debug.
 int main(int argc, char** argv)
 {
     const char* CONFIG = U::GetEnv(sreport::sreport__CONFIG,"");
-    bool _main = sreport::IsConfig(CONFIG, "main") ;
+    bool _main = sreport::IsListed(CONFIG, "main") ;
 
     char* argv0 = argv[0] ;
     const char* dirp = argc > 1 ? argv[1] : U::PWD() ;

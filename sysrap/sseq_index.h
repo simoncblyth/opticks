@@ -633,9 +633,9 @@ inline std::string sseq_index_ab::desc(const char* opt) const
             case DEVIANT: selected = deviant ; break ;
         }
 
-        const char* head ;
-        const char* tail ;
-        const char* pdev ;
+        const char* head = "" ;
+        const char* tail = "" ;
+        const char* pdev = "" ;
 
         if(isRST())
         {

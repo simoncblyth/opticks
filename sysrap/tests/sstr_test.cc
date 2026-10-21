@@ -10,6 +10,7 @@ TEST=ParseIntSpecList64   ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 
 TEST=ParseDict ~/opticks/sysrap/tests/sstr_test.sh
+TEST=ParseStringList  ~/opticks/sysrap/tests/sstr_test.sh
 
 
 **/
@@ -609,6 +610,8 @@ struct sstr_test
     static int split();
     static int ParseInt();
     static int ParseDict();
+    static int ParseStringList(const char* list);
+    static int ParseStringList();
     static int ExtractSize();
 
 
@@ -752,6 +755,35 @@ int sstr_test::ParseDict()
     return 0 ;
 }
 
+int sstr_test::ParseStringList(const char* list)
+{
+    std::vector<std::string>* ls = sstr::ParseStringList(list, '\n');
+
+    std::cout
+        << "[sstr_test::ParseStringList\n"
+        << " list {\n"
+        << list
+        << "\n}\n"
+        << " ls->size " << ls->size() << "\n"
+        ;
+
+    for(size_t i=0 ; i < ls->size() ; i++ ) std::cout << "[" << (*ls)[i] << "]\n" ;
+
+    std::cout
+        << "]sstr_test::ParseStringList\n"
+        ;
+
+    return 0 ;
+}
+
+int sstr_test::ParseStringList()
+{
+    int rc = 0 ;
+    rc += ParseStringList("red\ngreen\nblue");
+    rc += ParseStringList("red");
+    return rc ;
+}
+
 
 
 
@@ -836,6 +868,7 @@ int sstr_test::Main()
     if(ALL||0==strcmp(TEST,"split"))          rc += split();
     if(ALL||0==strcmp(TEST,"ParseInt"))       rc += ParseInt();
     if(ALL||0==strcmp(TEST,"ParseDict"))      rc += ParseDict();
+    if(ALL||0==strcmp(TEST,"ParseStringList"))  rc += ParseStringList();
     if(ALL||0==strcmp(TEST,"ExtractSize"))    rc += ExtractSize();
 
 

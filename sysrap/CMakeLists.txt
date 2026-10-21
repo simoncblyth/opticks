@@ -379,6 +379,7 @@ set(HEADERS
     SLabel.h
 
     smath.h
+    sFFS.h
     sblackbody.h
     tcomplex.h
 

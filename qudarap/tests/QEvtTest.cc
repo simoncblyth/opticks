@@ -470,7 +470,7 @@ To create source folder try::
 template<typename T>
 std::string QEvtTest::GetPhotonSource()
 {
-    bool is_sphoton     = strcmp( T::NAME, "sphoton" ) == 0 ;
+    [[maybe_unused]] bool is_sphoton     = strcmp( T::NAME, "sphoton" ) == 0 ;
     bool is_sphotonlite = strcmp( T::NAME, "sphotonlite" ) == 0 ;
     assert( is_sphoton ^ is_sphotonlite );
     const char* src = is_sphotonlite ? "$AFOLD/photonlite.npy" : "$AFOLD/photon.npy" ;

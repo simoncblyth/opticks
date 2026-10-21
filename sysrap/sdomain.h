@@ -68,7 +68,7 @@ inline NP* sdomain::ConvertWavelengthToEnergy(const NP* prop, bool reverse )
     double* aa = a->values<double>();
 
     size_t ni = prop->shape[0];
-    size_t nj = prop->shape[1];
+    [[maybe_unused]] size_t nj = prop->shape[1];
     assert( nj == 2 );
 
     for(size_t _i = 0 ; _i < ni ; _i++ )

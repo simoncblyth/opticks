@@ -146,7 +146,7 @@ inline void SOPTIX_SBT::initHitgroup()
         SOPTIX_MeshGroup* xmg = scn.meshgroup[i] ;
         size_t num_bi = xmg->num_buildInputs()  ;
         const SCUDA_MeshGroup* cmg = xmg->cmg ;
-        size_t num_part = cmg->num_part()  ;
+        [[maybe_unused]] size_t num_part = cmg->num_part()  ;
         assert( num_part == num_bi );
         size_t edge = 20 ;
 

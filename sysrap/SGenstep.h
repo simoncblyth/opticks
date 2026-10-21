@@ -414,7 +414,7 @@ Returns total photon in genstep slice gs[start:stop]
 
 inline size_t SGenstep::GetPhotonTotal( const NP* gs, int gs_start, int gs_stop ) // static
 {
-    int num_gs = gs ? gs->shape[0] : 0 ;
+    [[maybe_unused]] int num_gs = gs ? gs->shape[0] : 0 ;
     assert( gs_start <= num_gs );
     assert( gs_stop  <= num_gs );
     size_t tot = 0 ;

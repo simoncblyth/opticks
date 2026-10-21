@@ -53,7 +53,7 @@ inline sreport_Creator::sreport_Creator( const char* dirp_, const char* _CONFIG 
     VERBOSE(getenv("sreport_Creator__VERBOSE") != nullptr),
     dirp(dirp_ ? strdup(dirp_) : nullptr),
     CONFIG(_CONFIG),
-    _creator(sreport::IsConfig(CONFIG, "creator")),
+    _creator(sreport::IsListed(CONFIG, "creator")),
     fold(NPFold::LoadNoData(dirp)),
     fold_valid(NPFold::IsValid(fold)),
     run(fold_valid ? fold->get("run") : nullptr),
