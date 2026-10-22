@@ -445,6 +445,11 @@ set(HEADERS
     stran.h
     stmm.h
 
+    S4MultiLayrStack.h
+    sarray.h
+    scomplex.h
+    scomplex_select.h
+
     SPlace.h
     SPlaceSphere.h
     SPlaceRing.h
