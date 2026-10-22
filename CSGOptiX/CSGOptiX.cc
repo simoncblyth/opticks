@@ -413,6 +413,9 @@ Instanciated at near to main level in both running modes:
   with event processing CSGOptiX::simulate called from
   junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
 
+
+Changing from .ptx to .optixir also needs CMake change - and needs CMake 3.27+
+
 **/
 
 
@@ -422,14 +425,15 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     outdir(SEventConfig::OutFold()),
+    optixsuffix(".optixir"),   // .ptx OR .optixir
 #ifdef CONFIG_Debug
-    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/CSGOptiX_OPTIX/CSGOptiX7.ptx}"),
+    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/CSGOptiX_OPTIX/CSGOptiX7}"),
 #elif CONFIG_Release
-    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/CSGOptiX_OPTIX/CSGOptiX7.ptx}"),
+    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/CSGOptiX_OPTIX/CSGOptiX7}"),
 #else
     _optixpath(nullptr),
 #endif
-    optixpath(_optixpath ? spath::Resolve(_optixpath) : nullptr),
+    optixpath(_optixpath ? spath::ResolveWithSuffix(_optixpath, optixsuffix) : nullptr),
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
     kernel_count(0u),
     raygenmode(SEventConfig::RGMode()),

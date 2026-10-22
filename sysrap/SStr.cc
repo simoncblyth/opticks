@@ -932,32 +932,6 @@ template std::string SStr::GetEValue<std::string>(const char* key,  std::string 
 template bool        SStr::GetEValue<bool>(const char* key,  bool  fallback);
 
 
-/**
-Str::PTXPath
--------------
-
-Instead can use::
-
-   spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx")  
-
-
-const char* SStr::PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext ) // static
-{   
-    std::stringstream ss ;
-    ss << install_prefix
-       << "/ptx/"
-       << cmake_target
-       << "_generated_"
-       << cu_stem
-       << cu_ext
-       << ".ptx"
-       ;
-    std::string path = ss.str();
-    return strdup(path.c_str());
-}
-**/
-
-
 
 
 template <typename T>

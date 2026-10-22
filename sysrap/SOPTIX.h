@@ -33,6 +33,8 @@ struct SOPTIX
 
     int             irc ;
     SGLM&           gm  ;
+
+    const char*     optixsuffix ;
     const char*     _optixpath ;
     const char*     optixpath ;
 
@@ -71,18 +73,29 @@ inline int SOPTIX::Initialize()
 }
 
 
+/**
+SOPTIX::SOPTIX
+--------------
+
+The switch from .ptx to .optixir also required CMakeLists.txt change::
+
+    CUDA_PTX_COMPILATION ON => CUDA_OPTIX_COMPILATION ON   ## that needs CMake 3.27+
+
+**/
+
 inline SOPTIX::SOPTIX(SGLM& _gm)
     :
     irc(Initialize()),
     gm(_gm),
+    optixsuffix(".optixir"),   // .optixir OR .ptx
 #ifdef CONFIG_Debug
-    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/SysRap_OPTIX/SOPTIX.ptx}"),
+    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/SysRap_OPTIX/SOPTIX}"),
 #elif CONFIG_Release
-    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/SysRap_OPTIX/SOPTIX.ptx}"),
+    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/SysRap_OPTIX/SOPTIX}"),
 #else
     _optixpath(nullptr),
 #endif
-    optixpath(_optixpath ? spath::Resolve(_optixpath) : nullptr),
+    optixpath(_optixpath ? spath::ResolveWithSuffix(_optixpath, optixsuffix) : nullptr),
     mod(ctx.context, opt, optixpath ),
     pip(ctx.context, mod.module, opt ),
     scn(&ctx, gm.scene ),

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
 set(name CSGOptiX)
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions)
@@ -75,40 +75,16 @@ message(STATUS "OPTIX_SOURCES : ${OPTIX_SOURCES} ")
 add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 set_target_properties( ${name}_OPTIX
     PROPERTIES
-         CUDA_PTX_COMPILATION ON
+       # CUDA_PTX_COMPILATION ON
+         CUDA_OPTIX_COMPILATION ON        ## Formerly "CUDA_PTX_COMPILATION ON" - CAUTION CUDA_OPTIX_COMPILATION REQUIRES cmake 3.27
          POSITION_INDEPENDENT_CODE ON
          CUDA_SEPARABLE_COMPILATION ON
 )
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}     )
 add_dependencies( ${name} ${name}_OPTIX )
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -137,6 +113,14 @@ set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
     WITH_THRUST
 )
 
+# compilation to .optixir required removal of int128
+# binary search reveals culprit as <thrust/complex.h> included from 4MultiLayrStack.h
+# see ~/opticks/notes/optixir.rst
+
+set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE_OPTIX
+    _LIBCUDACXX_HAS_NO_INT128=1
+    CCCL_DISABLE_INT128_SUPPORT=1
+)
 
 
 if(Custom4_FOUND)
@@ -149,6 +133,7 @@ target_compile_definitions( ${name}_OPTIX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITI
 
 target_compile_definitions( ${name}         PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
 target_compile_definitions( ${name}_OPTIX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
+target_compile_definitions( ${name}_OPTIX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE_OPTIX}" )
 
 set_target_properties(${name}_OPTIX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
 

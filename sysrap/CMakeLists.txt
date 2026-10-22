@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)      # default:ON/OFF
@@ -950,7 +950,7 @@ if(BUILD_WITH_CUDA)
 
     set_target_properties( ${name}_OPTIX
         PROPERTIES
-             CUDA_PTX_COMPILATION ON
+             CUDA_OPTIX_COMPILATION ON    ## Formerly "CUDA_PTX_COMPILATION ON" - CAUTION CUDA_OPTIX_COMPILATION REQUIRES cmake 3.27
              POSITION_INDEPENDENT_CODE ON
              CUDA_SEPARABLE_COMPILATION ON
              CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}"    ## single integer CC of oldest GPU
@@ -965,8 +965,10 @@ if(BUILD_WITH_CUDA)
 
     target_compile_options( ${name}_OPTIX
        PRIVATE
-            $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
+            $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math -Xcompiler -fPIC>
     )
+
+    # removed -O2 to quell : nvcc warning : incompatible redefinition for option 'optimize', the last value of this option was used
 
     install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
 

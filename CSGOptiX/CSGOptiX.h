@@ -80,6 +80,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     const char*       flight ;
     const CSGFoundry* foundry ;
     const char*       outdir ;
+    const char*       optixsuffix ;    // .ptx OR .optixir
     const char*       _optixpath ;
     const char*       optixpath ;
     float             tmin_model ;

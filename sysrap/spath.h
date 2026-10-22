@@ -65,6 +65,7 @@ public:
     static bool LooksUnresolved(  const char* path , const char* _path );
     static bool LooksUnresolved0( const char* path , const char* _path );
     static const char* ResolveTopLevel( const char* spec );
+    static const char* ResolveWithSuffix( const char* spec, const char* suffix );
 
 
     static bool StartsWith( const char* s, const char* q);
@@ -621,6 +622,18 @@ inline const char* spath::ResolveTopLevel( const char* spec )
 }
 
 
+inline const char* spath::ResolveWithSuffix( const char* spec, const char* suffix )
+{
+    std::stringstream ss ;
+    ss << spec ;
+    if(suffix) ss << suffix ;
+    std::string spec_suffix = ss.str();
+    return ResolveTopLevel(spec_suffix.c_str());
+}
+
+
+
+
 
 
 
@@ -957,12 +970,17 @@ inline bool spath::Read( std::vector<char>& data, const char* path_ ) // static
         if(size <= 0 ) std::cerr << "spath::Read ERROR stream size " << size << " for path " << ( path ? path : "-" )  << "\n" ;
         if(size <= 0) return false ;
 
-        data.resize(size);
-        fp.read(data.data(), size );
-        bool fail = fp.fail();
-
-        if(fail) std::cerr << "spath::Read ERROR failed to read size " << size << " bytes from path " << ( path ? path : "-" ) << "\n" ;
-        if(fail) return false ;
+        data.resize(size + 1);
+        if(fp.read(data.data(), size ))
+        {
+            data[size] = '\0' ;    // safety null termination (not needed for optixir but could be for ptx)
+            data.resize(size);     // keep vector size same as file size
+        }
+        else
+        {
+            good = false ;
+            std::cerr << "spath::Read ERROR failed to read size " << size << " bytes from path " << ( path ? path : "-" ) << "\n" ;
+        }
     }
     return good ;
 }

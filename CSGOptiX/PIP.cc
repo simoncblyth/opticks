@@ -136,13 +136,13 @@ const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP__max_trace_depth", 1 ) ;  
 PIP::PIP
 ---------
 
-PTX read from *ptx_path_* is used to CreateModule
+.ptx OR .optixir read in binary way from *src_path_* is used to CreateModule
 
 * num_payload_values and num_attribute_values MUST MATCH payload and attribute slots
   used in the PTX, see CSGOptiX7.cu
 
 **/
-PIP::PIP(const char* ptx_path_, const Properties* properties_ )
+PIP::PIP(const char* src_path_, const Properties* properties_ )
     :
     max_trace_depth(MAX_TRACE_DEPTH),
     num_payload_values(2),     // see trace                  (prior to packPointer approach used 8)
@@ -150,7 +150,7 @@ PIP::PIP(const char* ptx_path_, const Properties* properties_ )
     properties(properties_),
     pipeline_compile_options(CreatePipelineOptions(num_payload_values,num_attribute_values)),
     program_group_options(CreateProgramGroupOptions()),
-    module(CreateModule(ptx_path_,pipeline_compile_options))
+    module(CreateModule(src_path_,pipeline_compile_options))
 {
     init();
 }
@@ -245,31 +245,31 @@ std::string PIP::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& modu
     return str ;
 }
 
-OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static
+OptixModule PIP::CreateModule(const char* src_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static
 {
-    std::string ptx ;
-    bool ptx_ok = spath::Read(ptx, ptx_path );
+    std::vector<char> src ;
+    bool src_ok = spath::Read(src, src_path );
 
-    LOG_IF(fatal, !ptx_ok)
+    LOG_IF(fatal, !src_ok)
         << std::endl
-        << " ptx_path " << ptx_path
+        << " src_path " << src_path
         << std::endl
-        << " ptx.size " << ptx.size()
+        << " src.size " << src.size()
         << std::endl
-        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " )
+        << " src_ok " << ( src_ok ? "YES" : "NO " )
         << std::endl
         ;
 
     LOG(LEVEL)
         << std::endl
-        << " ptx_path " << ptx_path
+        << " src_path " << src_path
         << std::endl
-        << " ptx.size " << ptx.size()
+        << " src.size " << src.size()
         << std::endl
-        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " )
+        << " src_ok " << ( src_ok ? "YES" : "NO " )
         << std::endl
         ;
-    assert(ptx_ok);
+    assert(src_ok);
 
     int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ;
     OptixCompileOptimizationLevel optLevel = OPT::OptimizationLevel(CreateModule_optLevel) ;
@@ -291,23 +291,14 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     size_t sizeof_log = sizeof(log) ;
 
 #if OPTIX_VERSION <= 70600
-    OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
-                Ctx::context,
-                &module_compile_options,
-                &pipeline_compile_options,
-                ptx.c_str(),
-                ptx.size(),
-                log,
-                &sizeof_log,
-                &module
-                ) );
+    assert(0 && "OPTIX TOO OLD");
 #else
     OPTIX_CHECK_LOG( optixModuleCreate(
                 Ctx::context,
                 &module_compile_options,
                 &pipeline_compile_options,
-                ptx.c_str(),
-                ptx.size(),
+                src.data(),
+                src.size(),
                 log,
                 &sizeof_log,
                 &module

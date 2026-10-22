@@ -121,8 +121,11 @@ inline void SOPTIX_Pipeline::initRaygen()
     desc.raygen.module = module;
     desc.raygen.entryFunctionName = RG ;
 
-    size_t sizeof_log = 0 ;
     char log[2048];
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
+
+
     unsigned num_program_groups = 1 ;
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
@@ -152,8 +155,10 @@ inline void SOPTIX_Pipeline::initMiss()
     desc.miss.module = module;
     desc.miss.entryFunctionName = MS ;
 
-    size_t sizeof_log = 0 ;
     char log[2048];
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
+
     unsigned num_program_groups = 1 ;
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
@@ -199,8 +204,10 @@ inline void SOPTIX_Pipeline::initHitgroup()
     desc.hitgroup.entryFunctionNameIS = nullptr ;
 
 
-    size_t sizeof_log = 0 ;
     char log[2048];
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
+
     unsigned num_program_groups = 1 ;
 
 
@@ -225,8 +232,10 @@ inline void SOPTIX_Pipeline::initPipeline()
     OptixProgramGroup program_groups[] = { raygen_pg, miss_pg, hitgroup_pg };
     unsigned num_program_groups = sizeof( program_groups ) / sizeof( program_groups[0] ) ;
 
-    size_t sizeof_log = 0 ;
     char log[2048];
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
+
 
     if(SOPTIX_Options::Level()>0) std::cout << "[SOPTIX_Pipeline::initPipeline.Create\n";
     OPTIX_CHECK_LOG( optixPipelineCreate(

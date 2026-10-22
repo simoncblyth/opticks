@@ -117,10 +117,13 @@ inline void SOPTIX_Module::init()
 
     assert(  read_ok );
 
-    size_t sizeof_log = 0 ;
     char log[2048];
+    memset(log, 0, sizeof(log));
+    size_t sizeof_log = sizeof(log) ;
+
 
 #if OPTIX_VERSION <= 70600
+    //assert( 0 && "OPTIX VERSION TOO OLD");
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
                 context,
                 &options.moduleCompileOptions,
@@ -131,6 +134,7 @@ inline void SOPTIX_Module::init()
                 &sizeof_log,
                 &module
                 ) );
+
 #else
     OPTIX_CHECK_LOG( optixModuleCreate(
                 context,
