@@ -140,6 +140,13 @@ prim_  = lambda p:ident_(p) >> 16
 inst_  = lambda p:ident_(p) & 0xffff
 
 
+# species (2026/09): [23:22] of the identity word: SPECIES_DEFAULT/PPO/BISMSB/SOLVENT (sysrap/sspecies.h)
+# NB the identity word packs: [31:24] hi8 extend index | [23:22] species | [21:0] identity (=sensor_identifier+1)
+species___ = lambda p:(p.view(np.uint32)[...,3,1] >> 22) & 0x3
+species__  = lambda p:(p.view(np.uint32)[:,3,1]   >> 22) & 0x3
+species_   = lambda p:(p.view(np.uint32)[3,1]     >> 22) & 0x3
+
+
 #1,3
 iindex_ = lambda p:p.view(np.uint32)[...,1,3] & 0x7fffffff
 orient___  = lambda p:p.view(np.uint32)[...,1,3] >> 31
