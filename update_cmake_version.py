@@ -21,22 +21,29 @@ from pathlib import Path
 
 def update_cmake_version(root_path: Path, target_version: str, every: bool):
     root_path = root_path.resolve()
+    cmake_files = []
 
     if every:
         # Recursively find all CMakeLists.txt files
         cmake_files = list(root_path.rglob('CMakeLists.txt'))
     else:
-        # Target direct subdirectories containing a CMakeLists.txt
-        cmake_files = []
-        for item in root_path.iterdir():
-            if item.is_dir():
-                pkg_cmake = item / 'CMakeLists.txt'
-                if pkg_cmake.is_file():
-                    cmake_files.append(pkg_cmake)
-                pass
-            pass
+        # Recurse only within non-obsolete top-level packages
+        for pkg in root_path.iterdir():
+            if not pkg.is_dir():
+                continue
+
+            # Skip if the package is marked obsolete
+            if (pkg / 'OBSOLETE.txt').is_file():
+                continue
+
+            # Recursively find all CMakeLists.txt files inside this non-obsolete package
+            cmake_files.extend(pkg.rglob('CMakeLists.txt'))
         pass
     pass
+
+    # Deduplicate in case root_cmake was captured twice
+    cmake_files = list(set(cmake_files))
+
     # Regex to match cmake_minimum_required(VERSION x.xx ...) case-insensitively
     pattern = re.compile(r'(cmake_minimum_required\s*\(\s*VERSION\s+)[\d\.]+', re.IGNORECASE)
 
@@ -67,7 +74,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Manage cmake_minimum_required versions across Opticks packages.")
     parser.add_argument('--root', type=str, default='.', help='Path to the Opticks repository root (default: current dir).')
     parser.add_argument('--version', type=str, default=CMAKE_MINIMUM_VERSION, help=f'Target minimum CMake version (e.g., {CMAKE_MINIMUM_VERSION}.')
-    parser.add_argument('--every', action='store_true', help='Update every CMakeLists.txt not just the typical top-level package CMakeLists.txt files.')
+    parser.add_argument('--every', action='store_true', help='Update every CMakeLists.txt not just CMakeLists.txt files from non-OBSOLETE packages.')
 
     args = parser.parse_args()
     update_cmake_version(Path(args.root), args.version, args.every)

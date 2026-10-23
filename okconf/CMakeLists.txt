@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
 set(name OKConf)
 
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF

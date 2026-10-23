@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.27)
 set(name UseUseGLMRaw)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)

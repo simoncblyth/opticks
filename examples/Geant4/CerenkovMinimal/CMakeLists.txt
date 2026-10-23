@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27 FATAL_ERROR)
 set(name CerenkovMinimal)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)

@@ -23,7 +23,8 @@ OBSOLETE_PKG = [
    "opticksgl",
    "cudarap",
    "npy",
-   "oglrap"
+   "oglrap",
+   "ok"
 ]
 
 if __name__ == '__main__':

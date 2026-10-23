@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.27)
 
 if(POLICY CMP0063) #Honor visibility properties for all target types
     cmake_policy(SET CMP0063 NEW)
