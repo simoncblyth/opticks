@@ -446,6 +446,7 @@ set(HEADERS
     stmm.h
 
     S4MultiLayrStack.h
+    S4MultiLayrStack_select.h
     sarray.h
     scomplex.h
     scomplex_select.h

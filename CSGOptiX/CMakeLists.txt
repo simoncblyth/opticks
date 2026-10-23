@@ -69,6 +69,9 @@ list(APPEND OPTIX_SOURCES
 )
 
 
+
+
+
 message(STATUS "OPTIX_SOURCES : ${OPTIX_SOURCES} ")
 
 
@@ -240,6 +243,103 @@ endif()
 #target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>)
 
 
+
+
+#[=[
+THE BELOW BLOCK IS JUST FOR CREATING A FLATTENED KERNEL
+#]=]
+
+
+set(KERNEL_TARGET_NAME "${name}_OPTIX")
+get_target_property(KERNEL_TARGET_INCLUDES ${KERNEL_TARGET_NAME} INCLUDE_DIRECTORIES)
+
+set(KERNEL_NVCC_INC_ARGS "")
+
+foreach(PROP_NAME INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(KERNEL_TARGET_INCS ${KERNEL_TARGET_NAME} ${PROP_NAME})
+    if(KERNEL_TARGET_INCS)
+        foreach(INC ${KERNEL_TARGET_INCS})
+            string(REGEX REPLACE "^\\$<BUILD_INTERFACE:(.*)>$" "\\1" CLEAN_INC "${INC}")
+            if(IS_ABSOLUTE "${CLEAN_INC}")
+                list(APPEND KERNEL_NVCC_INC_ARGS "-I${CLEAN_INC}")
+            endif()
+        endforeach()
+    endif()
+endforeach()
+
+list(REMOVE_DUPLICATES KERNEL_NVCC_INC_ARGS)
+
+
+# 2. Gather and evaluate compile definitions (handling generator expressions)
+get_target_property(RAW_DEFS ${KERNEL_TARGET_NAME} COMPILE_DEFINITIONS)
+set(KERNEL_NVCC_DEF_ARGS "")
+
+if(RAW_DEFS)
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" ACTIVE_CONFIG)
+    if(NOT ACTIVE_CONFIG)
+        set(ACTIVE_CONFIG "RELEASE") # Default fallback if CMAKE_BUILD_TYPE is empty
+    endif()
+
+    foreach(DEF ${RAW_DEFS})
+        # Check if the definition is wrapped in a config-specific generator expression
+        if(DEF MATCHES "\\\$<\\\$<CONFIG:([A-Za-z0-9_-]+)>:([A-Za-z0-9_=-]+)>")
+            string(TOUPPER "${CMAKE_MATCH_1}" CONFIG_MATCH)
+            set(DEF_MATCH "${CMAKE_MATCH_2}")
+            # Only include it if it matches our active build configuration
+            if(CONFIG_MATCH STREQUAL ACTIVE_CONFIG)
+                list(APPEND KERNEL_NVCC_DEF_ARGS "-D${DEF_MATCH}")
+            endif()
+        elseif(DEF MATCHES "\\\$<")
+            # Skip complex/unhandled generator expressions gracefully
+            continue()
+        else()
+            # Standard unconditional definition (e.g., RNG_PHILOX, WITH_SIMULATE)
+            list(APPEND KERNEL_NVCC_DEF_ARGS "-D${DEF}")
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES KERNEL_NVCC_DEF_ARGS)
+endif()
+
+
+
+set(KERNEL_SOURCE_FILE    "${CMAKE_CURRENT_SOURCE_DIR}/CSGOptiX7.cu")
+set(FLATTENED_OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/CSGOptiX7_flattened.ii")
+set(PARSER_SCRIPT         "${CMAKE_CURRENT_SOURCE_DIR}/../bin/parse_ii.py")
+
+add_custom_target(flatten_csgoptix_kernel ALL
+
+    # Step A: Run nvcc preprocessor
+    COMMAND ${CMAKE_CUDA_COMPILER} -E
+               "${KERNEL_SOURCE_FILE}"
+            -o "${FLATTENED_OUTPUT_FILE}"
+             ${KERNEL_NVCC_INC_ARGS}
+             ${KERNEL_NVCC_DEF_ARGS}
+            -std=c++17
+            -arch=compute_75
+            -Xcompiler -H
+
+    # -E            : dump flattened source with all includes included recursively
+    # -Xcompiler -H : dump include tree
+
+    # Step B: Report path and line count cleanly
+    COMMAND ${CMAKE_COMMAND} -E echo "--------------------------------------------------"
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Flattened Kernel Path: ${FLATTENED_OUTPUT_FILE} "
+    COMMAND ${CMAKE_COMMAND} -E echo " KERNEL_NVCC_INC_ARGS ${KERNEL_NVCC_INC_ARGS} "
+    COMMAND ${CMAKE_COMMAND} -E echo " KERNEL_NVCC_DEF_ARGS ${KERNEL_NVCC_DEF_ARGS} "
+    COMMAND sh -c "printf '[Monitoring] Total Line Count: ' && wc -l < '${FLATTENED_OUTPUT_FILE}'"
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Header Line Contribution Breakdown:"
+    COMMAND python3 "${PARSER_SCRIPT}" "${FLATTENED_OUTPUT_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E echo "--------------------------------------------------"
+
+    DEPENDS "${KERNEL_SOURCE_FILE}"
+    COMMENT "Generating flattened header monitoring file for CSGOptiX7.cu..."
+    VERBATIM
+)
+
+
+#[=[
+THE ABOVE BLOCK IS JUST FOR CREATING A FLATTENED KERNEL
+#]=]
 
 
 

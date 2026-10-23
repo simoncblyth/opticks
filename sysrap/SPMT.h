@@ -88,10 +88,8 @@ Related developments
 #include "spath.h"
 #include "s_pmt.h"
 
+#include "S4MultiLayrStack_select.h"
 
-#ifdef WITH_CUSTOM4
-#include "C4MultiLayrStack.h"
-#endif
 
 
 struct SPMT_Total
