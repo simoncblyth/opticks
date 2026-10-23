@@ -173,58 +173,67 @@ Release : optixTraverse + optixReorder + optixInvoke : (with .ptx)
 
 
 
-Debug : optixTraverse + optixReorder + optixInvoke - with .optixir
----------------------------------------------------------------------
+Debug : optixTraverse + optixReorder + optixInvoke - with .optixir - PLUS AVOID SOME DUPLICATED payload pointer packing
+-------------------------------------------------------------------------------------------------------------------------
 
 * comparing with the below .ptx (only diff is .optixir cf .ptx) - non reorder same at 34, reorder evt shows slight improvment 23.5 -> ~22
+* avoiding duplicated payload pointer - negligible effect
+
 
 ::
 
-    [sreport.desc_ranges ranges : (33, 5, )
-    .sreport.desc_ranges.descTable  ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )
     [NP::descTable_ {ranges} no-DT (33, 5, )
                                                       ta                tb                ab                ia                ib          TS_DELTA
-                                  init 1792677207.419256 1792677207.429668             10412                 0                 2          0.010412                              init 
-                             load_geom 1792677207.429668 1792677209.324745           1895077                 2                 3          1.895077                         load_geom 
-                           upload_geom 1792677209.324786 1792677214.835479           5510693                 4                 5          5.510693                       upload_geom 
-                         slice_genstep 1792677214.835834 1792677214.835873                39                 9                10          0.000039                     slice_genstep 
-                  upload genstep slice 1792677214.835880 1792677214.851553             15673                11                12          0.015673              upload genstep slice 
-                        simulate slice 1792677214.851553 1792677236.124437          21272884                12                13         21.272884                    simulate slice 
-                        download slice 1792677236.124437 1792677236.648571            524134                13                14          0.524134                    download slice 
-                        concat slices  1792677236.648633 1792677236.648658                25                15                16          0.000025                    concat slices  
-                          save arrays  1792677236.648682 1792677246.119377           9470695                17                21          9.470695                      save arrays  
-                         slice_genstep 1792677246.119535 1792677246.119564                29                23                24          0.000029                     slice_genstep 
-                  upload genstep slice 1792677246.119573 1792677246.122181              2608                25                26          0.002608              upload genstep slice 
-                        simulate slice 1792677246.122181 1792677268.911532          22789351                26                27         22.789351                    simulate slice 
-                        download slice 1792677268.911532 1792677269.443258            531726                27                28          0.531726                    download slice 
-                        concat slices  1792677269.443314 1792677269.443333                19                29                30          0.000019                    concat slices  
-                          save arrays  1792677269.443346 1792677278.917895           9474549                31                35          9.474549                      save arrays  
-                         slice_genstep 1792677278.918062 1792677278.918106                44                37                38          0.000044                     slice_genstep 
-                  upload genstep slice 1792677278.918115 1792677278.920726              2611                39                40          0.002611              upload genstep slice 
-                        simulate slice 1792677278.920726 1792677300.855489          21934763                40                41         21.934763                    simulate slice 
-                        download slice 1792677300.855489 1792677301.384526            529037                41                42          0.529037                    download slice 
-                        concat slices  1792677301.384586 1792677301.384607                21                43                44          0.000021                    concat slices  
-                          save arrays  1792677301.384620 1792677310.990240           9605620                45                49          9.605620                      save arrays  
-                         slice_genstep 1792677310.990410 1792677310.990439                29                51                52          0.000029                     slice_genstep 
-                  upload genstep slice 1792677310.990446 1792677310.993051              2605                53                54          0.002605              upload genstep slice 
-                        simulate slice 1792677310.993051 1792677332.953327          21960276                54                55         21.960276                    simulate slice 
-                        download slice 1792677332.953327 1792677333.481743            528416                55                56          0.528416                    download slice 
-                        concat slices  1792677333.481795 1792677333.481815                20                57                58          0.000020                    concat slices  
-                          save arrays  1792677333.481827 1792677343.485846          10004019                59                63         10.004019                      save arrays  
-                         slice_genstep 1792677343.486051 1792677343.486089                38                65                66          0.000038                     slice_genstep 
-                  upload genstep slice 1792677343.486096 1792677343.488704              2608                67                68          0.002608              upload genstep slice 
-                        simulate slice 1792677343.488704 1792677377.580126          34091422                68                69         34.091422                    simulate slice 
-                        download slice 1792677377.580126 1792677378.116500            536374                69                70          0.536374                    download slice 
-                        concat slices  1792677378.116570 1792677378.116596                26                71                72          0.000026                    concat slices  
-                          save arrays  1792677378.116609 1792677387.774019           9657410                73                78          9.657410                      save arrays  
-    num_timestamp 66 auto-offset from tmin 1792677207419256 2026-10-22T21:53:27.419
-                                TOTAL: 59158350361824820 59158350542178073         180353253              1231              1281
+                                  init 1792736294.281676 1792736294.292131             10455                 0                 2          0.010455                              init 
+                             load_geom 1792736294.292131 1792736296.182901           1890770                 2                 3          1.890770                         load_geom 
+                           upload_geom 1792736296.182941 1792736301.529866           5346925                 4                 5          5.346925                       upload_geom 
+                         slice_genstep 1792736301.530222 1792736301.530261                39                 9                10          0.000039                     slice_genstep 
+                  upload genstep slice 1792736301.530268 1792736301.545767             15499                11                12          0.015499              upload genstep slice 
+                        simulate slice 1792736301.545767 1792736323.015410          21469643                12                13         21.469643                    simulate slice 
+                        download slice 1792736323.015410 1792736323.616422            601012                13                14          0.601012                    download slice 
+                        concat slices  1792736323.616477 1792736323.616501                24                15                16          0.000024                    concat slices  
+                          save arrays  1792736323.616526 1792736333.378881           9762355                17                21          9.762355                      save arrays  
+                         slice_genstep 1792736333.379017 1792736333.379046                29                23                24          0.000029                     slice_genstep 
+                  upload genstep slice 1792736333.379053 1792736333.381747              2694                25                26          0.002694              upload genstep slice 
+                        simulate slice 1792736333.381747 1792736356.234465          22852718                26                27         22.852718                    simulate slice 
+                        download slice 1792736356.234465 1792736356.837892            603427                27                28          0.603427                    download slice 
+                        concat slices  1792736356.837948 1792736356.837969                21                29                30          0.000021                    concat slices  
+                          save arrays  1792736356.837982 1792736366.572690           9734708                31                35          9.734708                      save arrays  
+                         slice_genstep 1792736366.572835 1792736366.572862                27                37                38          0.000027                     slice_genstep 
+                  upload genstep slice 1792736366.572870 1792736366.575520              2650                39                40          0.002650              upload genstep slice 
+                        simulate slice 1792736366.575520 1792736388.435986          21860466                40                41         21.860466                    simulate slice 
+                        download slice 1792736388.435986 1792736389.038814            602828                41                42          0.602828                    download slice 
+                        concat slices  1792736389.038864 1792736389.038885                21                43                44          0.000021                    concat slices  
+                          save arrays  1792736389.038901 1792736399.013409           9974508                45                49          9.974508                      save arrays  
+                         slice_genstep 1792736399.013574 1792736399.013606                32                51                52          0.000032                     slice_genstep 
+                  upload genstep slice 1792736399.013613 1792736399.016220              2607                53                54          0.002607              upload genstep slice 
+                        simulate slice 1792736399.016220 1792736420.956959          21940739                54                55         21.940739                    simulate slice 
+                        download slice 1792736420.956959 1792736421.556375            599416                55                56          0.599416                    download slice 
+                        concat slices  1792736421.556421 1792736421.556442                21                57                58          0.000021                    concat slices  
+                          save arrays  1792736421.556455 1792736431.316727           9760272                59                63          9.760272                      save arrays  
+                         slice_genstep 1792736431.316929 1792736431.316958                29                65                66          0.000029                     slice_genstep 
+                  upload genstep slice 1792736431.316965 1792736431.319577              2612                67                68          0.002612              upload genstep slice 
+                        simulate slice 1792736431.319577 1792736465.422925          34103348                68                69         34.103348                    simulate slice 
+                        download slice 1792736465.422925 1792736466.021456            598531                69                70          0.598531                    download slice 
+                        concat slices  1792736466.021512 1792736466.021533                21                71                72          0.000021                    concat slices  
+                          save arrays  1792736466.021546 1792736476.374325          10352779                73                78         10.352779                      save arrays  
+    num_timestamp 66 auto-offset from tmin 1792736294281676 2026-10-23T14:18:14.281
+                                TOTAL: 59160300248429302 59160300430520528         182091226              1231              1281
 
      0 :                ta : ta
-     1 :                tb : tb
-     2 :                ab : ab
-     3 :                ia : ia
-     4 :                ib : ib
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

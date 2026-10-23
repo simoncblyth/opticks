@@ -3,9 +3,9 @@
 SOPTIX_getPRD.h : unpackPointer from optixPayload
 ==================================================
 
-An arbitrary payload is associated with each ray that is initialized with the optixTrace call. 
-The payload is passed to all the IS, AH, CH and MS programs that are executed during this invocation of trace. 
-The payload can be read and written by each program 
+An arbitrary payload is associated with each ray that is initialized with the optixTrace call.
+The payload is passed to all the IS, AH, CH and MS programs that are executed during this invocation of trace.
+The payload can be read and written by each program
 
 Using unpackPointer from "scuda_pointer.h" via SOPTIX.cu
 

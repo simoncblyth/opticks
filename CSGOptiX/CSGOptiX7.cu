@@ -13,8 +13,14 @@ Functions
 trace
     populate quad2 prd by call to optixTrace
 
-make_color
+make_normal_pixel
     minimal normal "shader"
+
+make_zdepth_pixel
+    minimal greyscale depth
+
+to_float3
+    float4 to float3
 
 render
     raygen function : calling trace and "shading" pixels
@@ -115,6 +121,8 @@ static __forceinline__ __device__ void trace(
         float                  tmin,
         float                  tmax,
         quad2*                 prd,
+        uint32_t               prd_p0,
+        uint32_t               prd_p1,
         unsigned               visibilityMask,
         float                  refine_distance
         )
@@ -124,9 +132,6 @@ static __forceinline__ __device__ void trace(
     const unsigned SBToffset = 0u ;
     const unsigned SBTstride = 1u ;
     const unsigned missSBTIndex = 0u ;
-
-    uint32_t p0, p1 ;
-    packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload
 
     if(!refine)
     {
@@ -144,7 +149,8 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1
+            prd_p0,
+            prd_p1
             );
 
 #else
@@ -161,7 +167,8 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1
+            prd_p0,
+            prd_p1
             );
 
         // TODO: use optixHitObjectGetInstanceId() et al. to inform the coherenceHint
@@ -176,12 +183,13 @@ static __forceinline__ __device__ void trace(
                 case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
             }
         }
-        optixInvoke(p0, p1);
+        optixInvoke(prd_p0, prd_p1);
 #endif
     }
     else
     {
 #if !defined(WITH_SER) || (OPTIX_VERSION < 80000)
+        // Trace : old monolithic way auto invokes CH
         optixTrace(
             handle,
             ray_origin,
@@ -194,7 +202,8 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1
+            prd_p0,
+            prd_p1
             );
 
         float t_hit = prd->distance() ;
@@ -217,7 +226,8 @@ static __forceinline__ __device__ void trace(
                 SBToffset,
                 SBTstride,
                 missSBTIndex,
-                p0, p1
+                prd_p0,
+                prd_p1
                 );
 
             prd->distance_add( t_approx );
@@ -237,7 +247,8 @@ static __forceinline__ __device__ void trace(
             SBToffset,
             SBTstride,
             missSBTIndex,
-            p0, p1
+            prd_p0,
+            prd_p1
             );
 
         float t_hit = optixHitObjectGetRayTmax();
@@ -259,7 +270,8 @@ static __forceinline__ __device__ void trace(
                 SBToffset,
                 SBTstride,
                 missSBTIndex,
-                p0, p1
+                prd_p0,
+                prd_p1
                 );
 
         }
@@ -273,7 +285,7 @@ static __forceinline__ __device__ void trace(
                 case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
             }
         }
-        optixInvoke(p0, p1);   // calls CH which sets prd->distance - from closer when do_refine:true
+        optixInvoke(prd_p0, prd_p1);   // calls CH which sets prd->distance - from closer when do_refine:true
         if(do_refine)
         {
             prd->distance_add( t_approx );
@@ -325,7 +337,7 @@ which make_color manages to clamp to (0,0,0) black.
 
 **/
 
-static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, quad2* prd )
+static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, quad2* prd, uint32_t prd_p0, uint32_t prd_p1 )
 {
 
 #if defined(DEBUG_PIDX)
@@ -364,6 +376,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.tmin,
         params.tmax,
         prd,
+        prd_p0,
+        prd_p1,
         params.vizmask,
         params.PropagateRefineDistance
     );
@@ -491,7 +505,7 @@ in cases where these things happen within close to surfaces.
 
 **/
 
-static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
+static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd, uint32_t prd_p0, uint32_t prd_p1 )
 {
     sevent* evt = params.evt ;
     if (launch_idx.x >= evt->num_seed) return;   // was evt->num_photon
@@ -544,8 +558,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         // intersect query filling (quad2)prd
         switch(params.PropagateRefine)
         {
-            case 0u: trace<false>( bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
-            case 1u: trace<true>(  bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+            case 0u: trace<false>( bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
+            case 1u: trace<true>(  bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
         }
 
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
@@ -623,7 +637,7 @@ if( index > 0 )
 **/
 
 
-static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
+static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd, uint32_t prd_p0, uint32_t prd_p1 )
 {
     unsigned idx = launch_idx.x ;
     sevent* evt  = params.evt ;
@@ -659,8 +673,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
     switch(params.PropagateRefine)
     {
-        case 0u: trace<false>( bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
-        case 1u: trace<true>(  bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+        case 0u: trace<false>( bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
+        case 1u: trace<true>(  bounce, params.handle, pos, mom, params.tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
     }
 
     evt->add_simtrace( idx, p, prd, params.tmin );  // sevent
@@ -687,18 +701,21 @@ extern "C" __global__ void __raygen__rg()
     quad2 prd ;
     prd.zero();
 
+    uint32_t prd_p0, prd_p1 ;
+    packPointer( &prd, prd_p0, prd_p1 ); // scuda_pointer.h : pack 64-bit addr into 2 uint32_t - the payload
+
 
     switch( params.raygenmode )
     {
 
 #ifdef WITH_SIMULATE
-        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;
+        case SRG_SIMULATE:  simulate( idx, dim, &prd, prd_p0, prd_p1 ) ; break ;
 #endif
 #ifdef WITH_RENDER
-        case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;
+        case SRG_RENDER:    render(   idx, dim, &prd, prd_p0, prd_p1 ) ; break ;
 #endif
 #ifdef WITH_SIMTRACE
-        case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;
+        case SRG_SIMTRACE:  simtrace( idx, dim, &prd, prd_p0, prd_p1 ) ; break ;
 #endif
     }
 
