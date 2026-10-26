@@ -19,8 +19,10 @@ sphoton.h
 |    |                         |                  |                 |                     |                              |
 +----+-------------------------+------------------+-----------------+---------------------+------------------------------+
 |    | u:orient_boundary_flag  |  u:identity      | u:index         |     u:flagmask      |                              |
-| q3 |    1b     15b      16b  |    8b 24b        |                 |                     |                              |
+| q3 |    1b     15b      16b  |  8b   2b   22b   |                 |                     |                              |
 |    |                         |  8b:extend index |                 |                     |                              |
+|    |                         |  2b:species      |                 |                     |                              |
+|    |                         | 22b:identity     |                 |                     |                              |
 |    | (3,0)                   | (3,1)            | (3,2)           | (3,3)               |                              |
 +----+-------------------------+------------------+-----------------+---------------------+------------------------------+
 
@@ -89,6 +91,19 @@ identity (32 bit)
     Out[11]: (65535, 16777215)
 
 
+    updated 2026/09: 2 bits of the former 24b identity field repurposed for a species flag::
+
+        [31:24]    8b    upper bits of the photon index (extend it to 40 bits)
+        [23:22]    2b    species: SPECIES_DEFAULT/PPO/BISMSB/SOLVENT (sspecies.h)
+        [21:0]    22b    identity (sensor_identifier+1, 0:not-a-sensor)
+
+    NB the identity value (sensor_identifier+1) is now the low 22 bits of the
+    identity word, which also packs species and the index extension::
+
+        species_ = lambda p:(p.view(np.uint32)[3,1] >> 22) & 0x3
+        ## identity: p.view(np.uint32)[3,1] & 0x3fffff
+
+
 orient (1 bit)
     set according to the sign of cosTheta
     (dot product of surface normal and momentum at last intersect)
@@ -129,6 +144,8 @@ See ana/p.py for python accessors such as::
     primIdx_   = lambda p:identity_(p) >> 16
     instanceId_  = lambda p:identity_(p) & 0xffff
 
+    species_  = lambda p:(p.view(np.uint32)[3,1] >> 22) & 0x3    ## SPECIES_DEFAULT/PPO/BISMSB/SOLVENT (sspecies.h)
+
     idx_      = lambda p:p.view(np.uint32)[3,2] & 0x7fffffff
     orient_   = lambda p:p.view(np.uint32)[3,2] >> 31
 
@@ -147,6 +164,7 @@ See ana/p.py for python accessors such as::
 #endif
 
 #include <cstdint>
+#include "sspecies.h"
 #include "sFFS.h"
 #include "sfunc.h"
 
@@ -191,7 +209,7 @@ struct sphoton
 
                         // 3rd quad
     unsigned orient_boundary_flag ;  // hi(1,15):(orient,boundary), lo16:flag
-    unsigned identity ;              // hi8  extend range of index, lo24:identity
+    unsigned identity ;              // hi8:extend index, 2b:species, lo22:identity
     unsigned index ;                 // lower 32 bits of the full index (extended into identity)
     unsigned flagmask ;              // full32 for flagmask
 
@@ -233,15 +251,20 @@ struct sphoton
         // lower 32 bits of full_index into index
         index    = ( static_cast<unsigned>((full_index >> 0 ) & 0xffffffffu) <<  0 ) ;
 
-        // upper 8 bits of full_index into upper 8 bits of identity with lower 24 bits of identity preserved
+        // upper 8 bits of full_index into upper 8 bits of identity with lower 24 bits of species and identity preserved
         identity = ( static_cast<unsigned>((full_index >> 32) & 0xffu      ) << 24 ) | ( identity & 0xffffffu ) ;
     }
     SPHOTON_METHOD uint64_t get_index() const {  return (static_cast<uint64_t>(identity >> 24) << 32) | static_cast<uint64_t>(index); }
 
 
     // upper 8 bits of identity field used to extend range of index beyond 4.29 billion
-    SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0x00ffffffu ); }
-    SPHOTON_METHOD unsigned get_identity() const {            return identity & 0x00ffffffu ; }
+    // and 2 bits for species, leaving 22 bits for the identity (sensor_identifier+1)
+    SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xffc00000u ) | ( id & 0x003fffffu ); }
+    SPHOTON_METHOD unsigned get_identity() const {            return identity & 0x003fffffu ; }
+
+    // species: SPECIES_DEFAULT/PPO/BISMSB/SOLVENT (sspecies.h)
+    SPHOTON_METHOD void     set_species(unsigned sp) { identity = ( identity & 0xff3fffffu ) | (( sp & 0x3u ) << 22 ) ; }
+    SPHOTON_METHOD unsigned species() const { return ( identity >> 22 ) & 0x3u ; }
     SPHOTON_METHOD unsigned pmtid() const
     {
         unsigned id = get_identity() ;
@@ -633,6 +656,7 @@ SPHOTON_METHOD std::string sphoton::descDetail() const
         << " bn " << boundary()
         << " fl " << std::hex << flag() << std::dec
         << " id " << identity
+        << " sp " << species()
         << " or " << orient()
         << " ix " << index
         << " fm " << std::hex << flagmask  << std::dec
