@@ -86,6 +86,27 @@ __intersection__is
 
 extern "C"  __constant__ Params params ;
 
+
+
+/*
+static __forceinline__ __device__ void reorder(int bounce )
+{
+    // TODO: use optixHitObjectGetInstanceId() et al. to inform the coherenceHint
+    if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+    {
+        switch( params.SER_hintMethod )
+        {
+            case 0: optixReorder()                                                                   ; break ;
+            case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+            case 2: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+            case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
+        }
+    }
+}
+*/
+
+
+
 /**
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
@@ -171,18 +192,7 @@ static __forceinline__ __device__ void trace(
             prd_p1
             );
 
-        // TODO: use optixHitObjectGetInstanceId() et al. to inform the coherenceHint
-
-        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
-        {
-            switch( params.SER_hintMethod )
-            {
-                case 0: optixReorder()                                                                   ; break ;
-                case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-                case 2: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-                case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-            }
-        }
+        //reorder(bounce);
         optixInvoke(prd_p0, prd_p1);
 #endif
     }
@@ -275,16 +285,9 @@ static __forceinline__ __device__ void trace(
                 );
 
         }
-        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
-        {
-            switch( params.SER_hintMethod )
-            {
-                case 0: optixReorder()                                                                   ; break ;
-                case 1: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-                case 2: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-                case 3: optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits ) ; break ;
-            }
-        }
+
+        //reorder(bounce);
+
         optixInvoke(prd_p0, prd_p1);   // calls CH which sets prd->distance - from closer when do_refine:true
         if(do_refine)
         {
@@ -578,11 +581,19 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         ctx.trace(bounce);
 #endif
         command = sim->propagate(bounce, rng, ctx);
+        bool done = command == BREAK ;
+
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        {
+            optixReorder( done ? 1u : 0u , 1);
+        }
+
         bounce++;
 #ifndef PRODUCTION
         ctx.point(bounce) ;
 #endif
-        if(command == BREAK) break ;
+
+        if(done) break ;
     }
 #ifndef PRODUCTION
     ctx.end();  // write seq, tag, flat
