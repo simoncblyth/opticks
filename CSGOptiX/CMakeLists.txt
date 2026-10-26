@@ -268,6 +268,7 @@ foreach(PROP_NAME INCLUDE_DIRECTORIES INTERFACE_INCLUDE_DIRECTORIES)
 endforeach()
 
 list(REMOVE_DUPLICATES KERNEL_NVCC_INC_ARGS)
+#message(STATUS "KERNEL_NVCC_INC_ARGS ${KERNEL_NVCC_INC_ARGS} ")
 
 
 # 2. Gather and evaluate compile definitions (handling generator expressions)
@@ -298,37 +299,44 @@ if(RAW_DEFS)
         endif()
     endforeach()
     list(REMOVE_DUPLICATES KERNEL_NVCC_DEF_ARGS)
+    #message(STATUS "KERNEL_NVCC_DEF_ARGS ${KERNEL_NVCC_DEF_ARGS} ")
+
 endif()
 
 
 
 set(KERNEL_SOURCE_FILE    "${CMAKE_CURRENT_SOURCE_DIR}/CSGOptiX7.cu")
 set(FLATTENED_OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/CSGOptiX7_flattened.ii")
+set(PARSED_FLATTENED_OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/CSGOptiX7_flattened_ii_parsed.txt")
+set(STRING_PARSED_FLATTENED_OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/CSGOptiX7_flattened_ii_string_parsed.txt")
+set(INCLUDE_TREE_FILE      "${CMAKE_CURRENT_BINARY_DIR}/CSGOptiX7_include_tree.txt")
 set(PARSER_SCRIPT         "${CMAKE_CURRENT_SOURCE_DIR}/../bin/parse_ii.py")
 
-add_custom_target(flatten_csgoptix_kernel ALL
+# Convert CMake lists into space-separated strings for safe shell execution
+string(REPLACE ";" " " SAFE_INC_ARGS "${KERNEL_NVCC_INC_ARGS}")
+string(REPLACE ";" " " SAFE_DEF_ARGS "${KERNEL_NVCC_DEF_ARGS}")
 
-    # Step A: Run nvcc preprocessor
-    COMMAND ${CMAKE_CUDA_COMPILER} -E
-               "${KERNEL_SOURCE_FILE}"
-            -o "${FLATTENED_OUTPUT_FILE}"
-             ${KERNEL_NVCC_INC_ARGS}
-             ${KERNEL_NVCC_DEF_ARGS}
-            -std=c++17
-            -arch=compute_75
-            -Xcompiler -H
+
+add_custom_target(flatten_csgoptix_kernel ALL
+    # Step A: Run nvcc preprocessor and redirect -Xcompiler -H (stderr) to a file
+    COMMAND ${CMAKE_COMMAND} -E echo "Running nvcc preprocessor and generating include tree..."
+    COMMAND sh -c "${CMAKE_CUDA_COMPILER} -E '${KERNEL_SOURCE_FILE}' -o '${FLATTENED_OUTPUT_FILE}' ${SAFE_INC_ARGS} ${SAFE_DEF_ARGS} -std=c++17 -arch=compute_75 -Xcompiler -H 2> '${INCLUDE_TREE_FILE}'"
 
     # -E            : dump flattened source with all includes included recursively
     # -Xcompiler -H : dump include tree
 
     # Step B: Report path and line count cleanly
     COMMAND ${CMAKE_COMMAND} -E echo "--------------------------------------------------"
-    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Flattened Kernel Path: ${FLATTENED_OUTPUT_FILE} "
-    COMMAND ${CMAKE_COMMAND} -E echo " KERNEL_NVCC_INC_ARGS ${KERNEL_NVCC_INC_ARGS} "
-    COMMAND ${CMAKE_COMMAND} -E echo " KERNEL_NVCC_DEF_ARGS ${KERNEL_NVCC_DEF_ARGS} "
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Flattened Kernel Path               : ${FLATTENED_OUTPUT_FILE} "
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Parsed Flattened Kernel Path        : ${PARSED_FLATTENED_OUTPUT_FILE} "
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] String Parsed Flattened Kernel Path : ${STRING_PARSED_FLATTENED_OUTPUT_FILE} "
+    COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Include Tree Log Path               : ${INCLUDE_TREE_FILE}"
+    COMMAND ${CMAKE_COMMAND} -E echo " SAFE_INC_ARGS                                   : ${SAFE_INC_ARGS} "
+    COMMAND ${CMAKE_COMMAND} -E echo " SAFE_DEF_ARGS                                   : ${SAFE_DEF_ARGS} "
     COMMAND sh -c "printf '[Monitoring] Total Line Count: ' && wc -l < '${FLATTENED_OUTPUT_FILE}'"
     COMMAND ${CMAKE_COMMAND} -E echo "[Monitoring] Header Line Contribution Breakdown:"
-    COMMAND python3 "${PARSER_SCRIPT}" "${FLATTENED_OUTPUT_FILE}"
+    COMMAND sh -c "python3 ${PARSER_SCRIPT} '${FLATTENED_OUTPUT_FILE}' > '${PARSED_FLATTENED_OUTPUT_FILE}'"
+    COMMAND sh -c "python3 ${PARSER_SCRIPT} '${FLATTENED_OUTPUT_FILE}' 'string' > '${STRING_PARSED_FLATTENED_OUTPUT_FILE}'"
     COMMAND ${CMAKE_COMMAND} -E echo "--------------------------------------------------"
 
     DEPENDS "${KERNEL_SOURCE_FILE}"
