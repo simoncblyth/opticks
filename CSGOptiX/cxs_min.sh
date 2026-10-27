@@ -237,6 +237,7 @@ knobs()
 
    local opticks_ser=hintMethod:0,coherenceHintBits:4,bounceInterval:0
    export OPTICKS_SER=${OPTICKS_SER:-$opticks_ser}
+   export OPTICKS_KERNEL_PROFILE=1   # needs CSGOptiX compiled WITH_KERNEL_PROFILE to do anything
 
    #export OPTICKS_MAX_BOUNCE=64
 
@@ -476,12 +477,19 @@ elif [ "$TEST" == "ser_medium_scan" ]; then
    mkdir -p $(dirname $ser_path)
    export OPTICKS_SER=filepath:$ser_path
    cat << EOS > $ser_path
-hintMethod:0,coherenceHintBits:4,bounceInterval:1   # optixReorder()
-hintMethod:1,coherenceHintBits:4,bounceInterval:4   # optixReorder( bounce / params.SER_bounceInterval, params.SER_coherenceHintBits )
-hintMethod:2,coherenceHintBits:4,bounceInterval:1   # optixReorder( ctx.p.flagidx()                   , params.SER_coherenceHintBits )
-hintMethod:3,coherenceHintBits:4,bounceInterval:1   # optixReorder(0,0)
-hintMethod:-1,coherenceHintBits:0,bounceInterval:0  # bounceInterval:0 disables the reorder
+hintMethod:0,coherenceHintBits:0,bounceInterval:0
+hintMethod:0,coherenceHintBits:0,bounceInterval:1
+hintMethod:0,coherenceHintBits:0,bounceInterval:2
+hintMethod:0,coherenceHintBits:0,bounceInterval:3
+hintMethod:0,coherenceHintBits:0,bounceInterval:4
+hintMethod:0,coherenceHintBits:0,bounceInterval:5
+hintMethod:0,coherenceHintBits:0,bounceInterval:6
+hintMethod:0,coherenceHintBits:0,bounceInterval:7
+hintMethod:0,coherenceHintBits:0,bounceInterval:8
+hintMethod:0,coherenceHintBits:0,bounceInterval:9
+hintMethod:0,coherenceHintBits:0,bounceInterval:10
 EOS
+   ## with current kernel only bounceInterval does anything
 
    opticks_num_event=$(wc -l < $ser_path)
    opticks_num_photon=M100x$opticks_num_event
@@ -851,7 +859,7 @@ logging(){
 
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done
+   for var in $vars ; do printf "%-30s : %s\n" "$var" "${!var}" ; done
 fi
 
 if [ "${arg/env}" != "$arg" ]; then
@@ -873,15 +881,24 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    fi
 
    if [ "${arg/run}" != "$arg" ]; then
-       date +"%Y-%m-%d %H:%M:%S.%3N  %N : [$BASH_SOURCE "
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N : [$BASH_SOURCE"
        $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
-       date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE "
+       date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE"
    elif [ "${arg/dbg}" != "$arg" ]; then
        source dbg__.sh
        dbg__ $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
    fi
+
+   if [ -f "$LOGFILE" ]; then
+       echo $BASH_SOURCE : LOGFILE $LOGFILE in LOGDIR $LOGDIR PWD $PWD
+       ls -alst $LOGFILE
+   else
+       echo $BASH_SOURCE : HMM - NO LOGFILE $LOGFILE in LOGDIR $LOGDIR PWD $PWD
+   fi
+
+
 fi
 
 # "meta" ARG MAY BE OUTDATED ? REVIEW THIS ON NEXT USE OF :  cxs_min_scan.sh

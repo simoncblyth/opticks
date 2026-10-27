@@ -87,15 +87,11 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "Params.h"
 
 
-#if OPTIX_VERSION < 70000
-#include "Six.h"
-#else
 #include "Ctx.h"
 #include "CUDA_CHECK.h"
 #include "OPTIX_CHECK.h"
 #include "PIP.h"
 #include "SBT.h"
-#endif
 
 #include "CSGOptiX.h"
 
@@ -1052,6 +1048,8 @@ void CSGOptiX::prepareParamSimulate_SER(size_t idx)
 {
     const char* SER = SEventConfig::SER(idx);
     params_helper->set_SER( SER );
+    //std::cout << params_helper->desc_SER() << "\n" ;
+    LOG(info) << params_helper->desc_SER();
 }
 
 

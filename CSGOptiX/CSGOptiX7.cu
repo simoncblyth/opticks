@@ -609,8 +609,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
         bool done = command == BREAK ;
 
-        //if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
-        if( params.SER_bounceInterval > 0u )
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
         {
             unsigned coherenceHint = ( ctx.p.flagidx() << 1 ) | ( done ? 0 : 1 )  ;
             optixReorder( coherenceHint , 5 );

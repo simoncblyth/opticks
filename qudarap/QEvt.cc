@@ -723,6 +723,17 @@ NP* QEvt::gatherPhotonLite() const
     return l ;
 }
 
+
+/**
+QEvt::gatherKProfile
+--------------------
+
+When OPTICKS_KERNEL_PROFILE envvar is defined but the WITH_KERNEL_PROFILE
+is not compiled into CSGOptiX the kprofile.npy array that this returns
+is just all zeros.
+
+**/
+
 NP* QEvt::gatherKProfile() const
 {
     if(kernel_profile == nullptr) return nullptr ;
@@ -732,7 +743,7 @@ NP* QEvt::gatherKProfile() const
 
     NP* a = kernel_profile->serialize();
 
-    LOG(info) << kernel_profile->desc() << "\n" << ( a ? a->sstr() : "-" ) << "\n" ;
+    //LOG(info) << kernel_profile->desc() << "\n" << ( a ? a->sstr() : "-" ) << "\n" ;
 
     return a ;
 }

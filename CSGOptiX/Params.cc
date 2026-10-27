@@ -346,18 +346,24 @@ void Params_Helper::set_SER( const char* SER )
     params->SER_hintMethod        = ser["hintMethod"] ;
     params->SER_coherenceHintBits = ser["coherenceHintBits"] ;
     params->SER_bounceInterval    = ser["bounceInterval"] ;
-
-    std::cout
-        << "[Params_Helper::set_SER\n"
-        << " SER                        : " << SER                                   << "\n"
-        << " hintMethod                 : " << params->SER_hintMethod                << "\n"
-        << " bounceInterval             : " << params->SER_bounceInterval            << "\n"
-        << " coherenceHintBits          : " << params->SER_coherenceHintBits         << "\n"
-        << "]Params_Helper::set_SER\n"
-        ;
-
-
 }
+
+std::string Params_Helper::desc_SER() const
+{
+    std::stringstream ss ;
+    ss
+        << "[Params_Helper::desc_SER"
+        << " hintMethod : " << params->SER_hintMethod
+        << " bounceInterval : " << params->SER_bounceInterval
+        << " coherenceHintBits : " << params->SER_coherenceHintBits
+        << "]"
+        ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
 
 void Params_Helper::device_alloc()
 {

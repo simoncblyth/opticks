@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
     OPTICKS_LOG_::Check();
-    return 0 ; 
+    return 0 ;
 }

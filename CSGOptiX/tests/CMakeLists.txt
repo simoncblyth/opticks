@@ -41,6 +41,8 @@ set(TEST_SOURCES
     CSGOptiXVersionTest.cc
     CSGOptiXRenderTest.cc
     ParamsTest.cc
+
+    CSGOptiX_LOG_Test.cc
 )
 
 foreach(SRC ${SINGLE_SOURCES})

@@ -57,6 +57,7 @@ set(SH_SCRIPTS
    opticks-ctest.sh
    f.sh
    f.py
+   kprofile.py
 )
 
 
