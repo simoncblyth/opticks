@@ -53,8 +53,6 @@ struct SBT ;
 #endif
 struct Frame ;
 
-//#include "SCSGOptiX.h"
-//struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
 #include "SSimulator.h"
 
@@ -108,7 +106,6 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     Frame* framebuf ;
     SMeta* meta ;
     double kernel_dt ;   // execution time of prior kernel
-
     scontext*    sctx ;
     QSim*        sim ;
     QEvt*        qev ;

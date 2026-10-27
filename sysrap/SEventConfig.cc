@@ -46,6 +46,7 @@ int         SEventConfig::_StartIndexDefault = 0 ;
 int         SEventConfig::_NumEventDefault = 1 ;
 const char* SEventConfig::_NumPhotonDefault = nullptr ;
 const char* SEventConfig::_NumGenstepDefault = nullptr ;
+int         SEventConfig::_KernelProfileDefault = 0 ;
 int         SEventConfig::_EventSkipaheadDefault = 100000 ;  // APPROPRIATE SKIPAHEAD DEPENDS ON HOW MANY RANDOMS CONSUMED BY PHOTON SIMULATION
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ;
@@ -281,6 +282,7 @@ bool SEventConfig::IsFirstEvent(int idx){ return idx == 0 ; }  // 0-based idx (s
 bool SEventConfig::IsLastEvent(int idx){ return idx == NumEvent()-1 ; }  // 0-based idx (such as Geant4 eventID)
 
 
+int         SEventConfig::_KernelProfile = ssys::getenvint(kKernelProfile, _KernelProfileDefault) ;
 int         SEventConfig::_EventSkipahead = ssys::getenvint(kEventSkipahead, _EventSkipaheadDefault) ;
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault );
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ;
@@ -407,7 +409,9 @@ bool SEventConfig::IsRunningModeInputPhoton(){   return RunningMode() == SRM_INP
 bool SEventConfig::IsRunningModeInputGenstep(){  return RunningMode() == SRM_INPUT_GENSTEP ; }
 bool SEventConfig::IsRunningModeGun(){           return RunningMode() == SRM_GUN ; }
 
+bool SEventConfig::IsKernelProfile(){  return KernelProfile() > 0 ; }
 
+int SEventConfig::KernelProfile(){ return _KernelProfile ; }
 int SEventConfig::EventSkipahead(){ return _EventSkipahead ; }
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
 
@@ -1746,6 +1750,12 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
     {
         LOG(LEVEL) << " NOT : adding SCOMP_G4STATE to comp list " ;
     }
+
+    if(IsKernelProfile())
+    {
+        gather_mask |= SCOMP_KPROFILE ; save_mask |= SCOMP_KPROFILE ;
+    }
+
 }
 
 void SEventConfig::Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask )

@@ -13,6 +13,7 @@ struct SEvt ;
 
 struct sphoton_selector ;
 struct sphotonlite_selector ;
+struct SKernelProfile ;
 
 
 #include <vector>
@@ -107,7 +108,9 @@ private:
     sslice*           gss ;
 
     NP*               input_photon ;
+
 public:
+    SKernelProfile*   kernel_profile ;
     int               upload_count ;
 
     /**
@@ -173,6 +176,8 @@ public:
     NP*      gatherHitLite() const ;
     NP*      gatherHitLiteMerged() const ;
     NP*      gatherHitMerged() const ;
+
+    NP*      gatherKProfile() const ;
 
 
 #ifndef PRODUCTION

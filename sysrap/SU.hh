@@ -26,6 +26,13 @@ struct SYSRAP_API SU
     static T* upload(const T* h, size_t num_items );
 
     template<typename T>
+    static void download(T* h, const T* d,  size_t num_items );
+
+    template<typename T>
+    static void zero(T* d,  size_t num_items );
+
+
+    template<typename T>
     static void deprecated_select_copy_device_to_host( T** h, unsigned& num_select,  T* d, unsigned num_d, const qselector<T>& selector  );
 
     template<typename T>

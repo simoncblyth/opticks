@@ -228,6 +228,8 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ;
     static constexpr const char* kNumPhoton    = "OPTICKS_NUM_PHOTON" ;
     static constexpr const char* kNumGenstep   = "OPTICKS_NUM_GENSTEP" ;
+
+    static constexpr const char* kKernelProfile = "OPTICKS_KERNEL_PROFILE" ; // requires CSGOptiX:WITH_KERNEL_PROFILE to gatherKProfile
     static constexpr const char* kEventSkipahead  = "OPTICKS_EVENT_SKIPAHEAD" ;
 
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ;
@@ -269,6 +271,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kEventReldir  = "OPTICKS_EVENT_RELDIR" ;
     static constexpr const char* kHitMask      = "OPTICKS_HIT_MASK" ;
     static constexpr const char* kRGMode       = "OPTICKS_RG_MODE" ;
+
 
 #ifdef WITH_COMP_OLD
     // components now controlled at higher level with OPTICKS_EVENT_MODE not directly with these
@@ -313,6 +316,9 @@ struct SYSRAP_API SEventConfig
     static bool IsRunningModeInputGenstep();
     static bool IsRunningModeGun();
 
+    static bool IsKernelProfile();
+
+    static int         KernelProfile();
     static int         EventSkipahead();
     static const char* G4StateSpec();
     static int         G4StateRerun();
@@ -446,6 +452,7 @@ struct SYSRAP_API SEventConfig
     static void SetNumEvent(int nevt);            // NumEvent is used by some tests
     static void SetNumPhoton(const char* spec);   // NumPhoton is used by some tests
 
+    static void SetKernelProfile(int kp);
     static void SetEventSkipahead(int offset);
     static void SetG4StateSpec(const char* spec);
     static void SetG4StateRerun(int id);
@@ -526,6 +533,7 @@ struct SYSRAP_API SEventConfig
     static const char* _NumPhotonDefault ;
     static const char* _NumGenstepDefault ;
 
+    static int         _KernelProfileDefault ;
     static int         _EventSkipaheadDefault ;
     static const char* _G4StateSpecDefault ;
     static const char* _G4StateSpecNotes ;
@@ -614,6 +622,7 @@ struct SYSRAP_API SEventConfig
     static bool              IsFirstEvent(int idx);   // 0-based idx (such as Geant4 eventID)
     static bool              IsLastEvent(int idx);    // 0-based idx (such as Geant4 eventID)
 
+    static int         _KernelProfile;
     static int         _EventSkipahead ;
     static const char* _G4StateSpec ;
     static int         _G4StateRerun ;

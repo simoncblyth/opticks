@@ -110,11 +110,20 @@ set(CSGOptiX_COMPILE_DEFINITIONS_PUBLIC
     OPTICKS_CSGOPTIX
 )
 
-
+# NB these definitions apply to both ${name} AND ${name}_OPTIX
 set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
     WITH_SER
     WITH_THRUST
 )
+
+set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE__DEFS_NOT_CURRENTLY_USED
+
+    WITH_KERNEL_PROFILE
+)
+
+
+
+
 
 # compilation to .optixir required removal of int128
 # binary search reveals culprit as <thrust/complex.h> included from 4MultiLayrStack.h

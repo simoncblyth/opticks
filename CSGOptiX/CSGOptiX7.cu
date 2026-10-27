@@ -84,6 +84,11 @@ __intersection__is
 #include "scuda_pointer.h"
 #include "SOPTIX_getPRD.h"
 
+#ifdef WITH_KERNEL_PROFILE
+#include "skernel_profile.h"
+#endif
+
+
 extern "C"  __constant__ Params params ;
 
 
@@ -297,6 +302,9 @@ static __forceinline__ __device__ void trace(
     }
 
 }
+
+
+
 
 //#if !defined(PRODUCTION) && defined(WITH_RENDER)
 #if defined(WITH_RENDER)
@@ -553,46 +561,65 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #ifndef PRODUCTION
     ctx.point(bounce);
 #endif
+
+#ifdef WITH_KERNEL_PROFILE
+    unsigned long long t0, t1, t2 ;
+#endif
+
     while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
 
-        float tmin = ( ctx.p.orient_boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
+#ifdef WITH_KERNEL_PROFILE
+        bool profile = ((photon_idx & 0xff) == 0) && bounce < 64 ;
+        if(profile) t0 = clock64();
+#endif
 
-        // intersect query filling (quad2)prd
-        switch(params.PropagateRefine)
+        float tmin = ( ctx.p.orient_boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
+        switch(params.PropagateRefine)   // intersect query filling (quad2)prd
         {
             case 0u: trace<false>( bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
             case 1u: trace<true>(  bounce, params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, prd_p0, prd_p1, params.vizmask, params.PropagateRefineDistance );  break ;
         }
-
-        if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
-        // propagate can do nothing meaningful without a boundary
-
-        // HMM: normalize here or within CSG ? Actually only needed for
-        // geometry with active scaling, such as ellipsoid.
-        // TODO: move this so its only done when needed
-        //     ~/o/notes/issues/CSGOptiX_simulate_avoid_normalizing_every_normal.rst
-        //
-
+        if( prd->boundary() == 0xffffu ) break ; // MISS FROM PHOTONS STARTING OUTSIDE WORLD, HMM COULD BE FROM TMIN/TMAX TOO
         float3* normal = prd->normal();
-        *normal = normalize(*normal);
+        *normal = normalize(*normal);   // TODO: move - see  ~/o/notes/issues/CSGOptiX_simulate_avoid_normalizing_every_normal.rst
+
+#ifdef WITH_KERNEL_PROFILE
+        if(profile) t1 = clock64();
+#endif
+
 
 #ifndef PRODUCTION
         ctx.trace(bounce);
 #endif
         command = sim->propagate(bounce, rng, ctx);
+
+
+#ifdef WITH_KERNEL_PROFILE
+        if(profile && evt->profile )
+        {
+            t2 = clock64();
+            // Atomically accumulate cycles for this bounce index
+            atomicAdd(&evt->profile->trace_cycles[bounce],      (unsigned long long)(t1 - t0));
+            atomicAdd(&evt->profile->propagate_cycles[bounce],  (unsigned long long)(t2 - t1));
+            atomicAdd(&evt->profile->active_counts[bounce], 1);
+        }
+#endif
+
+
         bool done = command == BREAK ;
 
-        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        //if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        if( params.SER_bounceInterval > 0u )
         {
-            optixReorder( done ? 1u : 0u , 1);
+            unsigned coherenceHint = ( ctx.p.flagidx() << 1 ) | ( done ? 0 : 1 )  ;
+            optixReorder( coherenceHint , 5 );
         }
 
         bounce++;
 #ifndef PRODUCTION
         ctx.point(bounce) ;
 #endif
-
         if(done) break ;
     }
 #ifndef PRODUCTION

@@ -44,7 +44,9 @@ enum {
     SCOMP_HITLOCAL       = 0x1 << 24,
     SCOMP_PHOTONLOCAL    = 0x1 << 25,
     SCOMP_HITLITEMERGED  = 0x1 << 26,
-    SCOMP_HITMERGED      = 0x1 << 27
+    SCOMP_HITMERGED      = 0x1 << 27,
+    SCOMP_KPROFILE       = 0x1 << 28
+
 };
 
 struct SYSRAP_API SCompProvider
@@ -88,6 +90,7 @@ struct SYSRAP_API SComp
     static constexpr const char* PHOTONLOCAL_ = "photonlocal" ;
     static constexpr const char* HITLITEMERGED_ = "hitlitemerged" ;
     static constexpr const char* HITMERGED_     = "hitmerged" ;
+    static constexpr const char* KPROFILE_     = "kprofile" ;
 
     static bool Match(const char* q, const char* n );
     static unsigned    Comp(const char* name);
@@ -128,6 +131,7 @@ struct SYSRAP_API SComp
     static bool IsPhotonLocal( unsigned mask){ return mask & SCOMP_PHOTONLOCAL ; }
     static bool IsHitLiteMerged( unsigned mask){ return mask & SCOMP_HITLITEMERGED ; }
     static bool IsHitMerged(     unsigned mask){ return mask & SCOMP_HITMERGED ; }
+    static bool IsKProfile(      unsigned mask){ return mask & SCOMP_KPROFILE ; }
 
 };
 
@@ -166,6 +170,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, PHOTONLOCAL_))   comp = SCOMP_PHOTONLOCAL ;
     if(Match(name, HITLITEMERGED_)) comp = SCOMP_HITLITEMERGED ;
     if(Match(name, HITMERGED_))     comp = SCOMP_HITMERGED ;
+    if(Match(name, KPROFILE_))      comp = SCOMP_KPROFILE ;
     return comp ;
 }
 inline const char* SComp::Name(unsigned comp)
@@ -201,6 +206,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_PHOTONLOCAL:  s = PHOTONLOCAL_   ; break ;
         case SCOMP_HITLITEMERGED:   s = HITLITEMERGED_    ; break ;
         case SCOMP_HITMERGED:   s = HITMERGED_    ; break ;
+        case SCOMP_KPROFILE:    s = KPROFILE_    ; break ;
     }
     return s ;
 }
@@ -235,6 +241,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_PHOTONLOCAL )   names.push_back(PHOTONLOCAL_) ;   // CAUTION : PHOTONLOCAL MUST STAY AFTER PHOTON
     if( mask & SCOMP_HITLITEMERGED ) names.push_back(HITLITEMERGED_) ;
     if( mask & SCOMP_HITMERGED ) names.push_back(HITMERGED_) ;
+    if( mask & SCOMP_KPROFILE )  names.push_back(KPROFILE_) ;
 
     std::stringstream ss ;
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" );

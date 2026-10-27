@@ -5,6 +5,7 @@
 
 #include "sphoton.h"
 #include "sphotonlite.h"
+#include "skernel_profile.h"
 
 
 #include <thrust/device_ptr.h>
@@ -21,9 +22,34 @@ T* SU::upload(const T* h, size_t num_items )
     return d ;
 }
 
+
 template SYSRAP_API quad4*       SU::upload(const quad4* , size_t );
 template SYSRAP_API sphoton*     SU::upload(const sphoton* , size_t );
 template SYSRAP_API sphotonlite* SU::upload(const sphotonlite* , size_t );
+template SYSRAP_API skernel_profile* SU::upload(const skernel_profile* , size_t );
+
+
+template<typename T>
+void SU::download(T* h, const T* d,  size_t num_items )
+{
+    cudaMemcpy(h, d, num_items*sizeof(T), cudaMemcpyDeviceToHost);
+}
+
+template SYSRAP_API void SU::download(skernel_profile*, const skernel_profile* , size_t );
+
+
+template<typename T>
+void SU::zero( T* d, size_t num_items )
+{
+    cudaMemset(d, 0,  num_items*sizeof(T));
+}
+template SYSRAP_API void SU::zero( skernel_profile*, size_t );
+
+
+
+
+
+
 
 
 /**

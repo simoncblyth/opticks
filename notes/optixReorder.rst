@@ -66,6 +66,114 @@ Combined benefits of the below approaching a factor of 3 reduction in simulation
 
 
 
+Release : optixTraverse + optixReorder + optixInvoke - with .optixir - standard heavy thrust/complex - termination reorder with hit object correction
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+::
+
+    /**
+    corrected_MakeHitObject
+    -------------------------
+
+    This to check if reordering based on corrected
+    spatial info from the photon simulation pos and mom
+    makes any difference to performance enhancement of reorder.
+
+    **/
+
+    static __forceinline__ __device__ void corrected_MakeHitObject(
+            OptixTraversableHandle handle,
+            float3                 ray_origin,
+            float3                 ray_direction,
+            float                  tmin
+            )
+    {
+
+        const float rayTime = 0.0f ;
+        OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE
+     
+        OptixTraverseData traverseData;
+        optixHitObjectGetTraverseData(&traverseData);
+
+        unsigned int numTransforms = optixHitObjectGetTransformListSize();
+        OptixTraversableHandle transforms[4];
+        for(unsigned int i = 0; i < numTransforms && i < 4; ++i) {
+            transforms[i] = optixHitObjectGetTransformListHandle(i);
+        }    
+
+        optixMakeHitObject(
+            handle, 
+            ray_origin, 
+            ray_direction, 
+            tmin, 
+            rayTime, 
+            rayFlags, 
+            traverseData, 
+            transforms, 
+            numTransforms
+        );   
+    }
+
+
+
+
+
+
+
+
+::
+
+    ]sreport.desc_runprof
+    [sreport.desc_ranges ranges : (33, 5, )
+    .sreport.desc_ranges.descTable  ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )
+    [NP::descTable_ {ranges} no-DT (33, 5, )
+                                                      ta                tb                ab                ia                ib          TS_DELTA
+                                  init 1793017424.411792 1793017424.420405              8613                 0                 2          0.008613                              init 
+                             load_geom 1793017424.420405 1793017425.992858           1572453                 2                 3          1.572453                         load_geom 
+                           upload_geom 1793017425.992891 1793017429.762017           3769126                 4                 5          3.769126                       upload_geom 
+                         slice_genstep 1793017429.762318 1793017429.762341                23                 9                10          0.000023                     slice_genstep 
+                  upload genstep slice 1793017429.762346 1793017429.784218             21872                11                12          0.021872              upload genstep slice 
+                        simulate slice 1793017429.784218 1793017443.367259          13583041                12                13         13.583041                    simulate slice 
+                        download slice 1793017443.367259 1793017443.730828            363569                13                14          0.363569                    download slice 
+                        concat slices  1793017443.730905 1793017443.730922                17                15                16          0.000017                    concat slices  
+                          save arrays  1793017443.730940 1793017453.677590           9946650                17                21          9.946650                      save arrays  
+                         slice_genstep 1793017453.677707 1793017453.677720                13                23                24          0.000013                     slice_genstep 
+                  upload genstep slice 1793017453.677726 1793017453.680321              2595                25                26          0.002595              upload genstep slice 
+                        simulate slice 1793017453.680321 1793017467.479601          13799280                26                27         13.799280                    simulate slice 
+                        download slice 1793017467.479601 1793017467.855659            376058                27                28          0.376058                    download slice 
+                        concat slices  1793017467.855721 1793017467.855740                19                29                30          0.000019                    concat slices  
+                          save arrays  1793017467.855753 1793017477.670984           9815231                31                35          9.815231                      save arrays  
+                         slice_genstep 1793017477.681949 1793017477.681962                13                37                38          0.000013                     slice_genstep 
+                  upload genstep slice 1793017477.681967 1793017477.684564              2597                39                40          0.002597              upload genstep slice 
+                        simulate slice 1793017477.684564 1793017491.532624          13848060                40                41         13.848060                    simulate slice 
+                        download slice 1793017491.532624 1793017491.894962            362338                41                42          0.362338                    download slice 
+                        concat slices  1793017491.895020 1793017491.895037                17                43                44          0.000017                    concat slices  
+                          save arrays  1793017491.895048 1793017502.295344          10400296                45                49         10.400296                      save arrays  
+                         slice_genstep 1793017502.309727 1793017502.309741                14                51                52          0.000014                     slice_genstep 
+                  upload genstep slice 1793017502.309747 1793017502.312342              2595                53                54          0.002595              upload genstep slice 
+                        simulate slice 1793017502.312342 1793017516.277924          13965582                54                55         13.965582                    simulate slice 
+                        download slice 1793017516.277924 1793017516.640885            362961                55                56          0.362961                    download slice 
+                        concat slices  1793017516.640945 1793017516.640961                16                57                58          0.000016                    concat slices  
+                          save arrays  1793017516.640972 1793017526.601176           9960204                59                63          9.960204                      save arrays  
+                         slice_genstep 1793017526.601294 1793017526.601309                15                65                66          0.000015                     slice_genstep 
+                  upload genstep slice 1793017526.601315 1793017526.603909              2594                67                68          0.002594              upload genstep slice 
+                        simulate slice 1793017526.603909 1793017547.785022          21181113                68                69         21.181113                    simulate slice 
+                        download slice 1793017547.785022 1793017548.146423            361401                69                70          0.361401                    download slice 
+                        concat slices  1793017548.146478 1793017548.146494                16                71                72          0.000016                    concat slices  
+                          save arrays  1793017548.146505 1793017557.787123           9640618                73                78          9.640618                      save arrays  
+    num_timestamp 66 auto-offset from tmin 1793017424411792 2026-10-26T20:23:44.411
+                                TOTAL: 59169576847937255 59169576981286265         133349010              1231              1281
+
+
+
+
+
+
+
+
+
+
+
 Release : optixTraverse + optixReorder + optixInvoke - with .optixir - standard heavy thrust/complex - just termination reorder
 ----------------------------------------------------------------------------------------------------------------------------------------
 

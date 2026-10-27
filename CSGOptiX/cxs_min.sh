@@ -466,7 +466,8 @@ elif [ "$TEST" == "medium_evt" ]; then
    opticks_num_event=1
    opticks_num_photon=M100
    opticks_num_genstep=10
-
+   opticks_max_slot=M100  ## avoid creating big buffer
+   opticks_max_bounce=63
 
 elif [ "$TEST" == "ser_medium_scan" ]; then
 

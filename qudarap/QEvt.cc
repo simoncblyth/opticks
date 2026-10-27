@@ -38,6 +38,7 @@
 #include "SEventConfig.hh"
 #include "NP.hh"
 #include "SLOG.hh"
+#include "SKernelProfile.h"
 
 #include "OpticksGenstep.h"
 
@@ -106,6 +107,7 @@ QEvt::QEvt()
     gs(nullptr),
     gss(nullptr),
     input_photon(nullptr),
+    kernel_profile(SEventConfig::IsKernelProfile() ? new SKernelProfile {} : nullptr),
     upload_count(0)
 {
     LOG(LEVEL);
@@ -470,6 +472,9 @@ void QEvt::device_alloc_genstep_and_seed()
 
 
 
+
+
+
 /**
 QEvt::setInputPhotonAndUpload
 ------------------------------------
@@ -716,6 +721,20 @@ NP* QEvt::gatherPhotonLite() const
     NP* l = sev->makePhotonLite();
     gatherPhotonLite(l);
     return l ;
+}
+
+NP* QEvt::gatherKProfile() const
+{
+    if(kernel_profile == nullptr) return nullptr ;
+
+    kernel_profile->download();
+    kernel_profile->zero_device();  // prepare for next event accumulation
+
+    NP* a = kernel_profile->serialize();
+
+    LOG(info) << kernel_profile->desc() << "\n" << ( a ? a->sstr() : "-" ) << "\n" ;
+
+    return a ;
 }
 
 
@@ -1459,6 +1478,7 @@ NP* QEvt::gatherComponent_(unsigned cmp) const
         case SCOMP_HITLITE:       a = gatherHitLite()           ; break ;
         case SCOMP_HITLITEMERGED: a = gatherHitLiteMerged()     ; break ;
         case SCOMP_HITMERGED:     a = gatherHitMerged()         ; break ;
+        case SCOMP_KPROFILE:      a = gatherKProfile()          ; break ;
 #ifndef PRODUCTION
         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;
@@ -1567,11 +1587,25 @@ void QEvt::device_alloc_photon()
     [[maybe_unused]] bool noalloc = evt->no_photon_or_photonlite_alloc();
 
 
+    if(kernel_profile)
+    {
+        // NB for profiling info to be populated requires non-standard CSGOptiX build : WITH_KERNEL_PROFILE
+        kernel_profile->upload();
+        evt->profile = kernel_profile->getDevicePtr();
+    }
+    else
+    {
+        evt->profile = nullptr ;
+    }
+
+
+
     LOG(LEVEL)
         << " evt.max_slot   " << evt->max_slot
         << " evt.max_record " << evt->max_record
         << " evt.max_photon " << evt->max_photon
         << " evt.num_photon " << evt->num_photon
+        << " evt.profile " << ( evt->profile != nullptr ? "YES" : "NO " )
 #ifndef PRODUCTION
         << " evt.num_record " << evt->num_record
         << " evt.num_rec    " << evt->num_rec
@@ -1599,9 +1633,13 @@ void QEvt::device_alloc_photon()
     evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_slot                  , "max_slot*sizeof(sflat)"   ) : nullptr ;
 #endif
 
+
     LOG(LEVEL) << desc() ;
     LOG(LEVEL) << desc_alloc() ;
 }
+
+
+
 
 
 
@@ -1611,7 +1649,7 @@ QEvt::SetAllocMeta
 
 Collect metadata from sevent.h into salloc.h
 
-**/
+*/
 
 
 void QEvt::SetAllocMeta(salloc* alloc, const sevent* evt)  // static

@@ -92,6 +92,7 @@ struct sflat ;
 
 struct sphoton ;
 struct sphotonlite ;
+struct skernel_profile ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -191,6 +192,8 @@ struct sevent
     quad4*   simtrace ;   //QEvt::device_alloc_simtrace
     quad4*   aux ;
     quad6*   sup ;
+
+    skernel_profile* profile ;  // set once only by QEvt::device_alloc_photon
 
     //] counts and pointers
 

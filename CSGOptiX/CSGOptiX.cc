@@ -69,6 +69,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "squad.h"
 #include "sframe.h"
 
+
 // csg
 #include "CSGPrim.h"
 #include "CSGFoundry.h"
@@ -84,6 +85,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 // CSGOptiX
 #include "Frame.h"
 #include "Params.h"
+
 
 #if OPTIX_VERSION < 70000
 #include "Six.h"
@@ -654,8 +656,8 @@ void CSGOptiX::initSimulate()
     LOG(LEVEL) ;
     Params* params = params_helper->params ;
 
-    params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
-    params->evt = qev ? qev->getDevicePtr() : nullptr ;  // sevent*
+    params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>* from (QSim*)sim
+    params->evt = qev ? qev->getDevicePtr() : nullptr ;  // sevent*      from (QEvt*)qev
 
     params->tmin0 = SEventConfig::PropagateEpsilon0() ;  // epsilon used after step points with flags in below mask
     params->PropagateEpsilon0Mask = SEventConfig::PropagateEpsilon0Mask();  // eg from CK|SI|TO|SC|RE
@@ -666,9 +668,9 @@ void CSGOptiX::initSimulate()
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ;
     params->max_time = SEventConfig::MaxTime() ;
+    params->_pad0 = 0 ;
+
 }
-
-
 
 
 /**

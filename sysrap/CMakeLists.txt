@@ -236,6 +236,9 @@ set(HEADERS
     SProf.hh
     smeta.h
 
+    SKernelProfile.h
+    skernel_profile.h
+
     SBacktrace.h
     SStackFrame.h
     SProfile.h
