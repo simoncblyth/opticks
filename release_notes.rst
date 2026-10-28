@@ -113,6 +113,59 @@ Snapshot Tags History
 
 
 
+v0.7.2 2026/11/?? : Optimization campaign - SER, Release, optixir, slimming + Contributions
+--------------------------------------------------------------------------------------------
+
+Optimization : optixir, SER (Shader Execution Reordering) with optixTraverse+optixReorder+optixInvoke, Release build, Kernel Profiling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-10-27 cb81a39de - add kernel profiling when CSGOptiX is compiled WITH_KERNEL_PROFILE to compare the times for the trace and the propagate in bounce loop - trace taking more than 100x longer time than propagate
+* 2026-10-23 9e5a53fba - add creation of flattened CSGOptiX kernel with -E and include tree with -H plus parse_ii.py to examine the header line markers in the ii file - shows thrust/complex.h bloats kernel by 120k lines compared to simple scomplex.h
+* 2026-10-22 989c9745d - notes on modern optixTraverse+optixReorder+optixInvoke - and idea for changing HitObjecty to correct spatial info for photon simulation - photons usually scatter/reemit not at RT hit boundary
+* 2026-10-22 dbf29c2ef - start looking at switching to local S4MultiLayrStack.h with simple scomplex.h scomplex_select.h - to avoid heavy thrust/complex.h compiled into kernel
+* 2026-10-22 5f39250e1 - switch from .ptx to .optixir - reveals via binary header search that CSGOptiX7.cu WITH_CUSTOM4 C4MultiLayrStack.h via <thrust/complex.h> brings in a boatload of headers into optix kernel - some of which use int128 which needed to be macro disabled for .optixir
+* 2026-10-21 117292f1b - add kerneltime recording to sfr.h and report that with a moving average and FPS in the SGLFW window title
+* 2026-10-21 eed66de10 - add sphoton::pos_hash to try with optixReorder
+
+* 2026-10-20 24e435222 - compare Release and Debug - shows another 30% gain on top of ~33% from SER - so sofar can ~double simulation speed with Production+SER on Ada
+* 2026-10-20 158d032a4 - fixes for Release build
+* 2026-10-20 5efe3ae11 - add multi-SER config, to facilitate changing SER config from event to event without multi-invokation
+* 2026-10-19 838deb5f3 - split sFFS.h from sseq.h to allow usage from sseq.h and sphoton.h - add sphoton::flagidx for SER
+* 2026-10-16 eeeb5caf4 - start taking a look at SER : Shader Execution Reordering
+
+
+New Feature : Start incorporating the three species LS model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-10-26 0f638749a - Merge pull request #14 from prinksx/yangdy_three_species_LS_model_pr1_sspecies_sphoton_genstep (2 days ago) <simoncblyth>
+* 2026-10-21 a712886ff - Merge branch 'master' into yangdy_three_species_LS_model_pr1_sspecies_sphoton_genstep <DY Yang>
+* 2026-10-19 ce1050f03 - add species tag to sphoton and DsG4ScintSimple genstep type for JUNO three-species LS model <yangdy>
+* 2026-09-28 4b0dacff5 - add U4ScintThreeExtra.h and test which does preparation for combined absorption length and species fraction float4 tex and reemiprob float4 tex
+
+
+Cleanup : Remove some obsolete packages, remove obsolete NOT:WITH_PRD code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-10-27 01e20119f - remove logging machinery for removed and obsolete packages
+* 2026-10-23 a40bcb3ba - add OBSOLETE.txt markers to obsolete packages not yet willing to remove
+* 2026-10-23 709f88310 - remove obsolete geometry packages : ggeo, CSG_GGeo, GeoChain
+* 2026-10-23 db05cc642 - remove unused top level CMakeLists.txt, add update_cmake_version.py script
+* 2026-10-21 db94a88fe - remove NOT:WITH_PRD approach and remove WITH_PRD macro - as the packPointer technique is the only one used for years now
+
+minor bug fixes and PR from contributors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-10-14 54161e17a - Merge pull request #12 from xyf5432/fix/numpy-api-replacements
+* 2026-08-16 de422b265 - fix: replace removed np.trapz and np.bool APIs (2 months ago) <谢翊凡>
+* 2026-10-14 879f3debb - fix cosmetic bug in sdigest::DescRaw sdigest::Finalize as pointed out by Gabor
+
+
+viz debug
+~~~~~~~~~~
+
+* 2026-09-28 2d129f143 - support photon history termination flag selection in sseq_record.h using wildcard starts, plus annotations
+* 2026-09-09 b865a409e - add sseq_array::find_selection_indices_ending to handle record selection of eg '\*SD', move more OpticksPhoton methods into header to facilitate quick testing
+* 2026-09-09 183cb0c8c - anim debug notes, revive UseGeometryShader example, disable wavelength coloring
 
 
 v0.7.1 2026/09/08  : Yet another expedient release following bug fix in J and OJ packaging fix
@@ -694,10 +747,16 @@ Prior progress notes
 * :doc:`notes/progress`
 
 
-..
+How to create and structure release notes
+-------------------------------------------
 
-   start from "git lg -n20" and summarize useful commit messages worthy of mention
+1. start from the commit messages since the previous release::
 
+   git lg -n20
 
+2. select useful commit messages (aim to keep 50% or less) that succinctly convey activities, group the messages
+   under sub-headings that outline the high level goals of the changes
+
+3. roughly use time ordering - but clarity is more relevant that precision
 
 

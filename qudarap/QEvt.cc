@@ -203,6 +203,8 @@ int QEvt::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
     LOG_IF( fatal, gs_ == nullptr ) << " gs_ null " ;
     assert( gs_ );
 
+    // NB: QEvt does not own the gs
+
     gs = gs_ ;
     gss = gss_ ? new sslice(*gss_) : nullptr ;
 
@@ -265,17 +267,19 @@ unsigned long long QEvt::get_photon_slot_offset() const
 
 
 /**
-QEvt::clear
---------------
+QEvt::clear_gs
+---------------
 
 This is called from QSim::reset
 The former omission of gs deletion was reported by Ilker Parmaksiz.
 
+HMM : gs OWNED BY SEvt - IT SHOULD BE MANAGED BY SEvt (NOT QEvt)
+
 **/
 
-void QEvt::clear()
+void QEvt::clear_gs()
 {
-    delete gs ;
+    //  delete gs ; // gs is a borrowed pointer from SEvt - so it should not be deleted here
     gs = nullptr ;
 }
 

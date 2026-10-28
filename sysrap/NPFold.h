@@ -353,6 +353,9 @@ public:
     int save(const char* base, const char* rel, const char* name) ;
     int save(const char* base, const char* rel) ;
     int save(const char* base) ;
+    static constexpr const char* save_DUMP = "NPFold__save_DUMP" ;
+
+
     int save_verbose(const char* base) ;
 
     int         _save_local_item_count() const ;
@@ -2504,6 +2507,10 @@ inline int NPFold::save(const char* base_)  // not const as calls _save
 {
     const char* base = U::Resolve(base_);
 
+    int _DUMP = U::GetEnvInt(save_DUMP, 0);
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : [" << ( base ? base : "-" )  << "]\n" ;
+
+
     if(base == nullptr) std::cerr
         << "NPFold::save(\"" << ( base_ ? base_ : "-" ) << "\")"
         << " did not resolve all tokens in argument "
@@ -2511,7 +2518,10 @@ inline int NPFold::save(const char* base_)  // not const as calls _save
         ;
     if(base == nullptr) return 1 ;
 
-    return _save(base) ;
+    int rc = _save(base) ;
+
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : [" << ( base ? base : "-" )  << "]\n" ;
+    return rc ;
 }
 
 inline int NPFold::save_verbose(const char* base_)  // not const as calls _save

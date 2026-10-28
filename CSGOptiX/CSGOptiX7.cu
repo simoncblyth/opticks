@@ -611,8 +611,35 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
         if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
         {
-            unsigned coherenceHint = ( ctx.p.flagidx() << 1 ) | ( done ? 0 : 1 )  ;
-            optixReorder( coherenceHint , 5 );
+            switch(params.SER_hintMethod)
+            {
+                case 0:  optixReorder();                                                          break ;
+                case 1:  optixReorder( done ? 0 : 1                                     , 1 );    break ;
+                case 2:  optixReorder(   ctx.p.flagidx_2bit()                           , 2 );    break ;
+                case 3:  optixReorder( ( ctx.p.flagidx_2bit() << 1 ) | ( done ? 0 : 1 ) , 3 );    break ;
+                case 4:  optixReorder( ctx.p.flagidx_4bit()                             , 4 );    break ;
+                case 5:  optixReorder( ( ctx.p.flagidx_4bit() << 1 ) | ( done ? 0 : 1 ) , 5 );    break ;
+                case 6:  optixReorder( ctx.s.index.x                                    , 5 );    break ;  // m1 : 5 bits enough for 32 material indices
+                case 7:  optixReorder( ctx.s.index.y                                    , 5 );    break ;  // m2
+                case 8:  optixReorder( ( ctx.s.index.y << 2 ) | ctx.p.flagidx_2bit()    , 7 );    break ;  // m2{5b} with f2{2b}
+                case 9:  optixReorder( ( ctx.s.index.y << 4 ) | ctx.p.flagidx_4bit()    , 9 );    break ;  // m2{5b} with f4{4b}
+                case 10:
+                        {
+                             uint32_t r2_4 = ctx.p.template ir2<4>(900.0f);
+                             uint32_t f4 = ctx.p.flagidx_4bit();
+                             optixReorder( (r2_4 << 4) | f4, 8);
+                        }
+                        break ;
+                case 11:
+                        {
+                             uint32_t r2_4 = ctx.p.template ir2<4>(900.0f);
+                             uint32_t m2_5 = ctx.s.index.y & 0x1f ; // 5 bits for m2
+                             optixReorder( (m2_5 << 4) | r2_4, 9);
+                        }
+                        break ;
+                case 12:
+                         break ;
+            }
         }
 
         bounce++;

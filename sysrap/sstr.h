@@ -135,6 +135,9 @@ struct sstr
 
     static void ParseDict( const char* txt, std::map<std::string, int>& mp );
 
+    template<typename T>
+    static std::string DescMap(const std::map<std::string, T>& mp);
+
 
     static bool IsInteger(const char* str);
     static bool IsWhitespace(const std::string& s );
@@ -1053,6 +1056,27 @@ inline void sstr::ParseDict(const char* txt, std::map<std::string, int>& mp) // 
         start = end + 1;
     }
 }
+
+template<typename T>
+inline std::string sstr::DescMap(const std::map<std::string, T>& mp) // static
+{
+    std::ostringstream oss;
+    oss << "{";
+    bool first = true;
+    for (const auto& [key, value] : mp) {
+        if (!first) oss << ", ";
+        // If the value is a string, wrap it in quotes for clarity
+        if constexpr (std::is_same_v<T, std::string>) {
+            oss << "\"" << key << "\": \"" << value << "\"";
+        } else {
+            oss << "\"" << key << "\": " << value;
+        }
+        first = false;
+    }
+    oss << "}";
+    return oss.str();
+}
+
 
 
 template<typename T>

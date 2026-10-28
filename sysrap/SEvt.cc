@@ -1967,6 +1967,7 @@ Configure what arrays are saved::
 
 void SEvt::endOfEvent(int eventID)
 {
+    SProf::Add("SEvt__endOfEvent_HEAD");
 
     setStage(SEvt__endOfEvent);
     LOG_IF(info, LIFECYCLE) << " eventID[" << eventID << "] " << id() ;
@@ -1976,11 +1977,19 @@ void SEvt::endOfEvent(int eventID)
     endMeta();
     gather_metadata();
 
+    SProf::Add("SEvt__endOfEvent_BSAV");
+
     save();              // gather and save SEventConfig configured arrays
+
+    SProf::Add("SEvt__endOfEvent_ASAV");
+
+
     clear_output();
     clear_genstep();
     clear_extra();
     reset_counter();
+
+    SProf::Add("SEvt__endOfEvent_ACLE");
 
     SaveRunMeta(); // saving run_meta.txt at end of every event incase of crashes
 
@@ -2013,6 +2022,7 @@ void SEvt::endOfEvent(int eventID)
         }
     }
 
+    SProf::Add("SEvt__endOfEvent_TAIL");
    // tail of SEvt::endOfEvent
 }
 
@@ -4584,6 +4594,8 @@ but that is at fold level./ Perhaps need each array to have skipdelete ?
 
 void SEvt::save(const char* dir_)
 {
+    SProf::Add("SEvt__save_HEAD");
+
     LOG_IF(info, LIFECYCLE || SIMTRACE || SAVE) << id() << " dir_[" << ( dir_ ? dir_ : "-" ) << "]" ;
 
     //  gather();   MOVED gather upwards to allow copying hits into other collections
@@ -4595,6 +4607,10 @@ void SEvt::save(const char* dir_)
     // 1. shallowcopy from topfold to save_fold components that are configured to save, export SEvt__SAVE=1 for log
     std::string save_comp = SEventConfig::DescSaveComp() ;
     NPFold* save_fold = topfold->shallowcopy(save_comp.c_str());
+
+    SProf::Add("SEvt__save_ACOP");
+
+
 
     LOG_IF(info, SAVE) << " save_comp[" << save_comp << "]" ;
     //LOG_IF(info, SAVE) << " topfold.desc   " << ( topfold ? topfold->desc() : "-" )  ;
@@ -4625,7 +4641,9 @@ void SEvt::save(const char* dir_)
     // 4. when "hit" array is configured for save and is present and "hitlocal" is also configured for save,
     //    derive "hitlocal" from "hit" and add to save_fold
 
+    SProf::Add("SEvt__save_BHIT");
     const NP* hit = save_fold->get(SComp::HIT_);
+    SProf::Add("SEvt__save_AHIT");
     if(hit && SEventConfig::HasSaveComp(SComp::HITLOCAL_))
     {
         bool consistency_check = true ;
@@ -4676,7 +4694,9 @@ void SEvt::save(const char* dir_)
         LOG_IF(info, MINIMAL) << "slicd\n" << slicd ;
 
         LOG(LEVEL) << "[ save_fold.save " << dir ;
+        SProf::Add("SEvt__save_BSAV");
         save_fold->save(dir);
+        SProf::Add("SEvt__save_ASAV");
         LOG(LEVEL) << "] save_fold.save " << dir ;
 
         int num_save_comp = SEventConfig::NumSaveComp();
@@ -4696,6 +4716,7 @@ void SEvt::save(const char* dir_)
     delete seqnib ;
     delete seqnib_table ;
     // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS
+    SProf::Add("SEvt__save_TAIL");
 }
 
 

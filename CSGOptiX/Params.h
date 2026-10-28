@@ -78,10 +78,10 @@ struct __align__(16) Params // Force 16-byte structural alignment boundary
     float      DEBUG_zdepth ;
     uint32_t   _pad2;
 
-    unsigned   SER_hintMethod ;
-    unsigned   SER_coherenceHintBits ;
-    unsigned   SER_bounceInterval ;
-    unsigned   _pad4 ;
+    int        SER_hintMethod ;
+    int        SER_coherenceHintBits ;
+    int        SER_bounceInterval ;
+    int        _pad4 ;
 
 };
 

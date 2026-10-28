@@ -536,6 +536,8 @@ double QSim::simulate(int eventID, bool reset_)
     }
 
 
+   
+
     size_t max_slot_M = SEventConfig::MaxSlot()/M;
     std::string anno = SProf::Annotation("slice",num_slice, "max_slot_M", max_slot_M);
     int64_t t_LEND = SProf::Add("QSim__simulate_LEND", anno.c_str());
@@ -543,6 +545,10 @@ double QSim::simulate(int eventID, bool reset_)
     std::stringstream ss ;
     std::ostream* out = CONCAT ? &ss : nullptr ;
     int concat_rc = sev->topfold->concat(out);
+
+
+
+
 
     LOG_IF(info, CONCAT) << ss.str() ;
     LOG_IF(fatal, concat_rc != 0) << " sev->topfold->concat FAILED " ;
@@ -580,6 +586,7 @@ double QSim::simulate(int eventID, bool reset_)
 
 
     assert( tot_ph == tot_ph_0 );
+
 
     int64_t t_BRES  = SProf::Add("QSim__simulate_BRES", counts.c_str() );
     if(reset_) reset(eventID) ;   // reset calles SEvt::endOfEvent
@@ -855,8 +862,9 @@ to enable copying from the gathered arrays into non-Opticks collections.
 void QSim::reset(int eventID)
 {
     SProf::Add("QSim__reset_HEAD");
-    qev->clear();
+    // qev->clear_gs();        // delete gs and set to nullptr - CANNOT BEFORE SEvt::endOfEvent AS CAUSES CORRUPTED SAVED GS 
     sev->endOfEvent(eventID);
+    //qev->clear_gs();     // gives double-free - GS IS NOT OWNED BY QEvt so QEvt SHOULD NOT DELETE IT - THAT IS HANDLED IN SEvt
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
     SProf::Add("QSim__reset_TAIL");
 }

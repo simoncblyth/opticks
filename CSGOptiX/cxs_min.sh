@@ -235,7 +235,7 @@ knobs()
 
    #export NPFold__substamp_DUMP=1
 
-   local opticks_ser=hintMethod:0,coherenceHintBits:4,bounceInterval:0
+   local opticks_ser=hintMethod:0,coherenceHintBits:-1,bounceInterval:1  # just optixReorder()
    export OPTICKS_SER=${OPTICKS_SER:-$opticks_ser}
    export OPTICKS_KERNEL_PROFILE=1   # needs CSGOptiX compiled WITH_KERNEL_PROFILE to do anything
 
@@ -470,6 +470,7 @@ elif [ "$TEST" == "medium_evt" ]; then
    opticks_max_slot=M100  ## avoid creating big buffer
    opticks_max_bounce=63
 
+
 elif [ "$TEST" == "ser_medium_scan" ]; then
 
 
@@ -477,17 +478,19 @@ elif [ "$TEST" == "ser_medium_scan" ]; then
    mkdir -p $(dirname $ser_path)
    export OPTICKS_SER=filepath:$ser_path
    cat << EOS > $ser_path
-hintMethod:0,coherenceHintBits:0,bounceInterval:0
-hintMethod:0,coherenceHintBits:0,bounceInterval:1
-hintMethod:0,coherenceHintBits:0,bounceInterval:2
-hintMethod:0,coherenceHintBits:0,bounceInterval:3
-hintMethod:0,coherenceHintBits:0,bounceInterval:4
-hintMethod:0,coherenceHintBits:0,bounceInterval:5
-hintMethod:0,coherenceHintBits:0,bounceInterval:6
-hintMethod:0,coherenceHintBits:0,bounceInterval:7
-hintMethod:0,coherenceHintBits:0,bounceInterval:8
-hintMethod:0,coherenceHintBits:0,bounceInterval:9
-hintMethod:0,coherenceHintBits:0,bounceInterval:10
+hintMethod:0,coherenceHintBits:-1,bounceInterval:1
+hintMethod:1,coherenceHintBits:-1,bounceInterval:1
+hintMethod:2,coherenceHintBits:-1,bounceInterval:1
+hintMethod:3,coherenceHintBits:-1,bounceInterval:1
+hintMethod:4,coherenceHintBits:-1,bounceInterval:1
+hintMethod:5,coherenceHintBits:-1,bounceInterval:1
+hintMethod:6,coherenceHintBits:-1,bounceInterval:1
+hintMethod:7,coherenceHintBits:-1,bounceInterval:1
+hintMethod:8,coherenceHintBits:-1,bounceInterval:1
+hintMethod:9,coherenceHintBits:-1,bounceInterval:1
+hintMethod:10,coherenceHintBits:-1,bounceInterval:1
+hintMethod:11,coherenceHintBits:-1,bounceInterval:1
+hintMethod:12,coherenceHintBits:-1,bounceInterval:1
 EOS
    ## with current kernel only bounceInterval does anything
 

@@ -3098,6 +3098,10 @@ inline std::string NP::descTable_(int wid,
     bool with_timestamp_delta = sizeof(T) == sizeof(int64_t) ;   // timestamps require 8 bytes
     bool row_label_rhs = true ;  // repeat label on the right
 
+    const char* item_counter = U::GetEnv("NP__descTable_ITEM_COUNTER", "simulate slice");
+    bool with_item_counter = item_counter && strlen(item_counter) > 0 ;
+    int counter = 0 ;
+
     std::stringstream ss ;
     ss << "[NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << ( do_timestamp_delta ? "DT " : "no-DT " ) << sstr() << std::endl ;
     int ndim = shape.size() ;
@@ -3159,7 +3163,24 @@ inline std::string NP::descTable_(int wid,
         std::vector<T> column_totals(nj,0);
         for(int i=0 ; i < ni ; i++)
         {
+            if(with_row_labels && with_item_counter)
+            {
+                bool is_item = 0 == strcmp(row_smry[i].c_str(), item_counter) ;
+                if(is_item)
+                {
+                    ss << "(" << std::setw(2) << counter << ") " ;
+                    counter += 1 ;
+                }
+                else
+                {
+                    ss << " " << std::setw(2) << "" << "  " ;
+                }
+            }
+
+
             if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ;
+
+
 
             for(int j=0 ; j < nj ; j++)
             {

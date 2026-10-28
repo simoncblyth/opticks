@@ -127,7 +127,7 @@ public:
     int setGenstepUpload_NP(const NP* gs);
     int setGenstepUpload_NP(const NP* gs,  const sslice* sl );
     unsigned long long get_photon_slot_offset() const ;
-    void clear();
+    void clear_gs();
 private:
 
     int setGenstepUpload(const quad6* qq0, int num_gs );

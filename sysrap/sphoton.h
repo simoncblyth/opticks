@@ -167,6 +167,7 @@ See ana/p.py for python accessors such as::
 #include "sspecies.h"
 #include "sFFS.h"
 #include "sfunc.h"
+#include "OpticksPhoton.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -182,7 +183,6 @@ See ana/p.py for python accessors such as::
    #include "scuda.h"
    #include "stran.h"
    #include "smath.h"
-   #include "OpticksPhoton.h"
 
    struct NP ;
 #endif
@@ -227,8 +227,8 @@ struct sphoton
     SPHOTON_METHOD unsigned boundary() const { return (orient_boundary_flag & 0x7fff0000u) >> 16 ; } // boundary___ = lambda p:(p.view(np.uint32)[...,3,0] & 0x7fff0000) >> 16
     SPHOTON_METHOD float    orient() const {   return (orient_boundary_flag & 0x80000000u) ? -1.f : 1.f ; }
 
-    SPHOTON_METHOD unsigned flagidx1() const { return FFS(flag())      ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx1 range 1 -> 16 (subtract one to fit in 4 bits, after check non-zero)
-    SPHOTON_METHOD unsigned flagidx() const  { return FFS(flag()) - 1u ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx  range 0 -> 15 for valid flag
+    SPHOTON_METHOD unsigned flagidx1() const {      return FFS(flag())      ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx1 range 1 -> 16 (subtract one to fit in 4 bits, after check non-zero)
+    SPHOTON_METHOD unsigned flagidx_4bit() const  { return FFS(flag()) - 1u ; }  // flag range 0x1 << 0 => 0x1 << 15 , flagidx  range 0 -> 15 for valid flag
 
     // bit manipulation approach of setters: clear bit(s) for flag/boundary/orient and then set them
     SPHOTON_METHOD void     set_flag(unsigned flag) {         orient_boundary_flag = ( orient_boundary_flag & 0xffff0000u ) | (( flag     & 0xffffu         ) <<  0 ) ; flagmask |= flag ; }
@@ -280,6 +280,41 @@ struct sphoton
        orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
     }
 
+    SPHOTON_METHOD unsigned flagidx_2bit() const
+    {
+        // 0b00  generation
+        // 0b01  bulk action
+        // 0b10  boundary action
+        // 0b11  termination
+
+        unsigned f2 = 0u ;
+        switch(flag())
+        {
+            case CERENKOV:
+            case SCINTILLATION:
+            case TORCH:
+                     f2 = 0u ;
+                     break ;
+            case BULK_REEMIT:
+            case BULK_SCATTER:
+                     f2 = 1u ;
+                     break ;
+            case SURFACE_DREFLECT:
+            case SURFACE_SREFLECT:
+            case BOUNDARY_REFLECT:
+            case BOUNDARY_TRANSMIT:
+                     f2 = 2u ;
+                     break ;
+            case BULK_ABSORB:
+            case SURFACE_DETECT:
+            case SURFACE_ABSORB:
+            case EFFICIENCY_COLLECT:
+            case EFFICIENCY_CULL:
+                     f2 = 3u ;
+                     break ;
+        }
+        return f2 ;
+    }
 
     /**
     pos_hash
@@ -331,7 +366,14 @@ struct sphoton
         return a;
     }
 
-
+    template<unsigned int BITS>
+    SPHOTON_METHOD uint32_t ir2(float max_r2) const
+    {
+        float r2 = pos.x * pos.x + pos.y * pos.y + pos.z * pos.z;
+        float r2norm = fminf(r2 / max_r2, 1.0f);  // Normalize to [0.0, 1.0]
+        constexpr uint32_t max_bin = (1u << BITS) - 1u;  // Scale to max int repr by BITS (e.g., 4 bits -> 15)
+        return static_cast<uint32_t>(r2norm * static_cast<float>(max_bin));
+    }
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

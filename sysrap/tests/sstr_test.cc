@@ -610,6 +610,7 @@ struct sstr_test
     static int split();
     static int ParseInt();
     static int ParseDict();
+    static int ParseDict(const char* dict);
     static int ParseStringList(const char* list);
     static int ParseStringList();
     static int ExtractSize();
@@ -745,12 +746,24 @@ int sstr_test::ParseInt()
 
 int sstr_test::ParseDict()
 {
-    const char* ser_config = "bounceInterval:4,coherenceHintBits:4" ;
-    std::map<std::string, int> ser ;
-    sstr::ParseDict(ser_config, ser );
+    int rc = 0 ;
+    rc += ParseDict("bounceInterval:4,coherenceHintBits:4");
+    rc += ParseDict("bounceInterval:4,coherenceHintBits:-4");
+    return rc ;
+}
 
-    std::cout << "ser[\"bounceInterval\"]     : " << ser["bounceInterval"]    << "\n" ;
-    std::cout << "ser[\"coherenceHintBits\"]  : " << ser["coherenceHintBits"] << "\n" ;
+int sstr_test::ParseDict(const char* dict)
+{
+    std::map<std::string, int> cfg ;
+    sstr::ParseDict(dict, cfg );
+
+    std::cout
+       << "[sstr_test::ParseDict "
+       << ( dict ? dict : "-" )
+       << " : "
+       << sstr::DescMap(cfg)
+       << "]\n"
+       ;
 
     return 0 ;
 }
