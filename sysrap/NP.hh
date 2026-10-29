@@ -858,6 +858,8 @@ struct NP
     void save_header(const char* path);
     void old_save(const char* path) ;  // formerly the *save* methods could not be const because of update_headers
     void save(const char* path) const ;  // *save* methods now can be const due to dynamic creation of header
+    static constexpr const char* save_DUMP = "NP__save_DUMP" ;
+
 
     void save(const char* dir, const char* name) const ;
     void save(const char* dir, const char* reldir, const char* name) const ;
@@ -9544,32 +9546,36 @@ inline void NP::old_save(const char* path)  // non-const due to update_headers
 
 inline void NP::save(const char* path_) const
 {
+    int _DUMP = U::GetEnvInt(save_DUMP, 0);
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : save [" << ( path_ ? path_ : "-" )  << "]\n" ;
+
     const char* path = U::Resolve(path_);  // path is nullptr with unexpanded envvar token
     if(path == nullptr) std::cerr << "NP::save failed to U::Resolve path_ " << ( path_ ? path_ : "-" ) << std::endl ;
     if(path == nullptr) return ;
 
-    int rc = U::MakeDirsForFile(path);
-    const char* _save_VERBOSE = "NP__save_VERBOSE" ;
-    bool save_VERBOSE = getenv(_save_VERBOSE) != nullptr ;
-
-    if(VERBOSE||save_VERBOSE) std::cout
-          << "NP::save"
-          << " " << _save_VERBOSE << ":" << ( save_VERBOSE ? "YES" : "NO " )
-          << " path [" << ( path ? path : "-" ) << "]"
-          << " rc:" << rc
-          << "\n"
-          ;
-
+    [[maybe_unused]] int rc = U::MakeDirsForFile(path);
     assert( rc == 0 );
 
     std::string hdr = make_header();
     std::ofstream fpa(path, std::ios::out|std::ios::binary);
     fpa << hdr ;
+
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : write bytes [" << arr_bytes() << "]" << " MakeDirsForFile.rc " << rc << "\n" ;
     fpa.write( bytes(), arr_bytes() );
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : write bytes [" << arr_bytes() << "]\n" ;
+
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : flushing/closing stream...\n" ;
+    auto t0 = std::chrono::high_resolution_clock::now();
+    fpa.close(); // Explicitly close - instead of doing that when goes out of scope
+    auto t1 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> close_ms = t1 - t0;
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : stream closed in " << close_ms.count() << " ms\n" ;
 
     save_meta( path);
     save_names(path);
     save_labels(path);
+
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : save [" << ( path_ ? path_ : "-" )  << "]\n" ;
 }
 
 inline void NP::save(const char* dir, const char* reldir, const char* name) const
@@ -9581,11 +9587,16 @@ inline void NP::save(const char* dir, const char* reldir, const char* name) cons
 
 inline void NP::save(const char* dir, const char* name) const
 {
+    int _DUMP = U::GetEnvInt(save_DUMP, 0);
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : save.dir.name [" << ( name ? name : "-" )  << "]\n" ;
+
     if(dir == nullptr || name == nullptr) std::cerr << "NP::save FAIL dir OR name arg is null " << std::endl ;
     if(dir == nullptr || name == nullptr) return ;
 
     std::string path = U::form_path(dir, name);
     save(path.c_str());
+
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : save.dir.name [" << ( name ? name : "-" )  << "]\n" ;
 }
 
 inline void NP::save_jsonhdr(const char* path) const

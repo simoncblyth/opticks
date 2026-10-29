@@ -111,6 +111,7 @@ This reproduces the "hit" line numbers::
 
 """
 
+import argparse
 import sys
 import os
 import re
@@ -388,27 +389,53 @@ def parse_tz():
     return tz_display
 
 
-if __name__ == "__main__":
-    rawpath = sys.argv[1] if len(sys.argv) > 1 else "SProf.txt"
 
-    fp = Path(rawpath).resolve()
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Process and summarize timing profile data.")
+
+    parser.add_argument(
+        "rawpath",
+        nargs="?",
+        default=os.environ.get("SPROF_RAWPATH", "SProf.txt"),
+        help="Path to the raw timing file (default: SProf.txt or SPROF_RAWPATH envvar)"
+    )
+    parser.add_argument(
+        "-i", "--index",
+        type=int,
+        default=int(os.environ.get("SPROF_INDEX", 0)),
+        help="Index value (default: 0 or SPROF_INDEX envvar)"
+    )
+    parser.add_argument(
+        "-r", "--report",
+        action="store_true",
+        default="REPORT" in os.environ,
+        help="Print detailed report (default: enabled if REPORT envvar is present)"
+    )
+
+    args = parser.parse_args()
+    return args
+
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    fp = Path(args.rawpath).resolve()
+
     fold = fp.parent.name
+
     fid = fold
     for fe in fold.split("_"):
-        if fe.startswith("hit"): fid = fe
-    pass
-    #print(fold)
-
-    idx = int(os.environ.get("SPROF_INDEX", 0))
+        if fe.startswith("hit"):
+            fid = fe
 
     stamps = parse_timing_file(fp)
     compute_deltas(stamps)
 
     tz_display = parse_tz()
 
-    if "REPORT" in os.environ:
-        print_report(stamps, tz_display, idx)
-    pass
+    if args.report:
+        print_report(stamps, tz_display, args.index)
 
-    print_summary(stamps, tz_display, idx, fid)
+    print_summary(stamps, tz_display, args.index, fid)
 pass

@@ -2620,6 +2620,10 @@ inline int NPFold::_save(const char* base)  // not const as sets savedir
 {
     assert( !nodata );
 
+    int _DUMP = U::GetEnvInt(save_DUMP, 0);
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : _save [" << ( base ? base : "-" )  << "]\n" ;
+
+
     int slic = _save_local_item_count();
     int slmc = _save_local_meta_count();
 
@@ -2632,19 +2636,35 @@ inline int NPFold::_save(const char* base)  // not const as sets savedir
 
     savedir = strdup(base);
 
+    if(_DUMP>0) std::cout << "-" << save_DUMP << " " << U::FormatLog() << " : bef _save_arrays [" << ( base ? base : "-" )  << "]\n" ;
+
     _save_arrays(base);
+
+    if(_DUMP>0) std::cout << "-" << save_DUMP << " " << U::FormatLog() << " : aft _save_arrays [" << ( base ? base : "-" )  << "]\n" ;
+
 
     NP::WriteNames(base, INDEX, kk );
 
     NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX
 
+
+    if(_DUMP>0) std::cout << "-" << save_DUMP << " " << U::FormatLog() << " : bef _save_subfold_r [" << ( base ? base : "-" )  << "]\n" ;
+
     _save_subfold_r(base);
+
+    if(_DUMP>0) std::cout << "-" << save_DUMP << " " << U::FormatLog() << " : aft _save_subfold_r [" << ( base ? base : "-" )  << "]\n" ;
+
+
 
     bool with_meta = !meta.empty() ;
 
     if(with_meta) U::WriteString(base, META, meta.c_str() );
 
     NP::WriteNames_Simple(base, NAMES, names) ;
+
+
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : _save [" << ( base ? base : "-" )  << "]\n" ;
+
 
     return 0 ;
 }
@@ -2660,11 +2680,18 @@ NB NP::save will create the directory if it does not exist
 
 inline int NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames
 {
+    int _DUMP = U::GetEnvInt(save_DUMP, 0);
+    if(_DUMP>0) std::cout << "[" << save_DUMP << " " << U::FormatLog() << " : _save_arrays [" << ( base ? base : "-" )  << "]\n" ;
+
+
     int count = 0 ;
     for(unsigned i=0 ; i < kk.size() ; i++)
     {
         const char* k = kk[i].c_str() ;
         const NP* a = aa[i] ;
+
+        if(_DUMP>0) std::cout << "-" << save_DUMP << " " << U::FormatLog() << " : k [" << ( k ? k : "-" ) << " a [" << ( a ? a->sstr() : "-" ) << "]\n" ;
+
         if( a == nullptr )
         {
             if(VERBOSE) std::cerr
@@ -2682,6 +2709,9 @@ inline int NPFold::_save_arrays(const char* base) // using the keys with .npy ex
         }
     }
     // this motivated adding directory creation to NP::save
+
+    if(_DUMP>0) std::cout << "]" << save_DUMP << " " << U::FormatLog() << " : _save_arrays [" << ( base ? base : "-" )  << "]\n" ;
+
     return count ;
 }
 
