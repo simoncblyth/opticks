@@ -43,9 +43,12 @@ To try
 
 6. DONE : optixTraverse + optixReorder + optixInvoke
 7. DONE : optixir
-8. try S4MultiLayrStack.h with simple scomplex.h scomplex_select.h - to avoid heavy thrust/complex.h compiled into kernel
-9. try termination hint reordering
-
+8. DONE : S4MultiLayrStack.h with simple scomplex.h scomplex_select.h - to avoid heavy thrust/complex.h compiled into kernel
+9. DONE : try termination hint reordering
+10. DONE : resolved issue of 10s 1.2G hit.npy save times - by moving writes onto SSD /tmp not HDD /data1
+11. TODO : look at impact of varying bit layout
+12. try to use nsight tools to measure warp metrics, reread "Mitigating..."
+13. test on RTX 6000
 
 Overview
 ----------
@@ -63,8 +66,160 @@ Combined benefits of the below approaching a factor of 3 reduction in simulation
 3. switch to optixir
 
 
-Why is "save arrays" taking 10s ? That is download + saving
--------------------------------------------------------------
+
+Compare best WITH_SER with NOT:WITH_SER : 1.82x
+------------------------------------------------
+
+::
+
+    In [1]: 12.628433/23.035775
+    Out[1]: 0.5482096000677207
+
+    In [2]: 1/(12.628433/23.035775)
+    Out[2]: 1.8241198254763678
+
+
+
+
+sanity check NOT:WITH_SER
+--------------------------
+
+::
+
+    [lo] A[blyth@localhost CSGOptiX]$ cxs_min_ser.sh report | grep "simulate slice $"
+    ( 0)                     simulate slice 1793268148.223157 1793268170.389169          22166012                12                13         22.166012                    simulate slice 
+    ( 1)                     simulate slice 1793268171.485140 1793268193.934673          22449533                38                39         22.449533                    simulate slice 
+    ( 2)                     simulate slice 1793268195.039519 1793268217.718920          22679401                64                65         22.679401                    simulate slice 
+    ( 3)                     simulate slice 1793268218.812790 1793268241.877454          23064664                90                91         23.064664                    simulate slice 
+    ( 4)                     simulate slice 1793268242.969544 1793268266.272539          23302995               116               117         23.302995                    simulate slice 
+    ( 5)                     simulate slice 1793268267.371063 1793268290.611551          23240488               142               143         23.240488                    simulate slice 
+    ( 6)                     simulate slice 1793268291.699866 1793268314.925814          23225948               168               169         23.225948                    simulate slice 
+    ( 7)                     simulate slice 1793268316.010911 1793268339.045953          23035042               194               195         23.035042                    simulate slice 
+    ( 8)                     simulate slice 1793268340.147889 1793268363.183664          23035775               220               221         23.035775                    simulate slice 
+    ( 9)                     simulate slice 1793268364.266982 1793268387.366305          23099323               246               247         23.099323                    simulate slice 
+    (10)                     simulate slice 1793268388.453580 1793268411.532179          23078599               272               273         23.078599                    simulate slice 
+    (11)                     simulate slice 1793268412.623535 1793268435.695701          23072166               298               299         23.072166                    simulate slice 
+    (12)                     simulate slice 1793268436.772588 1793268459.919680          23147092               324               325         23.147092                    simulate slice 
+    (13)                     simulate slice 1793268461.000871 1793268484.057798          23056927               350               351         23.056927                    simulate slice 
+    (14)                     simulate slice 1793268485.160674 1793268508.478501          23317827               376               377         23.317827                    simulate slice 
+    (15)                     simulate slice 1793268509.560858 1793268532.691689          23130831               402               403         23.130831                    simulate slice 
+    (16)                     simulate slice 1793268533.754837 1793268556.898354          23143517               428               429         23.143517                    simulate slice 
+    [lo] A[blyth@localhost CSGOptiX]$ 
+
+
+
+cxs_min_ser.sh Release
+----------------------
+
+::
+
+       bool done = command == BREAK ;
+
+        if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
+        {
+            unsigned dn = done ? 0u : 1u ; 
+            unsigned m1 = ctx.s.index.x & 0x1f ;
+            unsigned m2 = ctx.s.index.y & 0x1f ;
+            unsigned f2 = ctx.p.flagidx_2bit() ; 
+            unsigned f4 = ctx.p.flagidx_4bit() ;
+            unsigned r2 = ctx.p.ir2<4>(900.0f) ;
+
+            switch(params.SER_hintMethod)
+            {
+                case  0: optixReorder()                                               ; break ;  // 14.312304
+                case  1: optixReorder(  dn                                 ,  1 )     ; break ;  // 13.589810
+                case  2: optixReorder(  f2                                 ,  2 )     ; break ;  // 13.267087
+                case  3: optixReorder(  ( dn << 2 ) | f2                   ,  3 )     ; break ;  // 13.444653
+                case  4: optixReorder(  f4                                 ,  4 )     ; break ;  // 13.437059
+                case  5: optixReorder(  ( dn << 4 ) | f4                   ,  5 )     ; break ;  // 13.404350
+
+                case  6: optixReorder(  m1                                 ,  5 )     ; break ;  // 14.005246
+                case  7: optixReorder(  m2                                 ,  5 )     ; break ;  // 13.641412
+
+                case  8: optixReorder( ( m2 << 2 ) | f2                    ,  7 )     ; break ;  // 12.850961 
+                case  9: optixReorder( ( m2 << 4 ) | f4                    ,  9 )     ; break ;  // 12.658098
+
+                case 10: optixReorder( ( r2 << 4 ) | f4                    ,  8 )     ; break ;  // 13.509211 
+                case 11: optixReorder( ( m2 << 4 ) | r2                    ,  9 )     ; break ;  // 13.742220
+
+                case 12: optixReorder( ( dn << 7 ) | ( m2 << 2 ) | f2      ,  8 )     ; break ;  // 12.801995
+                case 13: optixReorder( ( dn << 7 ) | ( f2 << 5 ) | m2      ,  8 )     ; break ;  // 12.744048
+
+                case 14: optixReorder( ( dn << 9 ) | ( m2 << 4 ) | f4      , 10 )     ; break ;  // 12.628433
+                case 15: optixReorder( ( dn << 9 ) | ( f4 << 5 ) | m2      , 10 )     ; break ;  // 12.633959
+
+                case 16:                                                              ; break ;  // 21.195825
+            }
+        }
+
+
+
+
+
+        [lo] A[blyth@localhost opticks]$ cxs_min_ser.sh report | grep "simulate slice $"
+        ( 0)                     simulate slice 1793269705.521660 1793269719.953723          14432063                12                13         14.432063                    simulate slice 
+        ( 1)                     simulate slice 1793269721.233192 1793269735.136011          13902819                38                39         13.902819                    simulate slice 
+        ( 2)                     simulate slice 1793269736.354053 1793269749.833198          13479145                64                65         13.479145                    simulate slice 
+        ( 3)                     simulate slice 1793269751.074203 1793269764.675591          13601388                90                91         13.601388                    simulate slice 
+        ( 4)                     simulate slice 1793269766.012738 1793269779.810964          13798226               116               117         13.798226                    simulate slice 
+        ( 5)                     simulate slice 1793269781.225251 1793269794.938912          13713661               142               143         13.713661                    simulate slice 
+        ( 6)                     simulate slice 1793269796.294529 1793269810.391225          14096696               168               169         14.096696                    simulate slice 
+        ( 7)                     simulate slice 1793269811.754998 1793269825.619299          13864301               194               195         13.864301                    simulate slice 
+        ( 8)                     simulate slice 1793269826.953359 1793269839.990940          13037581               220               221         13.037581                    simulate slice 
+        ( 9)                     simulate slice 1793269841.190911 1793269854.137304          12946393               246               247         12.946393                    simulate slice 
+        (10)                     simulate slice 1793269855.358768 1793269869.122315          13763547               272               273         13.763547                    simulate slice 
+        (11)                     simulate slice 1793269870.438429 1793269884.367572          13929143               298               299         13.929143                    simulate slice 
+        (12)                     simulate slice 1793269885.664580 1793269898.567530          12902950               324               325         12.902950                    simulate slice 
+        (13)                     simulate slice 1793269899.740069 1793269912.947997          13207928               350               351         13.207928                    simulate slice 
+        (14)                     simulate slice 1793269914.346973 1793269927.111920          12764947               376               377         12.764947                    simulate slice 
+        (15)                     simulate slice 1793269928.258943 1793269941.117037          12858094               402               403         12.858094                    simulate slice 
+        (16)                     simulate slice 1793269942.237185 1793269963.526634          21289449               428               429         21.289449                    simulate slice 
+        [lo] A[blyth@localhost opticks]$ 
+
+
+        [lo] A[blyth@localhost CSGOptiX]$ cxs_min_ser.sh report | grep "simulate slice $"
+        ( 0)                     simulate slice 1793266753.541499 1793266767.853803          14312304                12                13         14.312304                    simulate slice 
+        ( 1)                     simulate slice 1793266769.009203 1793266782.599013          13589810                38                39         13.589810                    simulate slice 
+        ( 2)                     simulate slice 1793266783.691114 1793266796.958201          13267087                64                65         13.267087                    simulate slice 
+        ( 3)                     simulate slice 1793266798.060141 1793266811.504794          13444653                90                91         13.444653                    simulate slice 
+        ( 4)                     simulate slice 1793266812.595688 1793266826.032747          13437059               116               117         13.437059                    simulate slice 
+        ( 5)                     simulate slice 1793266827.209072 1793266840.613422          13404350               142               143         13.404350                    simulate slice 
+        ( 6)                     simulate slice 1793266841.770302 1793266855.775548          14005246               168               169         14.005246                    simulate slice 
+        ( 7)                     simulate slice 1793266857.043279 1793266870.684691          13641412               194               195         13.641412                    simulate slice 
+        ( 8)                     simulate slice 1793266871.809569 1793266884.660530          12850961               220               221         12.850961                    simulate slice 
+        ( 9)                     simulate slice 1793266885.757039 1793266898.415137          12658098               246               247         12.658098                    simulate slice 
+        (10)                     simulate slice 1793266899.603172 1793266913.112383          13509211               272               273         13.509211                    simulate slice 
+        (11)                     simulate slice 1793266914.274086 1793266928.016306          13742220               298               299         13.742220                    simulate slice 
+        (12)                     simulate slice 1793266929.137587 1793266941.939582          12801995               324               325         12.801995                    simulate slice 
+        (13)                     simulate slice 1793266942.998122 1793266955.742170          12744048               350               351         12.744048                    simulate slice 
+        (14)                     simulate slice 1793266956.800013 1793266969.428446          12628433               376               377         12.628433                    simulate slice 
+        (15)                     simulate slice 1793266970.482423 1793266983.116382          12633959               402               403         12.633959                    simulate slice 
+        (16)                     simulate slice 1793266983.854131 1793267005.049956          21195825               428               429         21.195825                    simulate slice 
+        [lo] A[blyth@localhost CSGOptiX]$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FIXED : Why is "save arrays" taking 10s ? That is download + saving
+------------------------------------------------------------------------
 
 sreport.h::
 

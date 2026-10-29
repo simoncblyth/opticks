@@ -2527,7 +2527,7 @@ inline int NPFold::save(const char* base_)  // not const as calls _save
 inline int NPFold::save_verbose(const char* base_)  // not const as calls _save
 {
     const char* base = U::Resolve(base_);
-    std::cerr
+    std::cout
         << "NPFold::save(\"" << ( base_ ? base_ : "-" ) << "\")"
         << " : "
         << "[" << ( base ? base : "ERR-FAILED-TO-RESOLVE-TOKENS" ) << "]"

@@ -191,10 +191,20 @@ tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
 export EVT=${EVT:-A000}
 export BASE=$TMP/GEOM/$GEOM
+
+
+
 export BINBASE=$BASE/$bin
 export SCRIPT=$(basename $BASH_SOURCE)
-
 vars="$vars TMP EVT BASE BINBASE SCRIPT"
+
+prm=/data1/$USER/opticks
+export PRM=${PRM:-$prm}   ## define PRM to something more
+export PERM=$PRM/GEOM/$GEOM
+export BINPERM=$PERM/$bin
+vars="$vars TMP prm PRM PERM BINPERM"
+
+
 
 vars="$vars ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM"
 
@@ -286,6 +296,10 @@ vars="$vars alt_TEST alt_opticks_event_reldir"
 
 
 export LOGDIR=$BINBASE/$opticks_event_reldir
+export LOGPRM=$BINPERM/$opticks_event_reldir
+vars="$vars LOGPRM"
+
+
 export AFOLD=$BINBASE/$opticks_event_reldir/$EVT
 export STEM=${opticks_event_reldir}_${PLOT}
 
@@ -469,14 +483,14 @@ elif [ "$TEST" == "medium_evt" ]; then
    opticks_num_genstep=10
    opticks_max_slot=M100  ## avoid creating big buffer
    opticks_max_bounce=63
-
+   opticks_ser="hintMethod:15,coherenceHintBits:-1,bounceInterval:1"
 
 elif [ "$TEST" == "ser_medium_scan" ]; then
 
 
    ser_path=/tmp/$USER/opticks/$name/SER.txt
    mkdir -p $(dirname $ser_path)
-   export OPTICKS_SER=filepath:$ser_path
+   opticks_ser=filepath:$ser_path
    cat << EOS > $ser_path
 hintMethod:0,coherenceHintBits:-1,bounceInterval:1
 hintMethod:1,coherenceHintBits:-1,bounceInterval:1
@@ -491,6 +505,10 @@ hintMethod:9,coherenceHintBits:-1,bounceInterval:1
 hintMethod:10,coherenceHintBits:-1,bounceInterval:1
 hintMethod:11,coherenceHintBits:-1,bounceInterval:1
 hintMethod:12,coherenceHintBits:-1,bounceInterval:1
+hintMethod:13,coherenceHintBits:-1,bounceInterval:1
+hintMethod:14,coherenceHintBits:-1,bounceInterval:1
+hintMethod:15,coherenceHintBits:-1,bounceInterval:1
+hintMethod:16,coherenceHintBits:-1,bounceInterval:1
 EOS
    ## with current kernel only bounceInterval does anything
 
@@ -688,6 +706,7 @@ opticks_hit_mask=EC
 export OPTICKS_HIT_MASK=${OPTICKS_HIT_MASK:-$opticks_hit_mask}
 vars="$vars OPTICKS_HIT_MASK"
 
+export OPTICKS_SER=${OPTICKS_SER:-$opticks_ser}
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep}
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}
@@ -938,8 +957,9 @@ fi
 
 if [ "${arg/report}" != "$arg" ]; then
    echo $BASH_SOURCE - $arg - RUNNING FROM LOGDIR $LOGDIR - PWD $PWD
-   sreport   ## NB running from LOGDIR
+   sreport 2>&1 | tee -a "$LOGFILE"
    [ $? -ne 0 ] && echo $BASH_SOURCE report error && exit 1
+   echo $BASH_SOURCE - sreport output was appended to LOGDIR/LOGFILE $LOGDIR/$LOGFILE
 fi
 
 if [ "${arg/loport}" != "$arg" ]; then
@@ -954,6 +974,17 @@ if [ "${arg/archive}" != "$arg" ]; then
    ( cd ${LOGDIR}_sreport ; SREPORT_ARCHIVE_DIR=$archive sreport )  ## NB running from ${LOGDIR}_sreport
    [ $? -ne 0 ] && echo $BASH_SOURCE archive error && exit 1
 fi
+
+if [ "${arg/preserve}" != "$arg" ]; then
+   if [ "$LOGDIR" == "$LOGPRM" ]; then
+       echo $BASH_SOURCE - SKIP preserve AS LOGDIR AND LOGPRM ARE THE SAME - $LOGDIR
+   else
+       mkdir -p "$LOGPRM"
+       rsync -avh --progress "$LOGDIR/" "$LOGPRM/"
+       [ $? -ne 0 ] && echo $BASH_SOURCE preserve error && exit 1
+   fi
+fi
+
 
 
 if [ "${arg/usage}" != "$arg" ]; then
