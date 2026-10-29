@@ -106,6 +106,8 @@ set(SOURCES
     ShimG4OpRayleigh.cc
     Local_G4Cerenkov_modified.cc
     Local_DsG4Scintillation.cc
+    Local_DsG4ScintSimple.cc
+    Local_DsG4OpAbsReemit.cc
 
     U4Physics.cc
 )
@@ -179,6 +181,9 @@ set(HEADERS
 
     Local_G4Cerenkov_modified.hh
     Local_DsG4Scintillation.hh
+    Local_DsG4ScintSimple.h
+    Local_DsG4OpAbsReemit.h
+    Local_DsOpticalModelHelper.hh
     U4Physics.hh
 
     U4PMTAccessor.h

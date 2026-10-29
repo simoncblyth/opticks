@@ -110,6 +110,18 @@ struct U4_API U4
          G4double ScintillationTime
     ); 
 
+    // DsG4ScintSimple: three-species (LAB/PPO/bisMSB) LS scintillation genstep collection
+    // one genstep per emitting component, four components (scnt 0..3) per step
+    static const char* CollectGenstep_DsG4ScintSimple_DISABLE ; 
+    static const char* CollectGenstep_DsG4ScintSimple_ZEROPHO ; 
+    static void CollectGenstep_DsG4ScintSimple( 
+         const G4Track* aTrack,
+         const G4Step* aStep,
+         G4int    numPhotons,
+         G4int    scnt,        
+         G4double ScintillationTime
+    ); 
+
     static const char* CollectGenstep_G4Cerenkov_modified_DISABLE ; 
     static const char* CollectGenstep_G4Cerenkov_modified_ZEROPHO ; 
     static void CollectGenstep_G4Cerenkov_modified( 

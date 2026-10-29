@@ -15,6 +15,7 @@ Boundary class changes need to match in all the below::
 #include <iomanip>
 #include "ssys.h"
 #include "sstr.h"
+#include "SEventConfig.hh"
 #include "U4Physics.hh"
 #include "U4OpBoundaryProcess.h"
 #include "G4ProcessManager.hh"
@@ -43,6 +44,10 @@ U4Physics::U4Physics()
     :
     fCerenkov(nullptr),
     fScintillation(nullptr),
+    fScintSimple(nullptr),
+    fOpAbsReemit_PPO(nullptr),
+    fOpAbsReemit_bisMSB(nullptr),
+    fOpAbsReemit_Solvent(nullptr),
     fAbsorption(nullptr),
     fRayleigh(nullptr),
     fBoundary(nullptr),
@@ -55,6 +60,7 @@ U4Physics::U4Physics()
     OpBoundaryProcess_DISABLE = EInt(_OpBoundaryProcess_DISABLE, "0") ;
     OpBoundaryProcess_LASTPOST = EInt(_OpBoundaryProcess_LASTPOST, "0") ;
     FastSim_ENABLE = EInt(_FastSim_ENABLE, "0") ;
+    UseScintThree = EInt(_UseScintThree, "0") ;
 }
 
 
@@ -164,6 +170,8 @@ void U4Physics::ConstructEM()
 
 #include "Local_G4Cerenkov_modified.hh"
 #include "Local_DsG4Scintillation.hh"
+#include "Local_DsG4ScintSimple.h"
+#include "Local_DsG4OpAbsReemit.h"
 
 #include "ShimG4OpAbsorption.hh"
 #include "ShimG4OpRayleigh.hh"
@@ -181,6 +189,7 @@ std::string U4Physics::desc() const
         << std::setw(60) << _OpBoundaryProcess_DISABLE  << " : " << OpBoundaryProcess_DISABLE << "\n"
         << std::setw(60) << _OpBoundaryProcess_LASTPOST << " : " << OpBoundaryProcess_LASTPOST << "\n"
         << std::setw(60) << _FastSim_ENABLE             << " : " << FastSim_ENABLE << "\n"
+        << std::setw(60) << _UseScintThree              << " : " << UseScintThree << "\n"
         ;
     std::string str = ss.str();
     return str ;
@@ -267,6 +276,8 @@ void U4Physics::ConstructOp()
 {
     LOG(info) << desc() ;
 
+    const int opticksMode = SEventConfig::IntegrationMode() ;
+
     if(Cerenkov_DISABLE == 0)
     {
         fCerenkov = new Local_G4Cerenkov_modified ;
@@ -278,8 +289,17 @@ void U4Physics::ConstructOp()
 
     if(Scintillation_DISABLE == 0)
     {
-        fScintillation = new Local_DsG4Scintillation(EInt("Local_DsG4Scintillation_opticksMode","0")) ;
-        fScintillation->SetTrackSecondariesFirst(true);
+        if(UseScintThree == 1)
+        {
+            fScintSimple = new Local_DsG4ScintSimple("Scintillation", fElectromagnetic);
+            fScintSimple->SetOpticksMode(opticksMode);
+            fScintSimple->SetTrackSecondariesFirst(true);
+        }
+        else
+        {
+            fScintillation = new Local_DsG4Scintillation(EInt("Local_DsG4Scintillation_opticksMode","0")) ;
+            fScintillation->SetTrackSecondariesFirst(true);
+        }
     }
 
     if(FastSim_ENABLE == 1 )
@@ -289,11 +309,24 @@ void U4Physics::ConstructOp()
 
     if(OpAbsorption_DISABLE == 0)
     {
+        if(UseScintThree == 1)
+        {
+            fOpAbsReemit_PPO = new Local_DsG4OpAbsReemit(Local_DsG4OpAbsReemit::ReemitComponent::kPPO, "OpAbsReemit_PPO");
+            fOpAbsReemit_bisMSB = new Local_DsG4OpAbsReemit(Local_DsG4OpAbsReemit::ReemitComponent::kbisMSB, "OpAbsReemit_bisMSB");
+            fOpAbsReemit_Solvent = new Local_DsG4OpAbsReemit(Local_DsG4OpAbsReemit::ReemitComponent::kSolvent, "OpAbsorption");
+
+            fOpAbsReemit_PPO->SetOpticksMode(opticksMode);
+            fOpAbsReemit_bisMSB->SetOpticksMode(opticksMode);
+            fOpAbsReemit_Solvent->SetOpticksMode(opticksMode);
+        }
+        else
+        {
 #ifdef DEBUG_TAG
-        fAbsorption = new ShimG4OpAbsorption();
+            fAbsorption = new ShimG4OpAbsorption();
 #else
-        fAbsorption = new G4OpAbsorption();
+            fAbsorption = new G4OpAbsorption();
 #endif
+        }
     }
 
     if(OpRayleigh_DISABLE == 0)
@@ -334,6 +367,13 @@ void U4Physics::ConstructOp()
             pmanager->SetProcessOrderingToLast(fScintillation, idxPostStep);
         }
 
+        if ( fScintSimple && fScintSimple->IsApplicable(*particle) && particleName != "opticalphoton")
+        {
+            pmanager->AddProcess(fScintSimple);
+            pmanager->SetProcessOrderingToLast(fScintSimple, idxAtRest);
+            pmanager->SetProcessOrderingToLast(fScintSimple, idxPostStep);
+        }
+
         if (particleName == "opticalphoton")
         {
             ConstructOp_opticalphoton(pmanager, particleName);
@@ -358,16 +398,31 @@ void U4Physics::ConstructOp_opticalphoton(G4ProcessManager* pmanager, const G4St
 {
     assert( particleName == "opticalphoton" );
 
-    if(fScintillation)
+    if(UseScintThree == 1)
     {
-        pmanager->AddProcess(fScintillation);
-        pmanager->SetProcessOrderingToLast(fScintillation, idxAtRest);
-        pmanager->SetProcessOrderingToLast(fScintillation, idxPostStep);
+        // Three-species (New Optical Model) route:
+        // DsG4ScintSimple rejects photons so no scintillation registered here.
+        // Order mirrors junosw DsPhysConsOptical: PPO -> bisMSB -> Solvent -> Rayleigh -> Boundary -> FastSim
+        if(fOpAbsReemit_PPO)       pmanager->AddDiscreteProcess(fOpAbsReemit_PPO);
+        if(fOpAbsReemit_bisMSB)    pmanager->AddDiscreteProcess(fOpAbsReemit_bisMSB);
+        if(fOpAbsReemit_Solvent)   pmanager->AddDiscreteProcess(fOpAbsReemit_Solvent);
+        if(fRayleigh)              pmanager->AddDiscreteProcess(fRayleigh);
+        if(fBoundary)              pmanager->AddDiscreteProcess(fBoundary);
+        if(fFastSim)               pmanager->AddDiscreteProcess(fFastSim);
     }
-    if(fAbsorption)    pmanager->AddDiscreteProcess(fAbsorption);
-    if(fRayleigh)      pmanager->AddDiscreteProcess(fRayleigh);
-    if(fBoundary)      pmanager->AddDiscreteProcess(fBoundary);
-    if(fFastSim)       pmanager->AddDiscreteProcess(fFastSim);
+    else
+    {
+        if(fScintillation)
+        {
+            pmanager->AddProcess(fScintillation);
+            pmanager->SetProcessOrderingToLast(fScintillation, idxAtRest);
+            pmanager->SetProcessOrderingToLast(fScintillation, idxPostStep);
+        }
+        if(fAbsorption)    pmanager->AddDiscreteProcess(fAbsorption);
+        if(fRayleigh)      pmanager->AddDiscreteProcess(fRayleigh);
+        if(fBoundary)      pmanager->AddDiscreteProcess(fBoundary);
+        if(fFastSim)       pmanager->AddDiscreteProcess(fFastSim);
+    }
 }
 
 

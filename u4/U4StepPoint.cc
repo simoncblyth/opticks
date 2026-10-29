@@ -114,7 +114,8 @@ unsigned U4StepPoint::ProcessDefinedStepType(const char* name) // static
     if(strcmp(name, NoProc_) == 0 )         type = U4StepPoint_NoProc ;
     if(strcmp(name, Transportation_) == 0 ) type = U4StepPoint_Transportation ;
     if(strcmp(name, OpRayleigh_) == 0)      type = U4StepPoint_OpRayleigh ;
-    if(strcmp(name, OpAbsorption_) == 0)    type = U4StepPoint_OpAbsorption ;
+    if(strcmp(name, OpAbsorption_) == 0 ||
+       strcmp(name, OpAbsReemit_PPO_) == 0 || strcmp(name, OpAbsReemit_bisMSB_) == 0) type = U4StepPoint_OpAbsorption ;
     if(strcmp(name, OpFastSim_) == 0)       type = U4StepPoint_OpFastSim ;
     if(strcmp(name, OTHER_) == 0)           type = U4StepPoint_OTHER ;
     return type ;

@@ -35,6 +35,7 @@ Boundary class changes need to match in all the below::
 
 #include "G4LogicalBorderSurface.hh"
 #include "G4Event.hh"
+#include "G4VProcess.hh"
 
 #include "U4Recorder.hh"
 #include "U4Engine.h"
@@ -44,6 +45,10 @@ Boundary class changes need to match in all the below::
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
+
+#include "Local_DsOpticalModelHelper.hh"    // three-species micro-process tags
+#include "Local_DsG4OpAbsReemit.h"          // three-species AbsRe process class (identity check)
+#include "sspecies.h"                       // species tags: SPECIES_DEFAULT/PPO/BISMSB/SOLVENT
 
 #include "U4UniformRand.h"
 NP* U4UniformRand::UU = nullptr ; // HMM: misplaced n InstrumentedG4OpBoundaryProcess
@@ -459,6 +464,36 @@ HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
 
 **/
 
+// three-species LS model: species tag (sspecies.h: PPO/BISMSB/SOLVENT)
+//
+// SpeciesFromTrack
+//    maps the micro-process tag stamped on generated secondaries at creation
+//    (DsOpticalModelHelper::SetModelTag: Local_DsG4ScintSimple and
+//    Local_DsG4OpAbsReemit) into the species of the photon state.
+//
+// SpeciesFromAbsReProcess
+//    maps the triggered absorption/reemission process into the species of the
+//    absorbing component.
+static unsigned SpeciesFromTrack(const G4Track* track)
+{
+    const G4String mp = DsOpticalModelHelper::GetMicroProcessName(track);
+    if( mp == "Scint_PPO_Fast"      || mp == "Scint_PPO_Slow"
+     || mp == "AbsRe_LAB_NR_PPO"    || mp == "AbsRe_PPO"      ) return PPO ;
+    if( mp == "Scint_Bis_Fast"      || mp == "Scint_Bis_Slow"
+     || mp == "AbsRe_LAB_NR_bisMSB" || mp == "AbsRe_bisMSB"   ) return BISMSB ;
+    return SPECIES_DEFAULT ;
+}
+static unsigned SpeciesFromAbsReProcess(const G4VProcess* process)
+{
+    if( process == nullptr ) return SPECIES_DEFAULT ;
+    if( dynamic_cast<const Local_DsG4OpAbsReemit*>(process) == nullptr ) return SPECIES_DEFAULT ;
+    const G4String pn = process->GetProcessName() ;
+    if( pn == U4StepPoint::OpAbsReemit_PPO_    ) return PPO ;
+    if( pn == U4StepPoint::OpAbsReemit_bisMSB_ ) return BISMSB ;
+    if( pn == U4StepPoint::OpAbsorption_       ) return SOLVENT ;
+    return SPECIES_DEFAULT ;
+}
+
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     spho ulabel = {} ;
@@ -535,6 +570,12 @@ void U4Recorder::PreUserTrackingAction_Optical_(const G4Track* track, int* label
             sev->rjoin_resumePhoton(ulabel);
         }
     }
+
+    // three-species: stamp species from the generating micro-process
+    // (untagged -> SPECIES_DEFAULT -> leave species untouched)
+    const unsigned species = SpeciesFromTrack(track);
+    if( species != SPECIES_DEFAULT ) sev->current_ctx.p.set_species(species);
+
     LOG(LEVEL) << "]" ;
     //std::cout << "] U4Recorder::PreUserTrackingAction_Optical " << std::endl ;
 }
@@ -1238,6 +1279,14 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, ulabel.id );
 #endif
 
+        // three-species: absorption marks the absorbing component;
+        // when reemission succeeds the secondary track start stamps the emitted
+        // species (overwriting here) and rjoin later rewrites the slot AB->RE
+        if( flag == BULK_ABSORB )
+        {
+            const unsigned abs_species = SpeciesFromAbsReProcess( post->GetProcessDefinedStep() );
+            if( abs_species != SPECIES_DEFAULT ) current_photon.set_species( abs_species );
+        }
 
         sev->pointPhoton(ulabel);     // save SEvt::current_photon/rec/seq/prd into sevent
     }

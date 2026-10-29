@@ -28,6 +28,10 @@ struct U4_API U4StepPoint
     static constexpr const char* Transportation_ = "Transportation" ; 
     static constexpr const char* OpRayleigh_     = "OpRayleigh" ; 
     static constexpr const char* OpAbsorption_   = "OpAbsorption" ; 
+    // OpAbsReemit_* (three-species AbsReemit) will be recorded as Absorption: the absorbing photon is killed.
+    static constexpr const char* OpAbsReemit_PPO_    = "OpAbsReemit_PPO" ; 
+    static constexpr const char* OpAbsReemit_bisMSB_ = "OpAbsReemit_bisMSB" ; 
+
     static constexpr const char* OTHER_          = "OTHER" ; 
     static           const char* OpFastSim_ ;  // default "fast_sim_man" configurable by envvar U4StepPoint_OpFastSim 
 

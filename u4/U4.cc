@@ -79,7 +79,28 @@ Using hidden static non-member functions allows keeping Opticks types like quad6
 
 **/
 
-static quad6 MakeGenstep_DsG4Scintillation_r4695(
+/**
+MakeGenstep_DsG4Scint
+----------------------
+
+Shared sscint quad6 genstep builder used by both scintillation genstep
+collections, distinguishing the genstep type via ScintGentype::
+
+    OpticksGenstep_DsG4Scintillation_r4695   DsG4Scintillation
+
+    OpticksGenstep_DsG4ScintSimple           three-species (LAB/PPO/bisMSB)
+                                             DsG4ScintSimple, scnt 0..3::
+
+                                                0 = PPO_Fast, 1 = PPO_Slow
+                                                2 = Bis_Fast, 3 = Bis_Slow
+
+In both cases scnt is the emitting-component index and ScintillationTime
+holds the time constant of that component.
+
+**/
+
+static quad6 MakeGenstep_DsG4Scint(
+     int      ScintGentype,    // OpticksGenstep_* genstep type code: OpticksGenstep_DsG4Scintillation_r4695 or OpticksGenstep_DsG4ScintSimple
      const G4Track* aTrack,
      const G4Step* aStep,
      G4int    numPhotons,
@@ -103,7 +124,7 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
 
     sscint* gs = (sscint*)(&_gs) ;   // warning: dereferencing type-punned pointer will break strict-aliasing rules
 
-    gs->gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
+    gs->gentype = ScintGentype ;
     gs->trackid = aTrack->GetTrackID() ;
     gs->matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
     gs->numphoton = numPhotons ;
@@ -177,7 +198,7 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
 
 
 
-    quad6 gs_ = MakeGenstep_DsG4Scintillation_r4695( aTrack, aStep, numPhotons, scnt, ScintillationTime);
+    quad6 gs_ = MakeGenstep_DsG4Scint(OpticksGenstep_DsG4Scintillation_r4695, aTrack, aStep, numPhotons, scnt, ScintillationTime);
 
 #ifdef WITH_CUSTOM4
     sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label
@@ -188,6 +209,62 @@ void U4::CollectGenstep_DsG4Scintillation_r4695(
     // gs is private static genstep label
 
     //if(dump) std::cout << "U4::CollectGenstep_DsG4Scintillation_r4695 " << gs.desc() << std::endl ;
+    LOG(LEVEL) << gs.desc();
+}
+
+
+const char* U4::CollectGenstep_DsG4ScintSimple_DISABLE = "U4__CollectGenstep_DsG4ScintSimple_DISABLE" ;
+const char* U4::CollectGenstep_DsG4ScintSimple_ZEROPHO = "U4__CollectGenstep_DsG4ScintSimple_ZEROPHO" ;
+
+
+/**
+
+U4::CollectGenstep_DsG4ScintSimple
+-----------------------------------
+
+Three-species LS scintillation genstep collection.
+One genstep per emitting component, four components (scnt 0..3) per step, called from the
+Local_DsG4ScintSimple PostStepDoIt prior to the per-component
+photon generation loop.
+
+1. makes quad6 gs_ collecting parameters needed to generate photons on GPU
+2. adds gs_ to SEvt using SEvt::AddGenstep which collects into vectors of
+   quad6 for each SEvt instance. For standard GPU running there is one GPU
+   instance, for GPU CPU comparison running there will be two SEvt instances.
+
+**/
+
+void U4::CollectGenstep_DsG4ScintSimple(
+         const G4Track* aTrack,
+         const G4Step* aStep,
+         G4int    numPhotons,
+         G4int    scnt,
+         G4double ScintillationTime
+    )
+{
+    if(getenv(CollectGenstep_DsG4ScintSimple_DISABLE))
+    {
+        LOG(error) << CollectGenstep_DsG4ScintSimple_DISABLE ;
+        return ;
+    }
+    if(getenv(CollectGenstep_DsG4ScintSimple_ZEROPHO))
+    {
+        LOG(error) << CollectGenstep_DsG4ScintSimple_ZEROPHO ;
+        numPhotons = 0 ;
+    }
+
+    quad6 gs_ = MakeGenstep_DsG4Scint(OpticksGenstep_DsG4ScintSimple, aTrack, aStep, numPhotons, scnt, ScintillationTime);
+
+#ifdef WITH_CUSTOM4
+    sgs _gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label
+    gs = C4GS::Make(_gs.index, _gs.photons, _gs.offset, _gs.gentype );
+#else
+    gs = SEvt::AddGenstep(gs_);    // returns sgs struct which is a simple 4 int label
+#endif
+    // gs is private static genstep label
+    // TODO: third copy of this AddGenstep/gs block (also in the Cerenkov and
+    // r4695 collect functions)
+
     LOG(LEVEL) << gs.desc();
 }
 
