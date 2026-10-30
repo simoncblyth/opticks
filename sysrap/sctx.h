@@ -51,12 +51,12 @@ q2.i.w : st
 
 #define WITH_SUP 1
 
-struct sevent ;
 struct quad2 ;
 struct sphoton ;
 struct sstate ;
 
 #ifndef PRODUCTION
+struct sevent ;
 struct srec ;
 struct sseq ;
 struct stagr ;
@@ -66,9 +66,8 @@ struct quad6 ;
 
 struct sctx
 {
-    sevent* evt ;
     const quad2* prd ;
-    unsigned idx ;    // local launch index : always zero based
+    unsigned idx ;              // local launch index : always zero based
     unsigned long long pidx ;   // absolute photon index : offset from zero for launches other than first
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
@@ -96,9 +95,9 @@ struct sctx
 #endif
 
 #ifndef PRODUCTION
-    SCTX_METHOD void point(int bounce);
-    SCTX_METHOD void trace(int bounce);
-    SCTX_METHOD void end();
+    SCTX_METHOD void point(sevent* evt, int bounce);
+    SCTX_METHOD void trace(sevent* evt, int bounce);
+    SCTX_METHOD void end(sevent* evt);
 #endif
 };
 
@@ -131,7 +130,7 @@ input bbox within target frame into a global frame bbox and use that ?
 
 **/
 
-SCTX_METHOD void sctx::point(int bounce)
+SCTX_METHOD void sctx::point(sevent* evt, int bounce)
 {
     if(evt->record && bounce < evt->max_record) evt->record[evt->max_record*idx+bounce] = p ;
     if(evt->rec    && bounce < evt->max_rec)    evt->add_rec( rec, idx, bounce, p );    // this copies into evt->rec array
@@ -151,7 +150,7 @@ The *prd* corresponds to the arrows (and trace) that gets between the points, eg
 
 **/
 
-SCTX_METHOD void sctx::trace(int bounce)
+SCTX_METHOD void sctx::trace(sevent* evt, int bounce)
 {
     if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ;
 }
@@ -171,7 +170,7 @@ A: unsure, currently thats done in SEvt::finalPhoton
 
 **/
 
-SCTX_METHOD void sctx::end()
+SCTX_METHOD void sctx::end(sevent* evt)
 {
     if(evt->seq)  evt->seq[idx] = seq ;
 #ifdef WITH_SUP

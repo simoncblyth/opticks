@@ -2919,7 +2919,7 @@ void SEvt::beginPhoton(const spho& label)
 #endif
 
     ctx.idx = idx ;
-    ctx.evt = evt ;
+    //ctx.evt = evt ;
     ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt
 
     ctx.p.index = idx ;

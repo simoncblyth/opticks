@@ -518,12 +518,12 @@ in cases where these things happen within close to surfaces.
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd, uint32_t prd_p0, uint32_t prd_p1 )
 {
-    sevent* evt = params.evt ;
-    if (launch_idx.x >= evt->num_seed) return;   // was evt->num_photon
+    //sevent* evt = params.evt ;
+    if (launch_idx.x >= params.evt->num_seed) return;
 
     unsigned idx = launch_idx.x ;
-    unsigned genstep_idx = evt->seed[idx] ;
-    const quad6& gs = evt->genstep[genstep_idx] ;
+    unsigned genstep_idx = params.evt->seed[idx] ;
+    const quad6& gs = params.evt->genstep[genstep_idx] ;
     // genstep needs the raw index, from zero for each genstep slice sub-launch
 
     unsigned long long photon_idx = params.photon_slot_offset + idx ;
@@ -544,7 +544,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
 
     sctx ctx = {} ;
-    ctx.evt = evt ;   // sevent.h
+    //ctx.evt = evt ;   // sevent.h
     ctx.prd = prd ;   // squad.h quad2
 
     ctx.idx = idx ;
@@ -559,14 +559,14 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     int command = START ;
     int bounce = 0 ;
 #ifndef PRODUCTION
-    ctx.point(bounce);
+    ctx.point(params.evt, bounce);
 #endif
 
 #ifdef WITH_KERNEL_PROFILE
     unsigned long long t0, t1, t2 ;
 #endif
 
-    while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
+    while( bounce < params.evt->max_bounce && ctx.p.time < params.max_time )
     {
 
 #ifdef WITH_KERNEL_PROFILE
@@ -590,19 +590,19 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
 
 #ifndef PRODUCTION
-        ctx.trace(bounce);
+        ctx.trace(params.evt, bounce);
 #endif
         command = sim->propagate(bounce, rng, ctx);
 
 
 #ifdef WITH_KERNEL_PROFILE
-        if(profile && evt->profile )
+        if(profile && params.evt->profile )
         {
             t2 = clock64();
             // Atomically accumulate cycles for this bounce index
-            atomicAdd(&evt->profile->trace_cycles[bounce],      (unsigned long long)(t1 - t0));
-            atomicAdd(&evt->profile->propagate_cycles[bounce],  (unsigned long long)(t2 - t1));
-            atomicAdd(&evt->profile->active_counts[bounce], 1);
+            atomicAdd(&params.evt->profile->trace_cycles[bounce],      (unsigned long long)(t1 - t0));
+            atomicAdd(&params.evt->profile->propagate_cycles[bounce],  (unsigned long long)(t2 - t1));
+            atomicAdd(&params.evt->profile->active_counts[bounce], 1);
         }
 #endif
 
@@ -645,26 +645,26 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
         bounce++;
 #ifndef PRODUCTION
-        ctx.point(bounce) ;
+        ctx.point(params.evt, bounce) ;
 #endif
         if(done) break ;
     }
 #ifndef PRODUCTION
-    ctx.end();  // write seq, tag, flat
+    ctx.end(params.evt);  // write seq, tag, flat
 #endif
 
 
-    if( evt->photon )
+    if( params.evt->photon )
     {
-        evt->photon[idx] = ctx.p ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
+        params.evt->photon[idx] = ctx.p ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
     }
 
-    if( evt->photonlite )
+    if( params.evt->photonlite )
     {
         sphotonlite l ;
         l.init( ctx.p.identity, ctx.p.time, ctx.p.flagmask );
         l.set_lpos(prd->lposcost(), prd->lposfphi() );
-        evt->photonlite[idx] = l ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
+        params.evt->photonlite[idx] = l ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
     }
 
 

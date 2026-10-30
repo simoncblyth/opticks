@@ -2139,7 +2139,7 @@ inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* mock_prd,
 
     sctx ctx = {} ;
     ctx.p = p ;     // Q: Why is this different from CSGOptiX7.cu:simulate ? A: Presumably due to input photon.
-    ctx.evt = evt ;
+    //ctx.evt = evt ;
     ctx.pidx = idx ;
 
     int command = START ;
