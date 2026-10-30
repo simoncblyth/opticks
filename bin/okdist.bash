@@ -429,12 +429,22 @@ okdist-stale--(){
    okdist-scp-with-hash "$(okdist-path)" "testing" "O"
 }
 
+#okdist-required-buildtype(){ echo Debug ; }
+okdist-required-buildtype(){ echo Release ; }
+
 okdist--(){
 
    if ! ( om- ; om-cmake-prefix-path-check ) ; then
        echo "$BASH_SOURCE : ABORT AS om-cmake-prefix-path-check SHOWS THAT CMAKE_PREFIX_PATH CONTAINS NON-DISTRIBUTABLE PATHS"
        return 1
    fi
+
+   local required_buildtype=$(okdist-required-buildtype)
+   if ! ( opticks-buildtype-is $required_buildtype ); then
+       echo "$BASH_SOURCE : ABORT AS opticks-buildtype '$(opticks-buildtype)' IS NOT required_buildtype '$required_buildtype' "
+       return 1
+   fi
+
 
    local tdel=$(okdist-stamp-delta)
 
@@ -445,7 +455,6 @@ okdist--(){
        okdist-stamp
        return 1
    fi
-
 
    okdist-install-update
    okdist-install-extras

@@ -101,6 +101,9 @@ Checking the merged PR
 1. check it builds : oo
 2. run tests : opticks-t
 
+* if differnces between Release and Debug builds
+  are likely (eg when changing the optix kernel)
+  do checks for both configs
 
 
 Proceed to merge
@@ -167,8 +170,7 @@ Check again the build and tests
 ::
 
     oo
-
-
+    opticks-t
 
 
 

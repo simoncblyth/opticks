@@ -1409,6 +1409,17 @@ opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
 opticks-config(){          echo ${OPTICKS_CONFIG:-Debug}  ; }
 
+opticks-buildtype-is()
+{
+    local buildtype="${1:-Release}"
+    if [ $(opticks-buildtype) == "$buildtype" ]; then
+       return 0
+    else
+       return 1
+    fi
+}
+
+
 
 opticks-config-notes(){ cat << EON
 
@@ -2885,7 +2896,7 @@ opticks-setup-geant4-(){ cat << EOS
 ## FINDING PREFIX TAKES ALMOST 10 SECONDS WITH LARGE CMAKE_PREFIX_PATH
 ## SO AVOID DOING THAT WHEN DETECT GEANT4 ENV ALREADY SETUP
 
-echo "[ $FUNCNAME "
+#echo "[ $FUNCNAME "
 
 if [ -n "\${G4LEDATA:-}" ]; then
 
@@ -2911,7 +2922,7 @@ else
     fi
 fi
 
-echo "] $FUNCNAME "
+#echo "] $FUNCNAME "
 
 
 
