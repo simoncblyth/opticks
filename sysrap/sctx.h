@@ -93,7 +93,7 @@ struct sctx
 
 #ifndef PRODUCTION
     SCTX_METHOD void point(sevent* evt, int bounce);
-    SCTX_METHOD void trace(sevent* evt, int bounce);
+    SCTX_METHOD void trace(sevent* evt, int bounce, const quad2* prd);
     SCTX_METHOD void end(sevent* evt);
 #endif
 };
@@ -147,7 +147,7 @@ The *prd* corresponds to the arrows (and trace) that gets between the points, eg
 
 **/
 
-SCTX_METHOD void sctx::trace(sevent* evt, int bounce)
+SCTX_METHOD void sctx::trace(sevent* evt, int bounce, const quad2* prd)
 {
     if(evt->prd) evt->prd[evt->max_prd*idx+bounce] = *prd ;
 }

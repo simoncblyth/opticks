@@ -3271,8 +3271,8 @@ void SEvt::pointPhoton(const spho& label)
 
 
 #ifndef PRODUCTION
-    if(first_point == false) ctx.trace(bounce);
-    ctx.point(bounce);  // sseq::add_nibble the current photon flag
+    if(first_point == false) ctx.trace(evt, bounce, &current_prd);
+    ctx.point(evt, bounce);  // sseq::add_nibble the current photon flag
 #endif
 
     LOG(LEVEL)
@@ -3399,7 +3399,7 @@ void SEvt::finalPhoton(const spho& label)
     xsup.q1.w.x = t_PenultimatePoint ;
     xsup.q1.w.y = t_LastPoint ;
 #endif
-    ctx.end();   // copies {seq,sup} into evt->{seq,sup}[idx] (and tag, flat when DEBUG_TAG)
+    ctx.end(evt);   // copies {seq,sup} into evt->{seq,sup}[idx] (and tag, flat when DEBUG_TAG)
 #endif
 
     evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?

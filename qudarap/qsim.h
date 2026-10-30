@@ -2133,7 +2133,7 @@ so can switch them off easily in production running
 
 **/
 
-inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* mock_prd, RNG& rng, unsigned long long idx )
+inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* prd0, RNG& rng, unsigned long long idx )
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
@@ -2148,15 +2148,15 @@ inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* mock_prd,
     int command = START ;
     int bounce = 0 ;
 #ifndef PRODUCTION
-    ctx.point(bounce);
+    ctx.point(evt, bounce);
 #endif
 
     while( bounce < evt->max_bounce )
     {
-        const quad2* prd = mock_prd + (evt->max_bounce*idx+bounce) ;  
+        const quad2* prd = prd0 + (evt->max_bounce*idx+bounce) ;
         if( prd->boundary() == 0xffffu ) break ;   // SHOULD NEVER HAPPEN : propagate can do nothing meaningful without a boundary
 #ifndef PRODUCTION
-        ctx.trace(bounce);
+        ctx.trace(evt, bounce, prd);
 #endif
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
@@ -2168,12 +2168,12 @@ inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* mock_prd,
         command = sim->propagate(bounce, prd, rng, ctx, state );
         bounce++;
 #ifndef PRODUCTION
-        ctx.point(bounce);
+        ctx.point(evt, bounce);
 #endif
         if(command == BREAK) break ;
     }
 #ifndef PRODUCTION
-    ctx.end();
+    ctx.end(evt);
 #endif
     evt->photon[idx] = ctx.p ;
 }
@@ -2243,7 +2243,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, const quad2* prd, RNG& 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.pidx == base->pidx )
     {
-    printf("\n//qsim.propagate.head pidx %7lld : ctx.evt.index %d evt.index %d \n", ctx.pidx, ctx.evt->index, evt->index );
+    printf("\n//qsim.propagate.head pidx %7lld : evt.index %d \n", ctx.pidx, evt->index );
 
     printf("\n//qsim.propagate.head pidx %7lld : bnc %d boundary %d cosTheta %10.8f \n", ctx.pidx, bounce, boundary, cosTheta );
 

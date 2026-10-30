@@ -21,7 +21,9 @@ TODO: split off debug functions from actually used functions
 #include "scerenkov.h"
 #include "sevent.h"
 #include "sstate.h"
-
+#include "sseq.h"
+#include "stag.h"
+#include "sctx.h"
 
 #include "qprop.h"
 #include "qbnd.h"
@@ -599,7 +601,7 @@ __global__ void _QSim_quad_launch( qsim* sim, quad* q, unsigned num_quad, qdebug
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
 #endif
- 
+
     float3* v3 = (float3*)&q[idx].f.x ;
 
 

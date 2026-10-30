@@ -587,7 +587,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
 
 #ifndef PRODUCTION
-        ctx.trace(params.evt, bounce);
+        ctx.trace(params.evt, bounce, prd);
 #endif
         sstate state = {} ;
         command = sim->propagate(bounce, prd, rng, ctx, state );
