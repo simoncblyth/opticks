@@ -544,13 +544,10 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
 
     sctx ctx = {} ;
-    //ctx.evt = evt ;   // sevent.h
-    ctx.prd = prd ;   // squad.h quad2
-
-    ctx.idx = idx ;
-    ctx.pidx = photon_idx ;
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    ctx.idx = idx ;
+    ctx.pidx = photon_idx ;
     ctx.pidx_debug = sim->base->pidx == photon_idx ;
 #endif
 
@@ -592,7 +589,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #ifndef PRODUCTION
         ctx.trace(params.evt, bounce);
 #endif
-        command = sim->propagate(bounce, rng, ctx);
+        sstate state = {} ;
+        command = sim->propagate(bounce, prd, rng, ctx, state );
 
 
 #ifdef WITH_KERNEL_PROFILE
@@ -614,8 +612,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
         if( params.SER_bounceInterval > 0u && (bounce % params.SER_bounceInterval) == 0)
         {
             unsigned dn = done ? 0u : 1u ;
-            unsigned m1 = ctx.s.index.x & 0x1f ;
-            unsigned m2 = ctx.s.index.y & 0x1f ;
+            unsigned m1 = state.index.x & 0x1f ;
+            unsigned m2 = state.index.y & 0x1f ;
             unsigned f2 = ctx.p.flagidx_2bit() ;
             unsigned f4 = ctx.p.flagidx_4bit() ;
             unsigned r2 = ctx.p.ir2<4>(900.0f) ;

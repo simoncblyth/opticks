@@ -57,6 +57,9 @@ boundary (16 bit)
 flag (16 bit)
     OpticksPhoton.h history flag enum eg: TO CK SI BT BR SR AB RE ...
 
+    * HMM, switching to flagidx could squeeze 16-> 6 bits perhaps
+    * that would free 10 bits, 5 bits for m2
+
 identity (32 bit)
     currently sensor_identifier+1 (see squad.h:quad2 for details)
     Formerly was combination of primIdx and instanceId of intersected geometry.

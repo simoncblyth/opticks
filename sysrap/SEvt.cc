@@ -2918,9 +2918,11 @@ void SEvt::beginPhoton(const spho& label)
 #endif
 #endif
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
-    //ctx.evt = evt ;
-    ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt
+#endif
+
+    //ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt
 
     ctx.p.index = idx ;
     ctx.p.set_flag(genflag);

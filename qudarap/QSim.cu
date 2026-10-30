@@ -235,9 +235,15 @@ __global__ void _QSim_fill_state_0(qsim* sim, quad6* state,  unsigned num_state,
 
     printf("//_QSim_fill_state_0 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );
 
-    unsigned base_pidx = -1u ;
 
-    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, state_id, base_pidx );
+    sctx ctx = {} ;
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    ctx.pidx = state_id ;
+    ctx.pidx_debug = false ;
+#endif
+
+
+    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, ctx );
 
     state[state_id].q0.f = s.material1 ;
     state[state_id].q1.f = s.m1group2 ;
@@ -272,10 +278,16 @@ __global__ void _QSim_fill_state_1( qsim* sim, sstate* state,  unsigned num_stat
 
     printf("//_QSim_fill_state_1 state_id %d  boundary %d wavelength %10.4f cosTheta %10.4f   \n", state_id, boundary, wavelength, cosTheta );
 
-    unsigned base_pidx = -1u ;
+
+    sctx ctx = {} ;
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    ctx.pidx = state_id ;
+    ctx.pidx_debug = false ;
+#endif
+
 
     sstate s ;
-    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, state_id, base_pidx );
+    sim->bnd->fill_state(s, boundary, wavelength, cosTheta, ctx );
 
     state[state_id] = s ;
 
@@ -303,8 +315,15 @@ __global__ void _QSim_rayleigh_scatter_align( qsim* sim, sphoton* photon,  unsig
 
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
+#endif
     ctx.p = dbg->p ;    // need local copy of photon otherwise would have write interference between threads
+
+
+
+
 
     sim->rayleigh_scatter(rng, ctx);
 
@@ -325,14 +344,20 @@ __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigne
 
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
-    ctx.prd = &dbg->prd ;  // no need for local copy when readonly
-    ctx.s = dbg->s ;
+#endif
+
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly
+
+    //ctx.s = dbg->s ;
     ctx.p = dbg->p ;      // need local copy of photon otherwise will have write interference between threads
 
+    const sstate& s = dbg->s ;
+
     unsigned flag = 0u ;
-    //sim->propagate_to_boundary( flag, p, prd, s, rng, idx, tagr );
-    sim->propagate_to_boundary( flag, rng, ctx );
+    sim->propagate_to_boundary( flag, prd, rng, ctx, s );
     ctx.p.set_flag(flag);
 
     sphoton& p = ctx.p ;
@@ -358,18 +383,24 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
-    ctx.prd = &dbg->prd ;  // no need for local copy when readonly
-    ctx.s = dbg->s ;
+#endif
+
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly
+
     ctx.p = dbg->p ;    // need local copy of photon otherwise will have write interference between threads
+
+    const sstate& s = dbg->s ;
+
 
     quad4& q = (quad4&)ctx.p ;
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
 
     unsigned flag = 0 ;
-    //sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );
-    sim->propagate_at_boundary( flag, rng, ctx );
+    sim->propagate_at_boundary( flag, prd, rng, ctx, s );
 
     q.q3.u.w = flag ;          // non-standard
 
@@ -403,10 +434,15 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
+#endif
     ctx.p = photon[idx] ;
-    ctx.s = dbg->s ;
-    ctx.prd = &dbg->prd ;
+
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly
+    const sstate& state = dbg->s ;
+
 
     quad4&  q  = (quad4&)ctx.p ;
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
@@ -418,7 +454,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
     unsigned flag = 0 ;
 
-    sim->propagate_at_boundary( flag, rng, ctx );
+    sim->propagate_at_boundary( flag, prd, rng, ctx, state );
 
     q.q3.u.w = flag ;  // non-standard
 
@@ -442,10 +478,15 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
+#endif
     ctx.p = photon[idx] ;
-    ctx.s = dbg->s ;
-    ctx.prd = &dbg->prd ;
+
+    const quad2* prd = &dbg->prd ;  // no need for local copy when readonly
+    const sstate& state = dbg->s ;
+
 
     quad4&  q  = (quad4&)ctx.p ;
 
@@ -456,7 +497,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
     unsigned flag = 0u ;
     //sim->propagate_at_multifilm(flag, p, prd, s, rng, idx, tagr );
-    sim->propagate_at_surface_MultiFilm(flag, rng, ctx );
+    sim->propagate_at_surface_MultiFilm(flag, prd, rng, ctx, state );
     //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d  flag = %d", idx, flag );
 
     q.q3.u.w = flag ;  // non-standard
@@ -477,16 +518,18 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
     RNG rng ;
     sim->rng->init(rng, 0, idx ) ;
 
+    const quad2* prd = &dbg->prd ;
 
     sctx ctx = {} ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
+#endif
     ctx.p = dbg->p ;
-    ctx.prd = &dbg->prd ;
 
     bool inwards = true ;
 
-    //sim->hemisphere_polarized( p, polz, inwards,  prd, rng, tagr );
-    sim->hemisphere_polarized( polz, inwards, rng, ctx );
+    sim->hemisphere_polarized( polz, inwards, prd, rng, ctx );
 
     photon[idx] = ctx.p ;
 }
@@ -516,12 +559,14 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
     RNG rng ;
     sim->rng->init(rng, 0, idx ) ;
 
+    const quad2* prd = &dbg->prd ;
 
     sctx ctx = {} ;
-
-    ctx.idx = idx ;
-    ctx.prd = &dbg->prd ;
     ctx.p = dbg->p ;
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    ctx.idx = idx ;
+#endif
 
     quad4& q = (quad4&)ctx.p ;
     q.q0.f = q.q1.f ;   // non-standard record initial q1 (mom) into q0 and initial q2 (pol,wl) into q3
@@ -532,8 +577,8 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
 
     switch(type)
     {
-        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  rng, ctx) ;  break ;
-        case REFLECT_SPECULAR:  sim->reflect_specular( rng, ctx) ;  break ;
+        case REFLECT_DIFFUSE:   sim->reflect_diffuse(  prd, rng, ctx) ;  break ;
+        case REFLECT_SPECULAR:  sim->reflect_specular( prd, rng, ctx) ;  break ;
     }
     photon[idx] = ctx.p ;
 }
@@ -551,8 +596,10 @@ __global__ void _QSim_quad_launch( qsim* sim, quad* q, unsigned num_quad, qdebug
 
 
     sctx ctx = {} ;
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     ctx.idx = idx ;
-
+#endif
+ 
     float3* v3 = (float3*)&q[idx].f.x ;
 
 

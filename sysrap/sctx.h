@@ -66,16 +66,13 @@ struct quad6 ;
 
 struct sctx
 {
-    const quad2* prd ;
-    unsigned idx ;              // local launch index : always zero based
-    unsigned long long pidx ;   // absolute photon index : offset from zero for launches other than first
+    sphoton p ;
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    unsigned idx ;              // local launch index : always zero based
+    unsigned long long pidx ;   // absolute photon index : offset from zero for launches other than first
     bool pidx_debug ;
 #endif
-
-    sphoton p ;
-    sstate  s ;
 
 #ifndef PRODUCTION
     srec rec ;
