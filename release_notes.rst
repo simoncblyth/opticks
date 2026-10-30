@@ -8,6 +8,11 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.7.2  | 72  | 2026/10/30 | Optimization with SER, Release, optixir, slimming + Contributions + Start Three Species LS support from Dingyong                                              |
+|         |     |            |                                                                                                                                                               | 
+|         |     |            | * cvmfs distrib for v0.7.2 switched to Release build - so users of cvmfs release can benefit from optimization enhancements                                   |  
+|         |     |            | * if no issues with the Release distrib will continue with this for subsequent cvmfs distributions                                                            |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.7.1  | 71  | 2026/09/08 | Yet another expedient release following bug fix in J and OJ packaging fix                                                                                     |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.7.0  | 70  | 2026/09/04 | Expedient release to check fix to OJ envset.sh                                                                                                                |
@@ -113,12 +118,15 @@ Snapshot Tags History
 
 
 
-v0.7.2 2026/11/?? : Optimization campaign - SER, Release, optixir, slimming + Contributions
---------------------------------------------------------------------------------------------
+v0.7.2 2026/10/30 : Optimization with SER, Release, optixir, slimming + Contributions + Start Three Species LS support from Dingyong
+--------------------------------------------------------------------------------------------------------------------------------------
 
 Optimization : optixir, SER (Shader Execution Reordering) with optixTraverse+optixReorder+optixInvoke, Release build, Kernel Profiling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* 2026-10-30 ba3f99120 - slim the Release sctx.h down to just sphoton
+* 2026-10-29 8df4142ca - resolve issue of flaky write time of 1.2G hit.npy - sometimes 0.5s sometimes 10s - by moving writing from /data1 to /tmp
+* 2026-10-28 9c1a6d82b - try 12 different forms of coherenceHint for cxs_min_ser.sh, investigating slow 10s 1.2G hit array save reveals corrupted genstep in Release build - from improper QEvt::clear_gs as SEvt owns the gs
 * 2026-10-27 cb81a39de - add kernel profiling when CSGOptiX is compiled WITH_KERNEL_PROFILE to compare the times for the trace and the propagate in bounce loop - trace taking more than 100x longer time than propagate
 * 2026-10-23 9e5a53fba - add creation of flattened CSGOptiX kernel with -E and include tree with -H plus parse_ii.py to examine the header line markers in the ii file - shows thrust/complex.h bloats kernel by 120k lines compared to simple scomplex.h
 * 2026-10-22 989c9745d - notes on modern optixTraverse+optixReorder+optixInvoke - and idea for changing HitObjecty to correct spatial info for photon simulation - photons usually scatter/reemit not at RT hit boundary
@@ -137,6 +145,7 @@ Optimization : optixir, SER (Shader Execution Reordering) with optixTraverse+opt
 New Feature : Start incorporating the three species LS model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* 2026-10-29 015134beb - add the JUNO three-species LS G4 processes and their genstep collection. (17 hours ago) <yangdy>
 * 2026-10-26 0f638749a - Merge pull request #14 from prinksx/yangdy_three_species_LS_model_pr1_sspecies_sphoton_genstep (2 days ago) <simoncblyth>
 * 2026-10-21 a712886ff - Merge branch 'master' into yangdy_three_species_LS_model_pr1_sspecies_sphoton_genstep <DY Yang>
 * 2026-10-19 ce1050f03 - add species tag to sphoton and DsG4ScintSimple genstep type for JUNO three-species LS model <yangdy>
@@ -158,7 +167,6 @@ minor bug fixes and PR from contributors
 * 2026-10-14 54161e17a - Merge pull request #12 from xyf5432/fix/numpy-api-replacements
 * 2026-08-16 de422b265 - fix: replace removed np.trapz and np.bool APIs (2 months ago) <谢翊凡>
 * 2026-10-14 879f3debb - fix cosmetic bug in sdigest::DescRaw sdigest::Finalize as pointed out by Gabor
-
 
 viz debug
 ~~~~~~~~~~
