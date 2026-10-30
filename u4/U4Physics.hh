@@ -16,6 +16,8 @@ This is intended solely for use from U4AppTest
 
 class Local_G4Cerenkov_modified ; 
 class Local_DsG4Scintillation ; 
+class Local_DsG4ScintSimple ; 
+class Local_DsG4OpAbsReemit ; 
 
 #ifdef DEBUG_TAG
 class ShimG4OpAbsorption ;
@@ -39,6 +41,10 @@ struct U4_API U4Physics : public G4VUserPhysicsList
 
     Local_G4Cerenkov_modified*  fCerenkov ; 
     Local_DsG4Scintillation*    fScintillation ; 
+    Local_DsG4ScintSimple*      fScintSimple ; 
+    Local_DsG4OpAbsReemit*      fOpAbsReemit_PPO ; 
+    Local_DsG4OpAbsReemit*      fOpAbsReemit_bisMSB ; 
+    Local_DsG4OpAbsReemit*      fOpAbsReemit_Solvent ; 
 
 #ifdef DEBUG_TAG
     ShimG4OpAbsorption*   fAbsorption ;
@@ -71,6 +77,7 @@ struct U4_API U4Physics : public G4VUserPhysicsList
     static constexpr const char* _OpBoundaryProcess_DISABLE = "U4Physics__ConstructOp_OpBoundaryProcess_DISABLE" ; 
     static constexpr const char* _OpBoundaryProcess_LASTPOST = "U4Physics__ConstructOp_OpBoundaryProcess_LASTPOST" ; 
     static constexpr const char* _FastSim_ENABLE = "U4Physics__ConstructOp_FastSim_ENABLE" ; 
+    static constexpr const char* _UseScintThree = "U4Physics__ConstructOp_UseScintThree" ; 
 
     int Cerenkov_DISABLE = 0 ; 
     int Scintillation_DISABLE = 0 ; 
@@ -79,6 +86,7 @@ struct U4_API U4Physics : public G4VUserPhysicsList
     int OpBoundaryProcess_DISABLE = 0 ; 
     int OpBoundaryProcess_LASTPOST = 0 ; 
     int FastSim_ENABLE = 0 ; 
+    int UseScintThree = 0 ; 
 };
 
 
