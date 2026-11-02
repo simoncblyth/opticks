@@ -123,6 +123,8 @@ float       SEventConfig::_InputPhotonChangeTimeDefault = -1.f ;   // -ve time m
 const char* SEventConfig::_InputPhotonRecordTimeDefault = nullptr ;   // ns
 const char* SEventConfig::_InputPhotonRecordSliceDefault = nullptr ;
 
+unsigned SEventConfig::_UseThreeSpeciesLSModelDefault = 0u ;
+
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault );
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault );
 const char* SEventConfig::_EventName  = ssys::getenvvar(kEventName,  _EventNameDefault );
@@ -372,6 +374,7 @@ float       SEventConfig::_InputPhotonChangeTime = ssys::getenvfloat(kInputPhoto
 const char* SEventConfig::_InputPhotonRecordTime = ssys::getenvvar(kInputPhotonRecordTime, _InputPhotonRecordTimeDefault ) ;
 const char* SEventConfig::_InputPhotonRecordSlice = ssys::getenvvar(kInputPhotonRecordSlice, _InputPhotonRecordSliceDefault );
 
+unsigned SEventConfig::_UseThreeSpeciesLSModel = ssys::getenvunsigned(kUseThreeSpeciesLSModel, _UseThreeSpeciesLSModelDefault );
 
 int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
 bool        SEventConfig::GPU_Simulation(){  return _IntegrationMode == 1 || _IntegrationMode == 3 ; }
@@ -586,6 +589,7 @@ bool SEventConfig::IsRGModeSimulate(){ return RGMode() == SRG_SIMULATE ; }
 bool SEventConfig::IsRGModeTest(){     return RGMode() == SRG_TEST ; }
 const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
+unsigned SEventConfig::UseThreeSpeciesLSModel(){ return _UseThreeSpeciesLSModel ; }
 
 
 

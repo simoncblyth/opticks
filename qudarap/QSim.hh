@@ -40,6 +40,7 @@ struct QBase ;
 struct QEvt ;
 struct QRng ;
 struct QScint ;
+struct QScintThree ;
 struct QCerenkov ;
 struct QBnd ;
 struct QMultiFilm;
@@ -77,6 +78,7 @@ struct QUDARAP_API QSim
 
     const QRng*      rng ;
     const QScint*    scint ;
+    const QScintThree* scint_three ;
     const QCerenkov* cerenkov ;
     const QBnd*      bnd ;
     const QOptical*  optical ;

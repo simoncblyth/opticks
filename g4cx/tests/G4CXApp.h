@@ -92,7 +92,7 @@ struct G4CXApp
     void UserSteppingAction(const G4Step*);
 
 
-    G4CXApp(G4RunManager* runMgr);
+    G4CXApp(G4RunManager* runMgr, bool initNow = true);
     static void OpenGeometry() ;
     virtual ~G4CXApp();
 
@@ -145,7 +145,7 @@ U4SensitiveDetector* G4CXApp::InitSensDet() // static
     return sd ;
 }
 
-G4CXApp::G4CXApp(G4RunManager* runMgr)
+G4CXApp::G4CXApp(G4RunManager* runMgr, bool initNow)
     :
     fRunMgr(runMgr),
     fRecorder(new U4Recorder),
@@ -159,9 +159,12 @@ G4CXApp::G4CXApp(G4RunManager* runMgr)
     fRunMgr->SetUserAction((G4UserEventAction*)this);
     fRunMgr->SetUserAction((G4UserTrackingAction*)this);
     fRunMgr->SetUserAction((G4UserSteppingAction*)this);
-    fRunMgr->Initialize();
 
-    LOG(info) << std::endl << U4Recorder::Desc() ;
+    if(initNow) {
+        fRunMgr->Initialize();
+
+        LOG(info) << std::endl << U4Recorder::Desc() ;
+    }
 }
 
 G4VPhysicalVolume* G4CXApp::Construct()

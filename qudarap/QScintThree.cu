@@ -7,6 +7,18 @@ using RNG = Philox;
 #include "stdio.h"
 
 
+// QScintThree.h is header-only and relies on these being included first
+#include <csignal>
+#include <iostream>
+#include <sstream>
+#include "ssys.h"
+#include "NP.hh"
+#include "QScintThree.h"
+
+const QScintThree* QScintThree::INSTANCE = nullptr ;
+const QScintThree* QScintThree::Get(){ return INSTANCE ; }
+
+
 __global__ void _QScintThree_wavelength(qscint_three* scint, float* wavelength, size_t width, size_t height, bool hd )
 {
     unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
@@ -23,9 +35,9 @@ __global__ void _QScintThree_wavelength(qscint_three* scint, float* wavelength, 
         unsigned long long offset = 0ull;
         curand_init(seed, subsequence, offset, &rng);
     }
-    int species = iy;
+    int species_idx_ = iy;
     float u0 = curand_uniform(&rng);
-    float wl = scint->wavelength_hd20(species, u0) ;
+    float wl = scint->wavelength_hd20(species_idx_, u0) ;
 
     //bool dump = ix % 100000 == 0 ;
     //bool dump = wl < 200.f ;

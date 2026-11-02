@@ -54,6 +54,7 @@ struct SYSRAP_API SSim
     static constexpr const char* RELDIR = "SSim" ;
     static constexpr const char* EXTRA = "extra" ;
     static constexpr const char* JPMT_RELP = "extra/jpmt" ;
+    static constexpr const char* JNM_RELP = "extra/jnm" ;  // jnm subfold: JUNO new-optical-model three-species arrays
     static constexpr const char* RELP_DEFAULT = "stree/standard" ;
 
     static SSim* INSTANCE ;
@@ -100,6 +101,12 @@ public:
     const NP* get_optical() const ;
     const NP* get_propcom() const ;  // no-longer-used? formerly for LS rindex lookup
     const NP* get_icdf() const ;
+
+    // JUNO new-optical-model
+    const NP* get_extra_array(const char* relp, const char* k) const ;
+    const NP* get_icdf_three() const ;  // emitting-species layered icdf (2,3,4096,1)
+    const NP* get_const_three() const ; // six LS new-optical-model constants
+    const NP* get_prop_three() const ;  // LS-only three-species compact array (2,761,4)
 
     const char* getBndName(unsigned bidx) const ;
     int getBndIndex(const char* bname) const ;

@@ -328,6 +328,16 @@ const NP* SSim::get_optical() const {  return get(snam::OPTICAL);  }
 const NP* SSim::get_propcom() const {  return get(snam::PROPCOM);  } // ? no longer used ?
 const NP* SSim::get_icdf() const {     return get(snam::ICDF);  }
 
+// JUNO new-optical-model
+const NP* SSim::get_extra_array(const char* relp, const char* k) const
+{
+    const NPFold* f = top ? top->find_subfold(relp) : nullptr ;
+    return f ? f->get(k) : nullptr ;
+}
+const NP* SSim::get_icdf_three() const { return get_extra_array(JNM_RELP, "icdf_three"); }
+const NP* SSim::get_const_three() const { return get_extra_array(JNM_RELP, "const_three"); }
+const NP* SSim::get_prop_three() const { return get_extra_array(JNM_RELP, "prop_three"); }
+
 /**
 SSim::getBndName
 -------------------

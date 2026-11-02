@@ -149,6 +149,7 @@ set(HEADERS
 
     U4Scint.h
     U4ScintThree.h
+    U4ScintThreeExtra.h
     U4ScintCommon.h
 
     U4Volume.h

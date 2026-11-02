@@ -294,6 +294,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputPhotonRecordTime = "OPTICKS_INPUT_PHOTON_RECORD_TIME" ;
     static constexpr const char* kInputPhotonRecordSlice = "OPTICKS_INPUT_PHOTON_RECORD_SLICE" ;
 
+    static constexpr const char* kUseThreeSpeciesLSModel = "OPTICKS_USE_THREE_SPECIES_LS_MODEL" ;
 
     static int         IntegrationMode();
     static bool        GPU_Simulation() ; // 1 or 3
@@ -402,6 +403,7 @@ struct SYSRAP_API SEventConfig
     static bool HasSaveComp(  const char* q_names, char q_delim=',');
     static bool HasGatherComp(const char* q_names, char q_delim=',');
 
+    static unsigned UseThreeSpeciesLSModel();
 
 
 
@@ -595,6 +597,8 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonRecordTimeDefault ;
     static const char* _InputPhotonRecordSliceDefault ;
 
+    static unsigned _UseThreeSpeciesLSModelDefault ;
+
     static int         _IntegrationMode ;
     static const char* _EventMode ;
     static const char* _EventName ;
@@ -682,6 +686,8 @@ struct SYSRAP_API SEventConfig
     static float       _InputPhotonChangeTime ;
     static const char* _InputPhotonRecordTime ;
     static const char* _InputPhotonRecordSlice ;
+
+    static unsigned _UseThreeSpeciesLSModel ;
 
 #ifdef WITH_CUDA
     static scontext* CONTEXT ;

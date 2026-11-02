@@ -146,7 +146,7 @@ Local_DsG4OpAbsReemit::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     if( m_opticksMode == 2 || m_opticksMode == 3 )
     {
         U4::GenPhotonAncestor(&aTrack);
-        U4::GenPhotonBegin(0);
+        U4::GenPhotonBegin(0);  // generation "loop" index of 0 for reemission: only one photon is generated
     }
     //-------------------//
 
@@ -161,7 +161,7 @@ Local_DsG4OpAbsReemit::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     aParticleChange.AddSecondary(aSecondaryTrack);
 
     //--- opticks::U4 ---//
-    if( m_opticksMode == 2 || m_opticksMode == 3 ) U4::GenPhotonEnd(0, aSecondaryTrack);
+    if( m_opticksMode == 2 || m_opticksMode == 3 ) U4::GenPhotonEnd(0, aSecondaryTrack);  // generation "loop" index of 0 for reemission: only one photon is generated
     //-------------------//
 
     return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);

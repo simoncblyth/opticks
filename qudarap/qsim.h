@@ -42,6 +42,7 @@ TODO:
 #include "sevent.h"
 #include "sstate.h"
 #include "smatsur.h"
+#include "sspecies.h"
 
 
 #ifndef PRODUCTION
@@ -61,6 +62,7 @@ TODO:
 #include "qmultifilm.h"
 #include "qbnd.h"
 #include "qscint.h"
+#include "qscint_three.h"
 #include "qcerenkov.h"
 #include "qpmt.h"
 //#include "tcomplex.h"
@@ -78,6 +80,7 @@ struct qsim
     qmultifilm*         multifilm;
     qcerenkov*          cerenkov ;
     qscint*             scint ;
+    qscint_three*       scint_three ;
     qpmt<float>*        pmt ;
     qplanck*            planck ;
 
@@ -104,7 +107,9 @@ struct qsim
     QSIM_METHOD static void lambertian_direction(float3* dir, const float3* normal, float orient, RNG& rng, sctx& ctx );
     QSIM_METHOD static void random_direction_marsaglia(float3* dir, RNG& rng, sctx& ctx );
     QSIM_METHOD void rayleigh_scatter(RNG& rng, sctx& ctx );
-    QSIM_METHOD int     propagate_to_boundary( unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& state );
+    QSIM_METHOD int     propagate_to_boundary_single( unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& state );
+    QSIM_METHOD int     propagate_to_boundary_three(  unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& state );
+    QSIM_METHOD int     propagate_to_boundary(        unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& state );
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
@@ -150,6 +155,7 @@ inline qsim::qsim()    // instanciated on CPU (see QSim::init_sim) and copied to
         multifilm(nullptr),
         cerenkov(nullptr),
         scint(nullptr),
+        scint_three(nullptr),
         pmt(nullptr),
         planck(nullptr)
     {
@@ -695,7 +701,7 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(RNG& rng, sctx& ctx )
 
 
 /**
-qsim::propagate_to_boundary
+qsim::propagate_to_boundary_single
 ------------------------------
 
 +---------------------+------------------+---------------------------------------------------------+-------------------------------------------------------+
@@ -720,7 +726,7 @@ TODO:
 
 
 
-inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& s )
+inline QSIM_METHOD int qsim::propagate_to_boundary_single(unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& s )
 {
     sphoton& p = ctx.p ;
     //const sstate& s = ctx.s ;
@@ -866,6 +872,148 @@ inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, const quad2* 
 
     return BOUNDARY ;
 }
+
+
+/**
+qsim::propagate_to_boundary_three
+----------------------------------
+
+Three-species counterpart of qsim::propagate_to_boundary_single.
+Mirrors the CPU new model absorption/reemission processes of
+junosw DsG4OpAbsReemit::PostStepDoIt()
+(see also u4/Local_DsG4OpAbsReemit.cc):
+
+is_ls = s.index.x == scint_three->ls_material_index + 1u
+
+**/
+
+inline QSIM_METHOD int qsim::propagate_to_boundary_three(unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& s)
+{
+    sphoton& p = ctx.p ;
+    //const sstate& s = ctx.s ;
+
+    const float& scattering_length = s.material1.z ;
+    const float& group_velocity = s.m1group2.x ;
+    const float& distance_to_boundary = prd->q0.f.w ;
+
+    const bool is_ls = ( s.index.x == scint_three->ls_material_index + 1u ) ;
+
+    // three-species vector textures at the current wavelength:
+    // row0 = ( fraction_lab, fraction_ppo, fraction_bis, abslength_combined )
+    const float4 abs_three = scint_three->abslength_lookup(p.wavelength) ;
+
+    // step 1: absorption length uses the combined abslength on LS
+    // and the standard absorption length elsewhere
+    const float absorption_length = is_ls ? abs_three.w : s.material1.y ;
+
+    float u_scattering = curand_uniform(&rng) ;
+    float u_absorption = curand_uniform(&rng) ;
+
+    float scattering_distance = -scattering_length*logf(u_scattering);
+    float absorption_distance = -absorption_length*logf(u_absorption);
+
+    const float min_distance = fminf( absorption_distance, fminf( scattering_distance, distance_to_boundary ) ) ;
+
+    // advance the photon to the interaction point
+    p.time += min_distance/group_velocity ;
+    p.pos  += min_distance*(p.mom) ;
+
+    if( min_distance == absorption_distance )
+    {
+        if( is_ls )
+        {
+            // step 2: decide species, absorption rate fractions are baked
+            // into row0.xyz ( fraction_i = abslength_combined/abslength_i )
+            float u_species = curand_uniform(&rng) ;
+            float f_lab = abs_three.x ;
+            float f_ppo = abs_three.y ;
+
+            unsigned species_idx = u_species < f_lab + f_ppo ? ( u_species < f_lab ? SOLVENT : PPO ) : BISMSB ;
+            bool via_lab = species_idx == SOLVENT ;
+
+            if( via_lab )
+            {
+                float u_fate = curand_uniform(&rng) ;
+                float p_lab2ppo = scint_three->m_prob_lab2[0] ;
+                float p_lab2bis = scint_three->m_prob_lab2[1] ;
+                species_idx = u_fate < p_lab2ppo             ? PPO
+                            : u_fate < p_lab2ppo + p_lab2bis ? BISMSB
+                            :                                  SOLVENT ;
+            }
+
+            if( species_idx != SOLVENT )
+            {
+                const float4 reem = scint_three->reemissionprob_lookup(p.wavelength) ;
+                float p_reemission = species_idx == PPO ? reem.x : reem.y ;
+                float u_reemit = p_reemission == 0.f ? 2.f : curand_uniform(&rng) ;
+
+                if( u_reemit < p_reemission )
+                {
+                    int species_idx_ = int(species_idx-1u) ;
+                    float u_re_wavelength = curand_uniform(&rng) ;
+                    p.wavelength = scint_three->wavelength_hd20(species_idx_, u_re_wavelength) ;
+
+                    float tau_nr  = via_lab ? scint_three->m_tau_lab2[species_idx_]      : 0.f ;
+                    float tau_rad =           scint_three->m_tau_intrinsic[species_idx_] ;
+
+                    if( tau_nr > 0.f )
+                    {
+                        float u_tau_nr = curand_uniform(&rng) ;
+                        p.time += -logf(u_tau_nr)*tau_nr ;
+                    }
+                    if( tau_rad > 0.f )
+                    {
+                        float u_tau_rad = curand_uniform(&rng) ;
+                        p.time += -logf(u_tau_rad)*tau_rad ;
+                    }
+
+                    qscint_three::sample_direction_polarization(p.mom, p.pol, rng) ;
+
+                    p.set_species(species_idx) ;
+
+                    flag = BULK_REEMIT ;
+                    return CONTINUE ;
+                }
+            }
+
+            p.set_species( via_lab ? SOLVENT : species_idx ) ;
+            flag = BULK_ABSORB ;
+            return BREAK ;
+        }
+
+        // non-LS:
+        p.set_species( SOLVENT ) ;
+        flag = BULK_ABSORB ;
+        return BREAK ;
+    }
+    else if( min_distance == scattering_distance )
+    {
+        rayleigh_scatter(rng, ctx) ;
+
+        flag = BULK_SCATTER ;
+        return CONTINUE ;
+    }
+
+    // sail to boundary
+    return BOUNDARY ;
+}
+
+
+/**
+qsim::propagate_to_boundary
+----------------------------
+
+Dispatch to propagate_to_boundary_single (standard model) or propagate_to_boundary_three (JUNO three-species model)
+
+**/
+
+inline QSIM_METHOD int qsim::propagate_to_boundary(unsigned& flag, const quad2* prd, RNG& rng, sctx& ctx, const sstate& state)
+{
+    return scint_three != nullptr ? propagate_to_boundary_three( flag, prd, rng, ctx, state )
+                                  : propagate_to_boundary_single( flag, prd, rng, ctx, state );
+}
+
+
 #endif
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
 /**
@@ -2557,6 +2705,9 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6&
         case OpticksGenstep_DsG4Scintillation_r4695:
         case OpticksGenstep_SCINTILLATION:
                                               scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ;
+
+        case OpticksGenstep_DsG4ScintSimple:
+                                              scint_three->generate(  p, rng, gs, photon_id, genstep_id ) ; break ;
 
         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;

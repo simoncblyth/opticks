@@ -36,6 +36,7 @@
 #include "QRng.hh"
 #include "QTex.hh"
 #include "QScint.hh"
+#include "QScintThree.h"
 #include "QCerenkov.hh"
 #include "QBnd.hh"
 #include "QProp.hh"
@@ -173,17 +174,43 @@ void QSim::UploadComponents( const SSim* ssim  )
         LOG(LEVEL) << "  propcom null, snam::PROPCOM " <<  snam::PROPCOM ;
     }
 
+    // Three-species model selection (set by junosw python from --new-optical-model,
+    // or from OPTICKS_USE_THREE_SPECIES_LS_MODEL when running Opticks standalone):
+    //       0 : single-species model (default)
+    //       1 : three-species model (fatal if the data is missing)
+    //   NB: geometry converted with --new-optical-model contains BOTH the old icdf
+    //       and the three-species arrays, so data presence alone cannot select the model.
+    const unsigned use_three_opt = SEventConfig::UseThreeSpeciesLSModel() ;
+    const NP* icdf_three  = ssim->get_icdf_three();
+    const NP* const_three = ssim->get_const_three();
+    const NP* prop_three  = ssim->get_prop_three();
+    const bool has_three = icdf_three != nullptr && const_three != nullptr && prop_three != nullptr ;
+    const bool use_three = use_three_opt == 1u ;
 
-    const NP* icdf = ssim->get_icdf();
-    if( icdf == nullptr )
+    if( use_three && !has_three )
     {
-        LOG(error) << " icdf null, snam::ICDF " << snam::ICDF ;
+        LOG(fatal) << " _UseThreeSpeciesLSModel == 1u but icdf_three/const_three/prop_three are missing: "
+                   << " re-convert geometry with --new-optical-model " ;
+    }
+
+    if(!use_three)
+    {
+        const NP* icdf = ssim->get_icdf();
+        if( icdf == nullptr )
+        {
+            LOG(error) << " icdf null, snam::ICDF " << snam::ICDF ;
+        }
+        else
+        {
+            unsigned hd_factor = 20u ;  // 0,10,20
+            QScint* scint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
+            LOG(LEVEL) << scint->desc();
+        }
     }
     else
     {
-        unsigned hd_factor = 20u ;  // 0,10,20
-        QScint* scint = new QScint( icdf, hd_factor); // custom high-definition inverse CDF for scintillation generation
-        LOG(LEVEL) << scint->desc();
+        QScintThree* scint_three = new QScintThree( icdf_three, const_three, prop_three );
+        LOG(LEVEL) << scint_three->desc();
     }
 
 
@@ -273,6 +300,7 @@ QSim::QSim()
     sev(qev->sev),
     rng(QRng::Get()),
     scint(QScint::Get()),
+    scint_three(QScintThree::Get()),
     cerenkov(QCerenkov::Get()),
     bnd(QBnd::Get()),
     debug_(QDebug::Get()),
@@ -323,6 +351,12 @@ void QSim::init()
     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ;
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ;
     sim->scint = scint ? scint->d_scint : nullptr ;
+    sim->scint_three = scint_three ? scint_three->d_scint : nullptr ;
+
+    assert( (sim->scint != nullptr && sim->scint_three == nullptr)
+         || (sim->scint == nullptr && sim->scint_three != nullptr)
+         || (sim->scint == nullptr && sim->scint_three == nullptr) ) ;
+
     sim->pmt = pmt ? pmt->d_pmt : nullptr ;
     sim->planck = planck ? planck->d_planck : nullptr ;
 
