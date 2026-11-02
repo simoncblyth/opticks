@@ -18,11 +18,20 @@ int main()
     std::cout << "srng_Desc<RNG>()\n" << srng_Desc<RNG>() << "\n\n" ; 
 
 
+
     std::cout << "srng<RNG>::NAME :[" << srng<RNG>::NAME << "]\n" ; 
 
     std::cout << " srng_IsXORWOW<RNG>()" << srng_IsXORWOW<RNG>() << "\n" ; 
     std::cout << " srng_IsPhilox<RNG>()" << srng_IsPhilox<RNG>() << "\n" ; 
     std::cout << " srng_IsPhiLiteOx<RNG>()" << srng_IsPhiLiteOx<RNG>() << "\n" ; 
+
+
+
+    std::cout << "\nsrng_UPLOAD_RNG_STATES<RNG>()\n" << srng_UPLOAD_RNG_STATES<RNG>()  << "\n\n" ;
+
+
+
+
  
     std::cout << " srng_Matches<RNG>(\"Cheese\")" << srng_Matches<RNG>("Cheese") << "\n" ; 
     std::cout << " srng_Matches<RNG>(\"Cheese XORWOW \")" << srng_Matches<RNG>("Cheese XORWOW") << "\n" ; 

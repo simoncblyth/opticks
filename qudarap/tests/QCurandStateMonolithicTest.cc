@@ -27,10 +27,11 @@ Used at install time via::
 
 int main(int argc, char** argv)
 {
+#if defined(RNG_XORWOW)
     OPTICKS_LOG(argc, argv); 
-
     QCurandStateMonolithic* cs = QCurandStateMonolithic::Create() ; 
     LOG(info) << cs->desc() ;
+#endif
 
     return 0 ; 
 }

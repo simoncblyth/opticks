@@ -1,3 +1,5 @@
+#if defined(RNG_XORWOW)
+
 #include "SLOG.hh"
 #include "QU.hh"
 #include "QRng.hh"
@@ -82,3 +84,4 @@ std::string QCurandStateMonolithic::desc() const
     return s ; 
 }
 
+#endif

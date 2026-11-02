@@ -69,6 +69,9 @@ See SCurandState.h SCurandChunk.h
 
 **/
 
+
+#if defined(RNG_XORWOW)
+
 #include <string>
 #include <cstdint>
 #include "QUDARAP_API_EXPORT.hh"
@@ -100,3 +103,6 @@ struct QUDARAP_API QCurandStateMonolithic
 
     std::string desc() const ; 
 };
+
+#endif
+

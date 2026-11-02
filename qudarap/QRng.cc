@@ -56,12 +56,16 @@ QRng::QRng(unsigned skipahead_event_offset_)
     SEED_OFFSET(ssys::getenvvar("QRng__SEED_OFFSET")),
     parse_rc(SCurandSpec::ParseSeedOffset(seed, offset, SEED_OFFSET )),
     qr(new qrng<RNG>(seed, offset, skipahead_event_offset)),
-    d_qr(nullptr),
+    d_qr(nullptr)
+#if defined(RNG_XORWOW)
 #ifdef OLD_MONOLITHIC_CURANDSTATE
-    rngmax(0)
+   ,rngmax(0)
 #else
-    rngmax(SEventConfig::MaxCurand()),
+   ,rngmax(SEventConfig::MaxCurand()),
     cs(nullptr)
+#endif
+#elif defined(RNG_PHILOX)
+   ,rngmax(-1)
 #endif
 {
     init();
@@ -69,15 +73,18 @@ QRng::QRng(unsigned skipahead_event_offset_)
 
 
 
+#if defined(RNG_PHILOX)
+
 template<> void QRng::initStates<Philox>()
 {
     LOG_IF(info, LIFECYCLE)
         << "[" << QRng__LIFECYCLE << "] " << ( LIFECYCLE ? "YES" : "NO " )
         << "initStates<Philox> DO NOTHING : No LoadAndUpload needed "
-        << " rngmax " << rngmax
         << " SEventConfig::MaxCurand " << SEventConfig::MaxCurand()
         ;
 }
+
+#elif defined(RNG_XORWOW)
 
 template<> void QRng::initStates<XORWOW>()
 {
@@ -95,6 +102,8 @@ template<> void QRng::initStates<XORWOW>()
     qr->set_uploaded_states( d_uploaded_states );
 }
 
+
+#endif
 
 
 void QRng::init()
@@ -143,6 +152,7 @@ QRng::~QRng()
 }
 
 
+#if defined(RNG_XORWOW)
 
 #ifdef OLD_MONOLITHIC_CURANDSTATE
 
@@ -471,7 +481,9 @@ void QRng::Save( XORWOW* states, unsigned num_states, const char* path ) // stat
     return ;
 }
 
-
+#elif defined(RNG_PHILOX)
+#elif defined(RNG_PHILITEOX)
+#endif
 
 
 

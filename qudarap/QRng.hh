@@ -24,13 +24,16 @@ TODO : implement sanity check for use after loading::
 #include "curand_kernel.h"
 #include "qrng.h"
 
-//#define OLD_MONOLITHIC_CURANDSTATE 1
+
+
+#if defined(RNG_XORWOW)
 
 #ifdef OLD_MONOLITHIC_CURANDSTATE
 #else
 #include "SCurandState.h"
 #endif
 
+#endif
 
 
 struct QUDARAP_API QRng
@@ -45,9 +48,10 @@ struct QUDARAP_API QRng
     static const QRng* Get();
     static std::string Desc();
 
+
+
+#if defined(RNG_XORWOW)
     static const char* Load_FAIL_NOTES ;
-
-
 
 #ifdef OLD_MONOLITHIC_CURANDSTATE
     static constexpr const char* IMPL = "OLD_MONOLITHIC_CURANDSTATE" ;
@@ -59,6 +63,13 @@ struct QUDARAP_API QRng
     static XORWOW* LoadAndUpload(ULL rngmax, const SCurandState& cs);
 #endif
     static void Save( XORWOW* states, unsigned num_states, const char* path );
+
+#elif defined(RNG_PHILOX)
+    static constexpr const char* IMPL = "NONSTATE_PHILOX" ;
+#elif defined(RNG_PHILITEOX)
+    static constexpr const char* IMPL = "NONSTATE_PHILITEOX" ;
+#endif
+
 
 
     const char* RNGNAME ;
@@ -72,8 +83,14 @@ struct QUDARAP_API QRng
     qrng<RNG>*     d_qr ;
     ULL            rngmax ;
 
-#ifndef OLD_MONOLITHIC_CURANDSTATE
-    SCurandState   cs ;
+#if defined(RNG_XORWOW)
+#ifdef OLD_MONOLITHIC_CURANDSTATE
+#else
+    SCurandState  cs ;
+#endif
+
+#elif defined(RNG_PHILOX)
+#elif defined(RNG_PHILITEOX)
 #endif
 
 

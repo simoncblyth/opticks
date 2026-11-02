@@ -893,8 +893,8 @@ if [ "${arg/fold}" != "$arg" ]; then
     du -hs $AFOLD/*
 fi
 
-if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 
+if [[ $arg =~ run|dbg|ncu|chk ]]; then
    knobs
 
    if [ -f "$LOGFILE" ]; then
@@ -902,15 +902,26 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
        rm "$LOGFILE"
    fi
 
-   if [ "${arg/run}" != "$arg" ]; then
+   if [[ $arg =~ run ]]; then
        date +"%Y-%m-%d %H:%M:%S.%3N  %N : [$BASH_SOURCE"
        $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
        date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE"
-   elif [ "${arg/dbg}" != "$arg" ]; then
+   elif [[ $arg =~ dbg ]]; then
        source dbg__.sh
        dbg__ $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
+   elif [[ $arg =~ chk ]]; then
+       sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH -E $(which gdb) -ex r --args $(which $bin)
+   elif [[ $arg =~ ncu ]]; then
+       sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH -E $(which ncu) \
+           --section SpeedOfLight \
+           --section WarpStateStats \
+           --section InstructionStats \
+           --print-summary per-kernel \
+           --target-processes all \
+           -o cxs_min_warp_profile \
+           $(which $bin)
    fi
 
    if [ -f "$LOGFILE" ]; then

@@ -17,6 +17,7 @@ bin=/tmp/$name
 
 gcc $name.cc \
     -DWITH_CURANDLITE \
+    -DRNG_PHILOX \
     -I$CUDA_PREFIX/include \
     -I.. \
     -std=c++17 -lstdc++ -g -o $bin && $bin
