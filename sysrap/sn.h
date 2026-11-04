@@ -591,6 +591,8 @@ struct SYSRAP_API sn
     static void GetLVNodesComplete(std::vector<const sn*>& nds, int lvid);
     void        getLVNodesComplete(std::vector<const sn*>& nds) const ;
     static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx);
+    static void GetLVNodesPostfix_r(std::vector<const sn*>& nds, const sn* nd);
+
 
     static void SelectListNode(std::vector<const sn*>& lns, const std::vector<const sn*>& nds);
 
@@ -4745,8 +4747,12 @@ inline uint64_t sn::getLVNumNode() const
 sn::GetLVNodesComplete
 -------------------------
 
-As the traversal is constrained to the binary tree portion of the n-ary snd tree
-can populate a vector of *snd* pointers in complete binary tree level order indexing
+Canonical usage is from CSGImport::importPrim where the this method yields
+the binary tree nodes.  When listnodes are included in the binary tree, the
+primitive nodes that are tacked on the end of the buffer are handled separately.
+
+As the traversal is constrained to the binary tree portion of the n-ary sn tree
+can populate a vector of *sn* pointers in complete binary tree level order indexing
 with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r.
 
 **/
@@ -4793,8 +4799,8 @@ inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const
     uint64_t ns = getLVSubNode();
     uint64_t numParts = bn + ns ;
 
-    //nds.resize(numParts);  // MAYBE THIS SHOULD JUST BE bn ?
-    nds.resize(bn);
+    nds.resize(bn); // NB: just the bn binary tree nodes, the ns subnodes referenced
+                    // from list nodes are handled separately see CSGImport::importPrim
 
     if(false) std::cout
         << "sn::getLVNodesComplete"
@@ -4803,9 +4809,6 @@ inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const
         << " numParts " << numParts
         << "\n"
         ;
-
-    // assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
-    // WIP: need to detect listnode at CSGImport::importPrim_ level
 
     GetLVNodesComplete_r( nds, this, 0 );
 }
@@ -4841,6 +4844,55 @@ inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, 
         }
     }
 }
+
+
+/**
+sn::GetLVNodesPostfix_r
+-------------------------
+
+Serializes tree nodes into a dense postfix (RPN) evaluation vector
+using a post-order traversal (Left -> Right -> Operator).
+
+NCU-PROFILING-SUGGESTS-RPN-NODE-LAYOUT-MAY-YIELD-DRASTIC-SPEEDUP
+
+* NB recursive call is before node collection - so this is postorder
+
+* postorder - tree traversal algorithm
+* postfix - closely related RPN reverse-polish-notation expression
+
+**/
+
+inline void sn::GetLVNodesPostfix_r(std::vector<const sn*>& nds, const sn* nd)
+{
+    if (!nd) return;
+
+    int nc = nd->num_child();
+
+    // If it's a binary operator node with children, visit them first (Post-order)
+    if (nc > 0 && nd->is_listnode() == false)
+    {
+        assert(nc == 2); // Binary CSG operator
+        for (int i = 0; i < nc; ++i)
+        {
+            GetLVNodesPostfix_r(nds, nd->get_child(i));
+        }
+    }
+
+    // Finally, append the current node (either primitive or operator)
+    nds.push_back(nd);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

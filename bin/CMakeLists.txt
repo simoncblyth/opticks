@@ -58,6 +58,7 @@ set(SH_SCRIPTS
    f.sh
    f.py
    kprofile.py
+   sed.sh
 )
 
 

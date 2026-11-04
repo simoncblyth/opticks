@@ -122,7 +122,9 @@ EOU
 #test=input_photon_poolcover_refine
 
 
-test=medium_evt
+#test=medium_evt
+#test=small_evt
+test=tiny_evt
 
 #test=large_evt
 #test=vlarge_evt
@@ -154,6 +156,7 @@ case $(uname) in
 esac
 
 [ -n "$BP" ] && defarg=dbg
+[ -n "$NCU" ] && defarg=ncu
 [ -n "$PLOT" ] && defarg=ana
 
 arg=${1:-$defarg}
@@ -224,13 +227,16 @@ knobs()
    exceptionFlags=NONE
 
    #debugLevel=DEFAULT
-   debugLevel=NONE
-   #debugLevel=FULL
+   #debugLevel=NONE     # No debug information
+   debugLevel=MINIMAL   # Generate information that does not impact performance - replaces OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO
+   #debugLevel=MODERATE # Generate some debug information with slight performance cost
+   #debugLevel=FULL     # Generate full debug information
 
    #optLevel=DEFAULT
-   #optLevel=LEVEL_0
-   optLevel=LEVEL_3
-
+   #optLevel=LEVEL_0    # No optimizations
+   #optLevel=LEVEL_1    # Some optimizations
+   #optLevel=LEVEL_2    # Most optimizations
+   optLevel=LEVEL_3     # All optimizations
 
    #export PIP__max_trace_depth=1
    export PIP__CreatePipelineOptions_exceptionFlags=$exceptionFlags # NONE/STACK_OVERFLOW/TRACE_DEPTH/USER/DEBUG
@@ -484,6 +490,27 @@ elif [ "$TEST" == "medium_evt" ]; then
    opticks_max_slot=M100  ## avoid creating big buffer
    opticks_max_bounce=63
    opticks_ser="hintMethod:15,coherenceHintBits:-1,bounceInterval:1"
+
+elif [ "$TEST" == "small_evt" ]; then
+
+   opticks_running_mode=SRM_TORCH
+   opticks_num_event=1
+   opticks_num_photon=M5
+   opticks_num_genstep=10
+   opticks_max_slot=M5  ## avoid creating big buffer
+   opticks_max_bounce=63
+   opticks_ser="hintMethod:15,coherenceHintBits:-1,bounceInterval:1"
+
+elif [ "$TEST" == "tiny_evt" ]; then
+
+   opticks_running_mode=SRM_TORCH
+   opticks_num_event=1
+   opticks_num_photon=M1
+   opticks_num_genstep=10
+   opticks_max_slot=M1  ## avoid creating big buffer
+   opticks_max_bounce=63
+   opticks_ser="hintMethod:15,coherenceHintBits:-1,bounceInterval:1"
+
 
 elif [ "$TEST" == "ser_medium_scan" ]; then
 
@@ -894,13 +921,17 @@ if [ "${arg/fold}" != "$arg" ]; then
 fi
 
 
-if [[ $arg =~ run|dbg|ncu|chk ]]; then
+if [[ $arg =~ run|dbg|ncu|chk|ui|cli ]]; then
    knobs
 
    if [ -f "$LOGFILE" ]; then
-       echo $BASH_SOURCE : run : delete prior LOGFILE $LOGFILE
-       rm "$LOGFILE"
+       if [[ $arg =~ run|dbg|ncu ]]; then
+           echo $BASH_SOURCE : run/dbg/ncu : delete prior LOGFILE $LOGFILE
+           rm -f "$LOGFILE"
+       fi
    fi
+
+   profile_stem=cxs_min_profile_${NCU:-0}
 
    if [[ $arg =~ run ]]; then
        date +"%Y-%m-%d %H:%M:%S.%3N  %N : [$BASH_SOURCE"
@@ -914,14 +945,28 @@ if [[ $arg =~ run|dbg|ncu|chk ]]; then
    elif [[ $arg =~ chk ]]; then
        sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH -E $(which gdb) -ex r --args $(which $bin)
    elif [[ $arg =~ ncu ]]; then
+
+       if [ "$NCU" == "0" ]; then
+           section="--section SpeedOfLight --section WarpStateStats --section InstructionStats --section SourceCounters"
+       elif [ "$NCU" == "1" ]; then
+           section="--section WarpStateStats --section SourceCounters"
+       elif [ "$NCU" == "2" ]; then
+           section="--section SpeedOfLight"
+       fi
+
        sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH -E $(which ncu) \
-           --section SpeedOfLight \
-           --section WarpStateStats \
-           --section InstructionStats \
+           $section \
+           --import-source yes \
            --print-summary per-kernel \
-           --target-processes all \
-           -o cxs_min_warp_profile \
+           -k optixLaunch \
+           -f -o $profile_stem \
            $(which $bin)
+
+
+   elif [[ $arg =~ cli ]]; then
+      ncu --import $profile_stem.ncu-rep
+   elif [[ $arg =~ ui ]]; then
+      ncu-ui $profile_stem.ncu-rep
    fi
 
    if [ -f "$LOGFILE" ]; then
