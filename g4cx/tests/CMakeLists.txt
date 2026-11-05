@@ -36,6 +36,7 @@ set(SINGLE_SOURCES
 
    G4CXSimulateTest.cc
    G4CXTest.cc 
+   G4CXThreeSpeciesTest.cc 
 
    G4CX_U4TreeCreateCSGFoundryTest.cc 
 

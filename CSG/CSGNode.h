@@ -191,6 +191,16 @@ Used by compound node types such as CSG_CONTIGUOUS, CSG_DISCONTIGUOUS and the ro
 Note that because subNum uses q0.u.x and subOffset used q0.u.y this should not (and cannot) be used for leaf nodes.
 
 
+Note the lack of left/right indices on operator nodes
+------------------------------------------------------
+
+This CSGNode impl assumes the use of complete binary tree serialization
+where tree navigation can be done using bit twiddling on the level order
+index. So the serialization is tied up with the node.
+
+That approach is handy for simple trees, but not for deep ones
+where it means there are lots of CSG_ZERO padding nodes.
+
 **/
 
 struct CSG_API CSGNode

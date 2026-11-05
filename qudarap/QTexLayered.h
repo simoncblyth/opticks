@@ -88,11 +88,11 @@ QTexLayered<T>::QTexLayered(const NP* a_, char filterMode_, bool scrunch_height_
     width(0),
     payload(0),
     hd_factor(a ? a->get_meta<int>("hd_factor",0) : -1 ),
+    meta(new quad4),
+    d_meta(nullptr),
     channelDesc(cudaCreateChannelDesc<T>()),
     layeredArray(nullptr),
-    tex(0),
-    meta(new quad4),
-    d_meta(nullptr)
+    tex(0)
 {
     init();
 }
@@ -133,7 +133,7 @@ void QTexLayered<T>::init()
     payload = a->shape[3] ;
 
 
-    size_t payload_check = GetPayloadSize();
+    [[maybe_unused]] size_t payload_check = GetPayloadSize();
     assert( payload_check == payload );
     assert( payload == 1 || payload == 2 || payload == 3 || payload == 4 );
 

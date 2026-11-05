@@ -3,24 +3,48 @@
 csg_Kensler_LUT.h
 ==================
 
+Extract from ~/o/optixrap/cu/intersect_boolean.py::
+
+    _pak0 = np.array([[0x22121141, 0x14014, 0x141141, 0x0],
+                      [0x22115122, 0x22055, 0x133155, 0x0]], dtype=np.uint32)
+
+
+(OpticksCSG_t)operation
+   CSG_UNION
+   CSG_INTERSECTION
+   CSG_DIFFERENCE
+
+(IntersectionState_t)stateA(B)
+   State_Enter
+   State_Exit
+   State_Miss
+
+(int)ctrl
+   CTRL_RETURN_MISS    = 0,
+   CTRL_RETURN_A       = 1,
+   CTRL_RETURN_B       = 2,
+   CTRL_RETURN_FLIP_B  = 3,
+   CTRL_LOOP_A         = 4,
+   CTRL_LOOP_B         = 5
+
 **/
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-   #define LUT_METHOD __device__ __forceinline__ 
+   #define LUT_METHOD __device__ __forceinline__
 #else
    #define LUT_METHOD inline
-#endif 
+#endif
 
 
-struct Kensler_LUT 
+struct Kensler_LUT
 {
     // We combine the original 4 unsigned ints into two 64-bit unsigned long long constants.
     // Low 64-bits = index 0 and 1 combined. High 64-bits = index 2 and 3 combined.
-    // Example for ACloser: 
+    // Example for ACloser:
     //   Low  = (0x00014014ULL << 32) | 0x22121141ULL;
     //   High = (0x00000000ULL << 32) | 0x00141141ULL;
-    
+
     static constexpr unsigned long long lutA_low  = 0x0001401422121141ULL;
     static constexpr unsigned long long lutA_high = 0x0000000000141141ULL;
 
@@ -29,21 +53,21 @@ struct Kensler_LUT
 
     template <bool ACloser>
     static LUT_METHOD int lookup(OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB)
-    {   
-        unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB; 
+    {
+        unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB;
         if (offset >= 8) return CTRL_RETURN_MISS;
 
-        unsigned index = (unsigned)operation - (unsigned)CSG_UNION; 
+        unsigned index = (unsigned)operation - (unsigned)CSG_UNION;
 
         // 1. Determine whether we look at the lower half (index 0,1) or upper half (index 2,3)
         // Since index < 4, this single check splits the entire 128-bit table perfectly.
-        unsigned long long target_64bit = ACloser ? 
-            ((index < 2) ? lutA_low : lutA_high) : 
+        unsigned long long target_64bit = ACloser ?
+            ((index < 2) ? lutA_low : lutA_high) :
             ((index < 2) ? lutB_low : lutB_high);
 
         // 2. Adjust the index relative to the chosen 64-bit boundary
         // If index was 2 or 3, it becomes 0 or 1.
-        unsigned local_index = index & 1; 
+        unsigned local_index = index & 1;
 
         // 3. Compute the exact global bit offset within the 64-bit word
         unsigned bit_pos = (local_index * 32) + (offset * 4);

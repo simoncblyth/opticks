@@ -10,7 +10,7 @@ int main()
     NPFold* fold = NPFold::Load(material_dir) ;
 
     U4ScintThree* scint = U4ScintThree::Create(fold);
-    std::cout << ( scint ? scint->desc() : "no-scint3" ) << "\n"  ;
+    std::cout << ( scint ? scint->desc() : "no-scint-three" ) << "\n"  ;
     if(!scint) return 0 ;
     scint->save("$FOLD");
 

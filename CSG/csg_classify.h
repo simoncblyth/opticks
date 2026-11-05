@@ -82,6 +82,16 @@ struct IntersectionState
    #define LUT_METHOD inline
 #endif 
 
+/**
+LUT
+====
+
+Extract from ~/o/optixrap/cu/intersect_boolean.py::
+
+    _pak0 = np.array([[0x22121141, 0x14014, 0x141141, 0x0],
+                      [0x22115122, 0x22055, 0x133155, 0x0]], dtype=np.uint32)
+
+**/
 
 struct LUT
 {

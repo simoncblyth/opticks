@@ -66,6 +66,7 @@ controlled via envvar::
 #include "sstr.h"
 #include "ssys.h"
 
+#include "SSim.hh"
 #include "SSimtrace.h"
 #include "SEventConfig.hh"
 
@@ -82,6 +83,8 @@ controlled via envvar::
 
 #include "U4Mesh.h"
 #include "U4Scint.h"
+#include "U4ScintThree.h"
+#include "U4ScintThreeExtra.h"
 
 #include "U4Solid.h"
 #include "U4PhysicsTable.h"
@@ -112,6 +115,7 @@ struct U4Tree
     std::vector<const G4VSolid*>                solids ;
     U4PhysicsTable<G4OpRayleigh>*               rayleigh_table ;
     U4Scint*                                    scint ;
+    U4ScintThree*                               scint_three ;
 
     // disable the below with settings with by defining the below envvar
     static constexpr const char* __DISABLE_OSUR_IMPLICIT = "U4Tree__DISABLE_OSUR_IMPLICIT" ;
@@ -152,6 +156,7 @@ private:
     void initMaterial(const G4Material* const mt);
 
     void initScint();
+    void initScintThree();
     void initSurfaces();
 
     void initSolids();
@@ -262,6 +267,7 @@ inline U4Tree::U4Tree(
     num_surface_standard(-1),
     rayleigh_table(CreateRayleighTable()),
     scint(nullptr),
+    scint_three(nullptr),
     enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
     enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT)),
     material_debug(ssys::getenvint(__MATERIAL_DEBUG,0)),
@@ -291,6 +297,8 @@ inline void U4Tree::init()
 
     LOG(LEVEL) << "-initScint" ;
     initScint();
+    LOG(LEVEL) << "-initScintThree" ;
+    initScintThree();
 
     LOG(LEVEL) << "-initSurfaces" ;
     initSurfaces();
@@ -381,6 +389,38 @@ inline void U4Tree::initScint()
     if(scint)
     {
         st->standard->icdf = scint->icdf ;
+    }
+}
+
+/**
+U4Tree::initScintThree
+-----------------------
+
+Three-species (LAB/PPO/bisMSB) counterpart of U4Tree::initScint.
+
+**/
+
+inline void U4Tree::initScintThree()
+{
+    // ls_material_index needs the materials ordering so is provided at array creation
+    G4Material* LS = G4Material::GetMaterial("LS", false);
+    int ls_material_index = LS ? stree::GetPointerIndex<G4Material>(materials, LS) : -1 ;
+
+    scint_three = U4ScintThree::Create(st->material) ;
+    if(scint_three)
+    {
+        LOG_IF(warning, ls_material_index < 0) << "U4Tree::initScintThree LS material index not found" ;
+
+        U4ScintThreeExtra* scint_three_extra = new U4ScintThreeExtra(scint_three->scint, scint_three->name, ls_material_index) ;
+
+        if(SSim::Get())
+        {
+            NPFold* jnm = new NPFold ;
+            jnm->add("icdf_three", scint_three->icdf_three );
+            jnm->add("const_three", scint_three->const_three );
+            jnm->add("prop_three", scint_three_extra->prop_three );
+            SSim::AddExtraSubfold("jnm", jnm );
+        }
     }
 }
 

@@ -22,7 +22,7 @@ manual approach to check PR
 gh cli tool setup
 -------------------
 
-0. make sure GH_TOKEN is defined::
+0. make sure GH_TOKEN is defined (if not gh-env)::
 
    echo $GH_TOKEN
 

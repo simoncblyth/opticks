@@ -96,6 +96,8 @@ set(SOURCES
     QScint.cc
     QScint.cu
 
+    QScintThree.cu
+
     QPlanck.cc
     QPlanck_test.cu
 
@@ -153,6 +155,7 @@ SET(HEADERS
     QTexRotate.hh
     QTexMaker.hh
     QTexLookup.hh
+    QTexLayered.h
     QTexLayeredLookup.h
 
 
@@ -174,6 +177,9 @@ SET(HEADERS
 
     QScint.hh
     qscint.h
+
+    QScintThree.h
+    qscint_three.h
 
     QPlanck.hh
     QPlanck_test.h

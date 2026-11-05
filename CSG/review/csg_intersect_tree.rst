@@ -1,490 +1,35 @@
-csg_review : Discussions with Gemini
-======================================
+review/csg_intersect_tree
+===========================
 
-
-csg_classify.h:LUT => csg_Kensler_LUT.h:Kensler_LUT
-----------------------------------------------------
-
-* added near drop-in replacement for the old LUT
+signbit(-0.f) signaling within mis-normal zeros trick
+--------------------------------------------------------
 
 ::
 
-     CSG/csg_Kensler_LUT.h
-     CSG/tests/csg_Kensler_LUT_test.cc
-     CSG/tests/csg_Kensler_LUT_test.py
-     CSG/tests/csg_Kensler_LUT_test.sh
-
-
-::
-
-    struct LUT
-    {
-        // generated from /Users/blyth/opticks/optixrap/cu by boolean_h.py on Sat Mar  4 20:37:03 2017 
-        unsigned packed_boolean_lut_ACloser[4] = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 } ;
-        unsigned packed_boolean_lut_BCloser[4] = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 } ;
-
-        LUT_METHOD
-        int lookup( OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser ) const
-        {
-            const unsigned* lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser ;
-            unsigned offset = 3*(unsigned)stateA + (unsigned)stateB ;
-            unsigned index = (unsigned)operation - (unsigned)CSG_UNION ;
-            return offset < 8 ? (( lut[index] >> (offset*4)) & 0xf) : CTRL_RETURN_MISS ;
-        }
-    };
-
-
-
-For a fixed 4-element Look-Up Table (LUT) inside a CUDA kernel, using a vector
-type like uint4 is highly superior to a 4-element unsigned[4] array, and your
-integer addressing logic can be optimized further.
-
-
-1. Vector Type (uint4) vs. 4-Element Array
-
-In your current code, the pointer assignment const unsigned* lut = ... combined
-with array indexing lut[index] forces a major architectural problem in CUDA:
-register spilling / local memory latency.
-
-* The Array Problem: The CUDA compiler cannot easily prove that index is a
-  compile-time constant because it depends on the runtime variable operation.
-  Because the compiler cannot resolve lut[index] to a specific register at
-  compile time, it is forced to "spill" the arrays into Local Memory (which is
-  actually just global device memory backed by the L1/L2 cache). This introduces
-  significant memory latency into your ray-tracing/CSG intersection loop.
-
-* The uint4 Solution: If you define your tables as uint4, the components (.x, .y,
-  .z, .w) reside entirely in native 32-bit registers. Registers are orders of
-  magnitude faster than local memory.
-
-You can perform conditional component selection from a uint4 using a fast
-ternary tree or a switch statement. The compiler will map this directly to
-hardware-level predicate registers or SEL (Select) instructions, entirely
-bypassing the memory subsystem.
+    signbit(-0.f) == true ;
+    signbit( 0.f) == false ;
 
 
 
 ::
 
-    struct LUT 
-    {
-        // High-performance register storage using uint4
-        // .x = index 0, .y = index 1, .z = index 2, .w = index 3
-        uint4 packed_boolean_lut_ACloser = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 }; 
-        uint4 packed_boolean_lut_BCloser = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 }; 
+    [lo] A[blyth@localhost CSG]$ grep -- -0.f *.*
+    csg_intersect_leaf.h:        isect.x = valid_isect ? -isect.x : -0.f ;    // miss needs to signal complement with -0.f signbit 
+    csg_intersect_leaf.h:        // even for miss need to signal the complement with a -0.f in isect.x
+    csg_intersect_leaf.h:        if(complement) isect.x = -0.f ;
+    csg_intersect_leaf_halfspace.h:            isect.y = -0.f;
+    csg_intersect_leaf_halfspace.h:    bool yflip = valid_isect == false && isect.y == -0.f ;
+    csg_intersect_leaf_phicut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
+    csg_intersect_leaf_phicut.h:    // o on phi0 line => t_cand.0  -0.f
+    csg_intersect_leaf_phicut.h:   for rays starting on phi0 line which have t_cand -0.f
+    csg_intersect_leaf_phicut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
+    csg_intersect_leaf_phicut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
+    csg_intersect_leaf_thetacut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+    csg_intersect_tree.h:                // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
+    CSGNode.cc:    nd.setAABB(  -0.f, -0.f, -0.f,  0.f, 0.f, 0.f  );   // HMM: is negated zero -0.f ever used for anything ?
+    [lo] A[blyth@localhost CSG]$ 
 
-        __device__ int lookup(OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB, bool ACloser) const 
-        {   
-            // 1. Select the correct table (fully registers, optimized via compiler predication)
-            uint4 lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser;   
-            
-            // 2. Compute addressing
-            unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB; 
-            if (offset >= 8) return CTRL_RETURN_MISS;
 
-            unsigned index = (unsigned)operation - (unsigned)CSG_UNION; 
-            
-            // 3. Resolve the 4-element index using pure register selection
-            unsigned target_word;
-            switch(index) {
-                case 0:  target_word = lut.x; break;
-                case 1:  target_word = lut.y; break;
-                case 2:  target_word = lut.z; break;
-                default: target_word = lut.w; break; 
-            }
-
-            // 4. Bit Field Extract (BFE): Extract 4 bits starting at (offset * 4)
-            // Maps to a single, native GPU instruction
-            return (int)__ubfe(target_word, offset * 4, 4);
-        }
-    };
-
-
-
-
-
-Why This Refactoring Wins
-
-1. Zero Local Memory Overhead: By eliminating the pointer (const unsigned*
-   lut) and the array syntax (lut[index]), the compiler guarantees that both
-   packed_boolean_lut_ACloser and packed_boolean_lut_BCloser stay inside the
-   thread's fast register file.
-
-2. Brilliant Branch Optimization: Because index only ranges from 0 to 3, the
-   switch statement doesn't actually generate a heavy branching instruction. The
-   compiler will unroll it into conditional move instructions (SASS: SEL), keeping
-   the warp execution perfectly uniform.
-
-3. Single-Cycle Extraction: Replacing >> and & 0xf with __ubfe cuts out
-   unnecessary arithmetic operations, translating directly to the GPU's hardware
-   bit-manipulation engine.
-
-Is this LUT struct instantiated per thread inside the kernel function, or is it
-passed in via Constant Memory (__constant__)? If you are declaring it inside
-the function, we should double-check your total register count to ensure it
-doesn't limit warp occupancy.
-
-
-
-Currently its instanciated in every thread.  Would getting it from constant
-memory help ? Also how about using template bool for ACloser and constrexpr to
-do more at compile time ?
-
-Using template bool ACloser and constexpr together is the ultimate way to
-optimize this LUT, while moving the LUT to __constant__ memory is unnecessary
-and might even hurt performance.
-
-
-1. Constant Memory vs. Thread Instantiation
-
-When you declare your uint4 LUTs inside the thread function, they are already
-fully optimized into the GPU's Register File. In NVIDIA architectures,
-registers are the fastest possible tier of memory.  Moving them to __constant__
-memory introduces a major hardware bottleneck called warp serialization. 
-
-Constant memory is highly optimized for broadcast reads, meaning every thread
-in a warp must read the exact same address at the exact same time. 
-
-In a look-up table, different threads will naturally be processing different
-CSG operations (operation) and different intersection states (stateA, stateB),
-meaning they will index into different parts of the LUT at the same time. If
-this happens in __constant__ memory, the warp stalls and executes the reads one
-by one (serially). 
-
-Verdict: Keep the data in registers by instantiating it inline or via the
-constexpr method below. 
-
-
-2. The Power Move: template bool ACloser and constexpr
-
-By utilizing a C++ template parameter for ACloser and marking the lookup logic
-constexpr, you compile away the conditional logic entirely.  The compiler
-evaluates the ACloser boolean during compilation and entirely removes the
-unused array branch for that specific pipeline instance. Additionally, marking
-the arrays static constexpr ensures they compile directly down to instantaneous
-inline register constants without consuming runtime cycles. 
-
-
-
-
-::
-
-    #include <cuda_runtime.h>
-
-    // Assuming placeholders for Opticks tokens for compilation completeness
-    enum OpticksCSG_t { CSG_UNION = 0 };
-    enum IntersectionState_t { STATE_0 = 0 };
-    #define CTRL_RETURN_MISS -1
-
-    struct LUT 
-    {
-        // 1. Declare tables as static constexpr uint4.
-        // This guarantees the compiler evaluates these values at compile-time.
-        static constexpr uint4 packed_boolean_lut_ACloser = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 }; 
-        static constexpr uint4 packed_boolean_lut_BCloser = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 }; 
-
-        // 2. Pass ACloser as a template parameter
-        template <bool ACloser>
-        __device__ __forceinline__ int lookup(OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB) const 
-        {   
-            // Compile-time branching: The compiler evaluates this block at compile time.
-            // The binary generated for lookup<true> will literally not contain BCloser.
-            constexpr uint4 lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser;   
-            
-            unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB; 
-            if (offset >= 8) return CTRL_RETURN_MISS;
-
-            unsigned index = (unsigned)operation - (unsigned)CSG_UNION; 
-            
-            // Zero local-memory overhead. Pure register matching.
-            unsigned target_word;
-            switch(index) {
-                case 0:  target_word = lut.x; break;
-                case 1:  target_word = lut.y; break;
-                case 2:  target_word = lut.z; break;
-                default: target_word = lut.w; break; 
-            }
-
-            // Hardware-accelerated single-cycle bit extraction
-            return (int)__ubfe(target_word, offset * 4, 4);
-        }
-    };
-
-
-How to call it in your kernel
-
-Since ACloser is typically determined at runtime by a geometric check, you can
-create a clean runtime gate to branch into your specialized compile-time
-templates::
-
-    __global__ void csgKernel(LUT lut, OpticksCSG_t op, IntersectionState_t sA, IntersectionState_t sB, bool runtime_ACloser) {
-        int result;
-        
-        if (runtime_ACloser) {
-            // Calls the completely stripped down 'A' table code path
-            result = lut.lookup<true>(op, sA, sB);
-        } else {
-            // Calls the completely stripped down 'B' table code path
-            result = lut.lookup<false>(op, sA, sB);
-        }
-        
-        // ... rest of your ray tracing / intersection logic ...
-    }
-
-
-
-Why this kills the performance bottlenecks:
-
-* Zero Dead Branch Penalty: Standard code branches evaluation paths dynamically.
-  By utilizing lut.lookup<true>(), the compilation generates a path entirely free
-  of packed_boolean_lut_BCloser, maximizing register occupancy. 
-
-* Optimal Register Allocation: Because lut becomes a compile-time constant
-  expression inside the function body, the compiler never treats it as a true
-  memory buffer. The compiler literally loads only the active bits into the
-  instruction cache as literal operands.
-
-* No Constant Memory Misses or Serializations: You bypass the constant data
-  cache entirely, running at pure register-pipeline speeds. 
-
-
-
-
-You are passing LUT by value ? Wouldnt a reference or pointer be better ?
-
-Passing the LUT struct by value into the kernel parameter list is highly
-efficient and actually superior to passing it by reference or pointer.  While
-passing by value in standard CPU C++ can be slow due to deep-copying, CUDA
-kernels operate under different hardware mechanics. Here is exactly why passing
-by value is the correct approach here, along with how to handle it for your
-struct method.
-
-
-
-
-The Optimized, Zero-Pointer Pattern
-
-By making the method static, you eliminate the hidden this pointer completely,
-ensuring the values stay purely as inline instruction literals or compile-time
-constants.
-
-
-::
-
-    struct LUT 
-    {
-        // These belong to the type, taking 0 bytes of instance space
-        static constexpr uint4 packed_boolean_lut_ACloser = { 0x22121141, 0x00014014, 0x00141141, 0x00000000 }; 
-        static constexpr uint4 packed_boolean_lut_BCloser = { 0x22115122, 0x00022055, 0x00133155, 0x00000000 }; 
-
-        // Changed to 'static': Removes the hidden 'this' pointer completely!
-        template <bool ACloser>
-        __device__ static __forceinline__ int lookup(OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB)
-        {   
-            constexpr uint4 lut = ACloser ? packed_boolean_lut_ACloser : packed_boolean_lut_BCloser;   
-            
-            unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB; 
-            if (offset >= 8) return CTRL_RETURN_MISS;
-
-            unsigned index = (unsigned)operation - (unsigned)CSG_UNION; 
-            
-            unsigned target_word;
-            switch(index) {
-                case 0:  target_word = lut.x; break;
-                case 1:  target_word = lut.y; break;
-                case 2:  target_word = lut.z; break;
-                default: target_word = lut.w; break; 
-            }
-
-            return (int)__ubfe(target_word, offset * 4, 4);
-        }
-    };
-
-
-
-
-Clean Kernel Invocation
-
-Now, you don't even need to pass an instance of LUT into your kernel
-parameters. You can call it directly using the type scoping operator (::),
-which completely guarantees zero runtime storage overhead:
-
-
-Summary
-
-* Do not use pointers/references for lightweight configuration or pure-logic
-  structs inside CUDA kernels; it forces slow global memory or local memory
-  lookups.
-
-* Pass by value for dynamic structs so they sit in the high-speed kernel argument
-  cache.
-
-* Use static methods combined with static constexpr fields wherever possible to
-  completely erase the struct from memory, turning the operations into pure,
-  blazing-fast register math.
-
-
-Since your index is guaranteed to be less than 4 (0, 1, 2, or 3), you can
-completely eliminate the switch statement and structural branching.
-
-Instead of treating the uint4 as four separate variables (.x, .y, .z, .w) that
-you have to choose between, you can reinterpret the uint4 as a single,
-contiguous 128-bit word (or two 64-bit words) and use bitwise math to extract
-the exact 4 bits you need in one fell swoop.
-
-Because NVIDIA GPUs have powerful 64-bit integer handling, the most performant
-way to exploit this is to flatten the 4-element lookup table into two 64-bit
-integers and use a single 64-bit Bit Field Extract (__bfe64).
-
-
-
-The Bitwise Concept: Flattening to 64-bit
-
-Each of your original unsigned integers holds eight 4-bit slots (32 bits
-total).
-
-* index 0 and index 1 combined take up exactly 64 bits.
-* index 2 and index 3 combined take up exactly 64 bits.
-
-By rearranging your lookup table into two unsigned long long values, your
-formula for finding the absolute bit-position across the entire table
-simplifies beautifully:
-
-    bit position = (index*32) + (offset*4)
-
-
-If index < 2, you pull from the low 64-bit word. If index >= 2, you pull from the high 64-bit word. This reduces your entire lookup logic to a simple ternary operator and a single, native hardware extraction instruction.
-
-::
-
-    struct LUT 
-    {
-        // We combine the original 4 unsigned ints into two 64-bit unsigned long long constants.
-        // Low 64-bits = index 0 and 1 combined. High 64-bits = index 2 and 3 combined.
-        // Example for ACloser: 
-        //   Low  = (0x00014014ULL << 32) | 0x22121141ULL;
-        //   High = (0x00000000ULL << 32) | 0x00141141ULL;
-        
-        static constexpr unsigned long long lutA_low  = 0x0001401422121141ULL;
-        static constexpr unsigned long long lutA_high = 0x0000000000141141ULL;
-
-        static constexpr unsigned long long lutB_low  = 0x0002205522115122ULL;
-        static constexpr unsigned long long lutB_high = 0x0000000000133155ULL;
-
-        template <bool ACloser>
-        __device__ static __forceinline__ int lookup(OpticksCSG_t operation, IntersectionState_t stateA, IntersectionState_t stateB)
-        {   
-            unsigned offset = 3 * (unsigned)stateA + (unsigned)stateB; 
-            if (offset >= 8) return CTRL_RETURN_MISS;
-
-            unsigned index = (unsigned)operation - (unsigned)CSG_UNION; 
-
-            // 1. Determine whether we look at the lower half (index 0,1) or upper half (index 2,3)
-            // Since index < 4, this single check splits the entire 128-bit table perfectly.
-            unsigned long long target_64bit = ACloser ? 
-                ((index < 2) ? lutA_low : lutA_high) : 
-                ((index < 2) ? lutB_low : lutB_high);
-
-            // 2. Adjust the index relative to the chosen 64-bit boundary
-            // If index was 2 or 3, it becomes 0 or 1.
-            unsigned local_index = index & 1; 
-
-            // 3. Compute the exact global bit offset within the 64-bit word
-            unsigned bit_pos = (local_index * 32) + (offset * 4);
-
-            // 4. Use 64-bit Bit Field Extract intrinsic.
-            // Extracts 4 bits from 'target_64bit' starting at 'bit_pos' in a single operation.
-            return (int)__bfe64(target_64bit, bit_pos, 4);
-        }
-    };
-
-
-
-Why This is a Massive Win for Your Kernel
-
-1. Zero Control Hazards: The compiler will optimize the conditional assignment
-   of target_64bit using hardware predicate registers or direct selection
-   instructions (SEL). There are no branches, no jump blocks, and zero execution
-   divergence inside the warp.
-
-2. Mathematical Streamlining: Replacing a code-flow structure (switch) with pure
-   arithmetic (local_index * 32 + offset * 4) plays directly to the strengths of
-   the GPU ALUs.
-
-3. Single Instruction Extraction: The __bfe64 intrinsic maps natively to a
-   hardware bit-field extract command, which grabs the 4 bits directly out of your
-   combined registers in a single clock cycle.
-
-4. Maintained Register Efficiency: We have cut the table storage down from 4
-   registers per state to just 2 registers (unsigned long long maps perfectly to a
-   pair of standard 32-bit registers). This frees up registers for the rest of
-   your ray-tracing/CSG logic, increasing thread occupancy.
-
-Now that the table lookup is entirely math-driven and down to a single
-instruction execution, what does your outer loop or intersection framework look
-like? We can see if any of the surrounding code can be refactored to similarly
-exploit predication instead of standard branch logic.
-
-
-
-
-
-csg_pack.h : unsigned PACK4/UNPACK4 - used for storing postorder indices sequences
--------------------------------------------------------------------------------------
-
-::
-
-    #define PACK4( a, b, c, d)   ( \
-           (( (a) & 0xff ) <<  0 ) | \
-           (( (b) & 0xff ) <<  8 ) | \
-           (( (c) & 0xff ) << 16 ) | \
-           (( (d) & 0xff ) << 24 ) \
-                                 )
-
-
-* better and simpler to use uchar4 or uchar2 or ushort2 - for storing slices
-
-
-csg_tranche.h : tr.curr starts at -1, becomes 0 at first push, incremented/decremented with each push/pop, becomes -1 after pop the final item
------------------------------------------------------------------------------------------------------------------------------------------------
-
-Usage::
-
-    Tranche tr ; 
-    tr.curr = -1 ;
-
-
-::
-
-    #define TRANCHE_STACK_SIZE 4
-    struct Tranche
-    {
-        float      tmin[TRANCHE_STACK_SIZE] ;  
-        unsigned  slice[TRANCHE_STACK_SIZE] ; 
-        int curr ;
-    };
-
-
-
-
-csg_stack.h : csg.curr starts at -1, becomes 0 at first push, incremented/decremented with each push/pop, becomes -1 after pop the final item
------------------------------------------------------------------------------------------------------------------------------------------------
-
-Usage::
-
-    CSG_Stack csg ;  
-    csg.curr = -1 ;
-
-
-::
-
-    #define CSG_STACK_SIZE 15
-    struct CSG_Stack 
-    {
-       float4 data[CSG_STACK_SIZE] ; 
-       unsigned idx[CSG_STACK_SIZE] ; 
-       int curr ;
-    };
 
 
 
@@ -1487,6 +1032,340 @@ architectural considerations remain on Ada Lovelace:
 * Preserving Shared Memory for Stacks: Keeping shared memory free allows you to
   allocate it for thread-local intersection stacks or bounding box traversal
   scratchpads if your OptiX program requires dynamic working storage per ray.
+
+
+
+
+
+
+
+
+CSG based on complete binary tree with bit twiddling navigation - but sparse layout for deep trees
+----------------------------------------------------------------------------------------------------
+
+
+A description of the  current CSG tree intersection implementation is below. It
+is based on slices of the postorder sequence - in order to repeat parts of the
+intersections of sub-trees.  How do you suggest to do this with RPN ?
+Presumably the equivalent is just simple RPN tape entry index slices ?
+
+::
+
+    /**
+    intersect_tree
+    -----------------
+
+    The principal of the approach is described in a note by Andrew Kensler
+    "Ray Tracing CSG Objects Using Single Hit Intersections",  available from
+    the below link together with a discussion of the technique as used in the XRT raytracer.
+
+    - http://xrt.wikidot.com/doc:csg 
+
+    - http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
+
+
+
+                       
+                      +-----------------------+
+                      |                     B |
+           +------------------+               | 
+           | A        |       |               |
+           |          |       |               |
+           |          |       |               |
+           |   0- - - 1 - - - 2 - - - - - - -[3]
+           |          |       |               |
+           |          |       |               |
+           |          +-------|---------------+
+           |                  |
+           |                  |
+           +------------------+
+
+    A ray is shot at each sub-object to find the nearest intersection, then the
+    intersection with the sub-object is classified as one of entering, exiting or
+    missing it. Based upon the combination of the two classifications, one of
+    several actions is taken:
+
+    1. returning a hit
+
+    2. returning a miss
+    3. changing the starting point of the ray for one of the objects and then
+       shooting this ray, classifying the intersection. In this case, the state
+       machine enters a new loop.
+
+    For full details of the LUT (lookup table) and the single-intersect CSG implementation below 
+    see tests/CSGClassifyTest.cc and run the below::
+
+        CSGClassifyTest U
+        CSGClassifyTest I
+        CSGClassifyTest D
+
+
+    Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary:: 
+                                                                                                                                              depth    elevation
+                                                                          1                                                                      0         4
+     
+                                          10                                                            11                                       1         3
+
+                              100                        101                            110                           [111]                       2         2
+
+                     1000            1001          1010         1011             1100          1101            *1110*           1111              3         1
+     
+                 10000  10001    10010 10011    10100 10101   10110 10111     11000 11001   11010  11011   *11100* *11101*   11110   11111          4         0
+                                                                                                         
+
+
+    CSG looping in the below implementation has been using the below complete binary tree slices(tranche)::
+
+        unsigned fullTree  = PACK4(  0,  0,  1 << height, 0 ) ;    
+
+        unsigned leftIdx = 2*nodeIdx  ;    // left child of nodeIdx
+        unsigned rightIdx = leftIdx + 1 ; // right child of nodeIdx  
+
+        unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
+        unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+        unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+
+
+    1 << height 
+        leftmost, eg 10000
+    0 = 1 >> 1 
+        one beyond root(1) in the sequence
+     
+    nodeIdx
+         node reached in the current slice of postorder sequence  
+    endIdx 
+         one beyond the last node in the current sequence (for fulltree that is 0)
+
+    leftTree 
+         consider example nodeIdx 111 which has elevation 2 in a height 4 tree
+         
+         nodeIdx  :  111
+         leftIdx  : 1110  
+         rightIdx : 1111
+
+         leftTree.start : leftIdx << (2-1)  : 11100
+         leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence 
+
+    rightTree
+        again consider nodeIdx 111
+
+        nodeIdx   :  111
+        rightIdx  : 1111
+
+        rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice 
+        rightTree.end   :nodeIdx 
+
+
+    Now consider how different things would be with an unbalanced tree : the number of nodes traversed in a leftTree traverse
+    of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence 
+    up until the same end points as above.  The rightTree would not change.
+
+    Perhaps leftTreeOld should be replaced with leftTreeNew starting all the way from leftmost beginning of the postorder sequence::
+
+        unsigned leftTreeOld  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+        unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ; 
+
+    I suspect that when using balanced trees the leftTreeold can cause spurious intersects
+    due to discontiguity from incomplete geometry as a result of not looping over the 
+    full prior postorder sequence. 
+
+    Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
+    so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
+
+    TODO: need to confirm exactly what is happening using CSGRecord, have not extinguished all hope of getting balanced
+    to work yet, as it seems like it should be possible in principle.
+
+    **/
+
+     
+
+
+
+
+
+
+
+Yes, exactly. The equivalent of those bit-shifted postorder slices in an RPN
+layout is simply contiguous tape index slices ([start_idx, end_idx]).
+
+The reason Kensler's algorithm can slice and repeat sub-tree evaluations in the
+first place relies on a fundamental property of post-order traversals: every
+subtree, no matter how complex or unbalanced, always occupies a single,
+perfectly contiguous block of nodes on a post-order tape.
+
+
+Why RPN Makes Slicing Native and Robust
+
+In your current complete binary tree implementation, you have to use
+bit-shifting (leftIdx << (elevation-1)) because the tree is padded with
+CSG_ZERO nodes to maintain a rigid, uniform height. That rigid math is
+precisely why your experiments with leftTreeNew and unbalanced trees
+failed—rigid level-order indexing breaks down when branches aren't symmetrical,
+leading to misalignment and spurious intersects on internal boundaries.
+
+In an RPN tape, you drop the rigid elevation math entirely. Because nodes are
+serialized strictly in post-order (Left -> Right -> Operator), a node's left
+child subtree and right child subtree are guaranteed to sit immediately
+preceding it on the tape in contiguous blocks.
+
+
+struct RPNTranche {
+    int tape_start;  // Inclusive start index on the RPN tape for this subtree
+    int tape_end;    // Inclusive end index on the RPN tape for this subtree
+    float t_min;     // Minimum intersection distance for this slice
+};
+
+
+When Kensler's lookup table (LUT) dictates that you need to re-evaluate a
+sub-tree (e.g., re-shooting a ray into sub-tree A after intersecting sub-tree
+B), your state machine doesn't need bit-shifts. It simply pushes a new
+RPNTranche with the pre-calculated [tape_start, tape_end] bounds of sub-tree A
+onto the tranche stack.
+
+
+
+
+
+
+
+
+
+
+
+
+precomputed RPN spans
+----------------------
+
+Kensler CSG sometimes requires - re-doing left or right intersects with t_min
+advanced.   This means that operator nodes need to hold their spans so I can
+rewind the stack to redo an intersect.  Can those spans be pre-computed up
+front ?
+
+
+Yes, the spans can absolutely be pre-computed up front, and doing so is the
+standard practice for hardware-accelerated RPN or linear-stream interpreters.
+Because your CSG tree structure is static (it doesn't change from frame to
+frame during ray tracing), you should compute these metadata spans once on the
+host CPU during geometry compilation and pack them directly into your CSGNode
+structure.
+
+When using an RPN layout, storing both the left child span and the total
+operator span allows your GPU traversal loop to instantly calculation exactly
+where to jump back (ip = current_ip - offset) to re-evaluate the required
+subtree with the advanced t_min.
+
+
+1. How Spans Map to an RPN Sequence
+
+In an RPN sequence, subtrees are fully evaluated before they reach the operator
+node. Structurally, the tokens are ordered as::
+
+    [ Left Subtree Tokens ] [ Right Subtree Tokens ] [ Operator Node ]
+
+When your instruction pointer (ip) is currently sitting directly on the
+Operator Node, the subtrees are positioned immediately behind it in memory.
+
+* Right Subtree Span (S_R): The number of tokens making up the right child. The
+  right subtree ends exactly at ip - 1. It starts at ip - S_R.
+
+* Left Subtree Span (S_L): The number of tokens making up the left child. It
+  ends at ip - S_R - 1. It starts at ip - S_R - S_L
+
+By storing S_R and S_L  directly in the Operator Node's bitfield metadata, you
+can perform instantaneous state rewinds without any backward searching or
+pointer chasing:
+
+
+
+::
+
+    class ASTNode:
+        def __init__(self, typecode, left=None, right=None, child_count=0):
+            self.typecode = typecode
+            self.left = left
+            self.right = right
+            self.child_count = child_count # Used for your listnodes
+            
+            # Pre-computed metadata for the GPU
+            self.total_span = 0
+            self.left_span = 0
+            self.right_span = 0
+
+    def compute_rpn_metadata(node):
+        if node is None:
+            return 0
+
+        if is_primitive(node.typecode):
+            node.total_span = 1
+            return 1
+            
+        elif node.typecode == CSG_LISTNODE:
+            # A listnode holds its operator plus all inline children
+            node.total_span = 1 + node.child_count
+            return node.total_span
+            
+        else: # Standard CSG Binary Operator (UNION, INTERSECT, etc.)
+            # Recursively calculate child spans
+            node.left_span = compute_rpn_metadata(node.left)
+            node.right_span = compute_rpn_metadata(node.right)
+            
+            # The operator token itself counts as 1
+            node.total_span = node.left_span + node.right_span + 1
+            return node.total_span
+
+
+
+Once computed, your serializer writes out the flat node array. When it outputs
+an operator token, it bakes left_span and right_span directly into the CSGNode
+structural fields.
+
+
+3. Modifying the GPU Stack for Rewinding
+
+When you rewind the instruction pointer (ip), you must also rewind your
+evaluation stack pointer (stack_ptr).
+
+Because a binary operator pops 2 frames (left and right) and processes them, if
+a rewind is triggered, you must reset the stack pointer to exactly where it was
+before those subtrees were evaluated.
+
+
+* If rewinding to the Left Subtree: You must drop both the right and left
+  evaluation results from the stack. The stack pointer resets to its state prior
+  to evaluating the left subtree.
+
+* If rewinding to the Right Subtree: You must preserve the valid left subtree
+  result on the stack, but drop the right subtree result.
+
+
+::
+
+    // Operator node is at 'ip'
+    const CSGNode* op_node = rpn_base + ip;
+    int left_span  = op_node->get_left_span();
+    int right_span = op_node->get_right_span();
+
+    if (kensler_action == RETRY_LEFT) {
+        ray.tmin = advanced_t;
+        
+        // Jump back to the start of the left subtree tokens
+        ip = ip - right_span - left_span; 
+        
+        // Pop both subtrees off the stack to re-run everything from that point
+        stack_ptr = stack_ptr - 2; 
+        continue;
+    } 
+    else if (kensler_action == RETRY_RIGHT) {
+        ray.tmin = advanced_t;
+        
+        // Jump back to the start of the right subtree tokens
+        ip = ip - right_span; 
+        
+        // Keep the Left child result (which is at stack[stack_ptr - 2])
+        // Clear only the Right child result
+        stack_ptr = stack_ptr - 1; 
+        continue;
+    }
 
 
 
