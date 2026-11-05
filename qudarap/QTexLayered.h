@@ -133,7 +133,7 @@ void QTexLayered<T>::init()
     payload = a->shape[3] ;
 
 
-    size_t payload_check = GetPayloadSize();
+    [[maybe_unused]] size_t payload_check = GetPayloadSize();
     assert( payload_check == payload );
     assert( payload == 1 || payload == 2 || payload == 3 || payload == 4 );
 

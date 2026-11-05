@@ -162,7 +162,7 @@ inline QTex<float4>* QScintThree::MakePropTex(const NP* prop, unsigned line )  /
     if(!src_expect) std::cerr << "QScintThree::MakePropTex unexpected src " << ( src ? src->sstr() : "-" ) << "\n" ;
     assert( src_expect );
 
-    unsigned ny = src->shape[0] ;
+    [[maybe_unused]] unsigned ny = src->shape[0] ;
     unsigned nx = src->shape[1] ;
     assert( line < ny );
 
