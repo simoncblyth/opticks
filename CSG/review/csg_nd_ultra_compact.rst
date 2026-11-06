@@ -4,8 +4,8 @@ review/csg_nd_ultra_compact
 What is needed within an ultra-compact csg node used with an RPN stream ? Aim for 32 bits
 
 
-cn.h
------
+srpn.h
+--------
 
 ::
 

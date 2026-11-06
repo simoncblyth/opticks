@@ -591,6 +591,9 @@ struct SYSRAP_API sn
     static void GetLVNodesComplete(std::vector<const sn*>& nds, int lvid);
     void        getLVNodesComplete(std::vector<const sn*>& nds) const ;
     static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx);
+
+    static void GetLVNodesPostfix(std::vector<const sn*>& nds, int lvid);
+    void        getLVNodesPostfix( std::vector<const sn*>& nds) const ;
     static void GetLVNodesPostfix_r(std::vector<const sn*>& nds, const sn* nd);
 
 
@@ -1519,7 +1522,16 @@ inline bool sn::is_lzero() const
 
 
 
+/**
+sn::num_node
+--------------
 
+Q: Does sn::num_node include listnode primitives ?
+A: Look like YES : as listnode are treated as n-ary nodes
+   - so this should work just fine to total the binary tree
+  nodes plus the listnode prim
+
+**/
 
 
 inline int sn::num_node() const
@@ -4693,6 +4705,10 @@ inline uint64_t sn::getLVBinNode() const
     return n ;
 }
 
+
+
+
+
 /**
 sn::getLVSubNode
 -------------------
@@ -4846,6 +4862,64 @@ inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, 
 }
 
 
+
+
+
+
+/**
+sn::GetLVNodesPostfix
+-------------------------
+
+EXPERIMENTAL RPN SERIALIZATION UNDER DEV
+
+**/
+
+inline void sn::GetLVNodesPostfix(std::vector<const sn*>& nds, int lvid) // static
+{
+    const sn* root = GetLVRoot(lvid);  // first sn from pool with requested lvid that is_root
+    assert(root);
+    root->getLVNodesPostfix(nds);
+
+    if(level() > 0 && nds.size() > 8 )
+    {
+        std::cout
+            << "sn::GetLVNodesPostfix"
+            << " lvid " << lvid
+            << " level " << level()
+            << std::endl
+            << root->rbrief()
+            << std::endl
+            << root->render(SUBDEPTH)
+            ;
+    }
+}
+
+/**
+sn::getLVNodesPostfix
+-------------------------
+
+Notice that the Postfix serialization avoids the need to presize
+a buffer of zeros and populate it with indices - as are streaming the
+nodes in postorder directly into the RPN serialization.
+
+**/
+
+inline void sn::getLVNodesPostfix(std::vector<const sn*>& nds) const
+{
+    uint64_t all_node_0 = num_node();
+    GetLVNodesPostfix_r( nds, this );
+    uint64_t all_node_1 = nds.size();
+
+    if(true) std::cout
+        << "sn::getLVNodesPostfix"
+        << " all_node_0 " << all_node_0 << " (including listnode prim if present - as they are inlined after the listnode head in Postfix serialization) "
+        << " all_node_1 " << all_node_1
+        << "\n"
+        ;
+    assert(all_node_0 == all_node_1);
+}
+
+
 /**
 sn::GetLVNodesPostfix_r
 -------------------------
@@ -4860,6 +4934,7 @@ NCU-PROFILING-SUGGESTS-RPN-NODE-LAYOUT-MAY-YIELD-DRASTIC-SPEEDUP
 * postorder - tree traversal algorithm
 * postfix - closely related RPN reverse-polish-notation expression
 
+
 **/
 
 inline void sn::GetLVNodesPostfix_r(std::vector<const sn*>& nds, const sn* nd)
@@ -4867,19 +4942,26 @@ inline void sn::GetLVNodesPostfix_r(std::vector<const sn*>& nds, const sn* nd)
     if (!nd) return;
 
     int nc = nd->num_child();
+    bool ln = nd->is_listnode() ;
 
-    // If it's a binary operator node with children, visit them first (Post-order)
-    if (nc > 0 && nd->is_listnode() == false)
+    if(!ln)
     {
-        assert(nc == 2); // Binary CSG operator
-        for (int i = 0; i < nc; ++i)
+        // If it's a binary operator node with children, visit them first (Post-order)
+        if (nc > 0)
         {
-            GetLVNodesPostfix_r(nds, nd->get_child(i));
+            assert(nc == 2); // Binary CSG operator
+            for (int i = 0; i < nc; ++i) GetLVNodesPostfix_r(nds, nd->get_child(i));
         }
+        // Finally, append the current node (either primitive or operator)
+        nds.push_back(nd);
     }
-
-    // Finally, append the current node (either primitive or operator)
-    nds.push_back(nd);
+    else
+    {
+        // listnodes are special - inline the prim children immediately after the listnode
+        nds.push_back(nd);
+        assert( nc > 0 );
+        for (int i = 0; i < nc; ++i) nds.push_back(nd->get_child(i));
+    }
 }
 
 

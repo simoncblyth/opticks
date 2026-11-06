@@ -619,6 +619,27 @@ set(HEADERS
     SOpBoundaryProcess.hh
 )
 
+
+set(WITH_RPN NO)
+if(WITH_RPN)
+
+    list(APPEND HEADERS
+
+    srpn.h
+    srpn_error.h
+    srpn_tranche.h
+
+
+    )
+endif()
+
+
+
+
+
+
+
+
 set(RETIRED_SOURCES
     SProc.cc
 )

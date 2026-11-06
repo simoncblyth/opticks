@@ -57,6 +57,12 @@
 #include "CSGImport.h"
 #include "CSGCopy.h"
 
+#ifdef WITH_RPN
+#include "srpn.h"
+#include "srpn_parm.h"
+#endif
+
+
 const unsigned CSGFoundry::IMAX = 50000 ;
 
 const plog::Severity CSGFoundry::LEVEL = SLOG::EnvLevel("CSGFoundry", "DEBUG" );

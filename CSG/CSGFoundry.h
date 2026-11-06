@@ -102,6 +102,14 @@ from stree this complication can be removed ?
 
 #define FRAME_TRANSITION 1
 
+
+#ifdef WITH_RPN
+struct srpn ;
+struct srpn_parm ;
+#endif
+
+
+
 #define WITH_SGEO 1
 
 #ifdef WITH_SGEO
@@ -462,6 +470,12 @@ struct CSG_API CSGFoundry
     std::vector<qat4>      tran ;
     std::vector<qat4>      itra ;
     std::vector<qat4>      inst ;
+
+#ifdef WITH_RPN
+    std::vector<srpn>        rpn_node ;
+    std::vector<srpn_parm>   rpn_parm ;
+    std::vector<qat4>        rpn_tran ;
+#endif
 
 
     CSGPrim*    d_prim ;

@@ -303,6 +303,9 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     assert(rt);
     int idx_rc = rt->check_idx("CSGImport::importPrim.check_idx");
 
+#ifdef WITH_RPN
+    importPrim_RPN(primIdx, node);
+#endif
 
     // 1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
 
@@ -460,6 +463,22 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 }
 
 
+
+#ifdef WITH_RPN
+/**
+CSGImport::importPrim_RPN
+--------------------------
+
+RPN node order is different to complete binary tree approach
+- so cannot do this just at importNode level
+
+**/
+
+CSGPrim* CSGImport::importPrim_RPN(int primIdx, const snode& node )
+{
+    return nullptr ;
+}
+#endif
 
 
 
