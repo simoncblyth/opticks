@@ -23,7 +23,7 @@ script=$name.py
 defarg="info_build_run"
 arg=${1:-$defarg}
 
-opt=-DWITH_CHILD
+opt="-DWITH_CHILD -DWITH_RPN"
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
@@ -41,7 +41,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 #test=CreateSmallerTreeWithListNode_2
 
 #test=Serialize
-test=Serialize_Import
+#test=Serialize_Import
+test=rpn_0
 
 export TEST=${TEST:-$test}
 

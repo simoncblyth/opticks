@@ -62,21 +62,10 @@ typedef enum {
         CSG_CUTCYLINDER=124,
         CSG_HALFSPACE=125,
         CSG_NOTSUPPORTED=126,
-        CSG_UNDEFINED=127,
+        CSG_UNDEFINED=127
 
-    CSG_OBSOLETE=1000,
-        CSG_PARTLIST=1001,
-        CSG_FLAGPARTLIST=1002,
-        CSG_FLAGNODETREE=1003,
-        CSG_FLAGINVISIBLE=1004,
-        CSG_PMT=1005,
-        CSG_ZLENS=1006,
-        CSG_PRISM=1007,
-        CSG_LAST=1008
 
 } OpticksCSG_t ;
-
-
 
 
 /*
@@ -86,8 +75,8 @@ typedef enum {
 * CAUTION : the text of this header is parsed for the generation,
   some words are not allowed and avoid semi-colons
 
-
-TODO: stick these in a struct
+* Simply removing the obsoletes - fits the typecode into 7 bits 0x7f 127
+* could rearrange to squeeze down to 6 bits - 0x3f 63 - but that would be disruptive
 
 
 */
@@ -152,16 +141,6 @@ static const char* CSG_UNDEFINED_     = "ERROR_undefined" ;
 static const char* CSG_EXBB_          = "externalbb" ;
 
 
-static const char* CSG_OBSOLETE_      = "obsolete" ;
-static const char* CSG_PARTLIST_      = "partlist" ;
-static const char* CSG_FLAGPARTLIST_  = "flagpartlist" ;
-static const char* CSG_FLAGNODETREE_  = "flagnodetree" ;
-static const char* CSG_FLAGINVISIBLE_ = "flaginvisible" ;
-static const char* CSG_PMT_           = "pmt" ;
-static const char* CSG_ZLENS_         = "zlens" ;
-static const char* CSG_PRISM_         = "prism" ;
-static const char* CSG_LAST_          = "last" ;
-
 
 
 struct CSG
@@ -187,9 +166,6 @@ struct CSG
         else if(strcmp(nodename, CSG_BOX3_) == 0)           tc = CSG_BOX3 ;
         else if(strcmp(nodename, CSG_SPHERE_) == 0)         tc = CSG_SPHERE ;
         else if(strcmp(nodename, CSG_ZSPHERE_) == 0)        tc = CSG_ZSPHERE ;
-        else if(strcmp(nodename, CSG_ZLENS_) == 0)          tc = CSG_ZLENS ;
-        else if(strcmp(nodename, CSG_PMT_) == 0)            tc = CSG_PMT ;  // not operational
-        else if(strcmp(nodename, CSG_PRISM_) == 0)          tc = CSG_PRISM ;
         else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
         else if(strcmp(nodename, CSG_CYLINDER_) == 0)       tc = CSG_CYLINDER ;
         else if(strcmp(nodename, CSG_CUTCYLINDER_) == 0)    tc = CSG_CUTCYLINDER ;
@@ -217,10 +193,7 @@ struct CSG
         else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
         else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
         else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
-        else if(strcmp(nodename, CSG_PARTLIST_) == 0)       tc = CSG_PARTLIST ;
-        else if(strcmp(nodename, CSG_FLAGPARTLIST_) == 0)   tc = CSG_FLAGPARTLIST ;
-        else if(strcmp(nodename, CSG_FLAGNODETREE_) == 0)   tc = CSG_FLAGNODETREE ;
-        else if(strcmp(nodename, CSG_FLAGINVISIBLE_) == 0)  tc = CSG_FLAGINVISIBLE ;
+
         return tc ;
     }
 
@@ -296,15 +269,7 @@ struct CSG
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ;
 
             case CSG_EXBB:          s = CSG_EXBB_          ; break ;
-            case CSG_OBSOLETE:      s = CSG_OBSOLETE_      ; break ;
-            case CSG_PARTLIST:      s = CSG_PARTLIST_      ; break ;
-            case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ;
-            case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ;
-            case CSG_FLAGINVISIBLE: s = CSG_FLAGINVISIBLE_ ; break ;
-            case CSG_PMT:           s = CSG_PMT_           ; break ;
-            case CSG_ZLENS:         s = CSG_ZLENS_         ; break ;
-            case CSG_PRISM:         s = CSG_PRISM_         ; break ;
-            case CSG_LAST:          s = CSG_LAST_          ; break ;
+
             default:                s = CSG_UNDEFINED_     ; break ;
         }
         return s ;
