@@ -324,7 +324,7 @@ HMM:that was optimized down to under 1s, by removal of some unused stree.h stuff
 
 **/
 
-void CSGOptiX::InitGeo(  CSGFoundry* fd )
+void CSGOptiX::InitGeo( SFoundry* fd )
 {
     LOG(LEVEL) << "[" ; ;
     fd->upload();
@@ -345,12 +345,12 @@ so cannot assume HasDevice is set as some tests do not use SEvt
 
 **/
 
-CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
+CSGOptiX* CSGOptiX::Create( SFoundry* fd )
 {
     SProf::Add("CSGOptiX__Create_HEAD");
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
 
-    SSim* ssim = const_cast<SSim*>(fd->sim) ;
+    SSim* ssim = const_cast<SSim*>(fd->getSim()) ;
 
     //InitEvt(fd);  // REPOSITIONED TO G4CXOpticks::CreateSimulator
 
@@ -417,7 +417,7 @@ Changing from .ptx to .optixir also needs CMake change - and needs CMake 3.27+
 **/
 
 
-CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
+CSGOptiX::CSGOptiX(const SFoundry* foundry_)
     :
     sglm(SGLM::Get()),
     flight(SGeoConfig::FlightConfig()),
@@ -610,17 +610,15 @@ from the uploaded CSGFoundry with SBT::createGeom.
 
 void CSGOptiX::initGeometry()
 {
+    bool is_uploaded =  foundry->isUploaded() ;
+    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;
+    assert( is_uploaded );
+
+
     LOG(LEVEL) << "[" ;
     Params* params = params_helper->params ;
 
-    params->node = foundry->d_node ;
-    params->plan = foundry->d_plan ;
-    params->tran = nullptr ;
-    params->itra = foundry->d_itra ;
-
-    bool is_uploaded =  params->node != nullptr ;
-    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;
-    assert( is_uploaded );
+    foundry->setupDeviceGeometry( &params->geom );
 
     LOG(LEVEL) << "[ sbt.setFoundry " ;
     sbt->setFoundry(foundry);
@@ -812,6 +810,7 @@ double CSGOptiX::simtrace(int eventID)
 
 
 
+#ifdef OBSOLETE_CSGOPTIX_SET_FRAME
 /**
 CSGOptiX::setFrame
 --------------------------
@@ -907,6 +906,8 @@ void CSGOptiX::setFrame(const sfr& lfr )
 
     LOG(LEVEL) << "]" ;
 }
+
+#endif
 
 
 
@@ -1113,7 +1114,7 @@ double CSGOptiX::launch()
     bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("CSGOptiX__launch_DEBUG_SKIP_LAUNCH") ;
     bool DEBUG_PARAMS = ssys::getenvbool("CSGOptiX__launch_DEBUG_PARAMS") ;
 
-    size_t idx = kernel_count ;   // maybe make sensitive to event offsets ? 
+    size_t idx = kernel_count ;   // maybe make sensitive to event offsets ?
     prepareParam(idx);
 
     if(raygenmode != SRG_RENDER) assert(qev) ;
@@ -1245,7 +1246,7 @@ double CSGOptiX::simulate_launch()
     return launch()  ;
 }
 
-const CSGFoundry* CSGOptiX::getFoundry() const
+const SFoundry* CSGOptiX::getFoundry() const
 {
     return foundry ;
 }
@@ -1499,9 +1500,10 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     js["jpg"] = jpg_path ;
     js["emm"] = SGeoConfig::EnabledMergedMesh() ;
 
-    if(foundry->hasMeta())
+    const std::string& cfmeta = foundry->getMeta();
+    if(!cfmeta.empty())
     {
-        js["cfmeta"] = foundry->meta ;
+        js["cfmeta"] = cfmeta ;
     }
 
     std::string extra = SEventConfig::GetGPUMeta();

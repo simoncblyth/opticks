@@ -31,6 +31,7 @@ struct SGLM ;
 struct SSim ;
 
 struct CSGFoundry ;
+struct SFoundry ;
 struct CSGView ;
 
 template <typename T> struct Tran ;
@@ -43,14 +44,9 @@ struct Params_Helper ;
 class Opticks ;
 class Composition ;
 
-#if OPTIX_VERSION < 70000
-struct Six ;
-struct Dummy ;
-#else
 struct Ctx ;
 struct PIP ;
 struct SBT ;
-#endif
 struct Frame ;
 
 
@@ -76,7 +72,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     SGLM*             sglm ;
 
     const char*       flight ;
-    const CSGFoundry* foundry ;
+    const SFoundry*   foundry ;
     const char*       outdir ;
     const char*       optixsuffix ;    // .ptx OR .optixir
     const char*       _optixpath ;
@@ -93,15 +89,9 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     Params_Helper*    params_helper  ;
 
 
-#if OPTIX_VERSION < 70000
-    Six* six ;
-    Dummy* dummy0 ;
-    Dummy* dummy1 ;
-#else
     Ctx* ctx ;
     PIP* pip ;
     SBT* sbt ;
-#endif
 
     Frame* framebuf ;
     SMeta* meta ;
@@ -116,14 +106,14 @@ private:
     static Params_Helper* InitParamsHelper( int raygenmode, const SGLM* sglm  ) ;
     static void InitMeta( SSim* ssim );
     static void InitSim(  SSim* ssim );
-    static void InitGeo(  CSGFoundry* fd );
+    static void InitGeo(  SFoundry* fd );
 
 public:
-    static CSGOptiX* Create(CSGFoundry* foundry );
+    static CSGOptiX* Create(SFoundry* foundry );
 
 
     virtual ~CSGOptiX();
-    CSGOptiX(const CSGFoundry* foundry );
+    CSGOptiX(const SFoundry* foundry );
 
 private:
     void init();
@@ -144,10 +134,13 @@ private:
     void destroy();
  public:
 
+
+#ifdef OBSOLETE_CSGOPTIX_SET_FRAME
     void setFrame();
     void setFrame(const char* moi);
     void setFrame(const float4& ce);
     void setFrame(const sfr& fr_);
+#endif
 
 
     static constexpr const char* _prepareParamRender_DEBUG = "CSGOptiX__prepareParamRender_DEBUG" ;
@@ -188,7 +181,7 @@ private:
     double simulate_launch();
 
  public:
-    const CSGFoundry* getFoundry() const ;
+    const SFoundry* getFoundry() const ;
     static std::string AnnotationTime( double dt, const char* extra=nullptr );
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr );
     const char* getDefaultSnapPath() const ;

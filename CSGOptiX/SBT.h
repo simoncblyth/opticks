@@ -33,7 +33,7 @@ WITH_SOPTIX_ACCEL
 #include "sqat4.h"
 
 struct PIP ;
-struct CSGFoundry ;
+struct SFoundry ;
 struct CSGPrim ;
 struct Properties ;
 struct SScene ;
@@ -64,7 +64,7 @@ struct SBT
     HitGroup*     hitgroup ;
     HitGroup*     check ;
 
-    const CSGFoundry*  foundry ;
+    const SFoundry*  foundry ;
     const SScene*      scene ;
 
     CUdeviceptr   d_raygen ;
@@ -103,7 +103,7 @@ struct SBT
     void destroyMiss();
     void updateMiss();
 
-    void setFoundry(const CSGFoundry* foundry);
+    void setFoundry(const SFoundry* foundry);
     void createGeom();
 
     void createGAS();

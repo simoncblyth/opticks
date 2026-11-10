@@ -332,7 +332,6 @@ set(HEADERS
 
 
     SCtrl.hh
-    SGeo.hh
     SConstant.hh
     SEvt.hh
 
@@ -617,6 +616,12 @@ set(HEADERS
     SSimtrace.h
 
     SOpBoundaryProcess.hh
+
+
+    SGeo.hh
+    SFoundry.h
+    SDeviceGeometry.h
+
 )
 
 
@@ -863,7 +868,8 @@ if(SysRap_VERBOSE)
 endif()
 
 
-target_include_directories( ${name} PUBLIC
+# stranRotateTest.cc
+target_include_directories( ${name} BEFORE PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
    $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>

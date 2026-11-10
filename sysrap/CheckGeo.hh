@@ -16,7 +16,13 @@ struct SYSRAP_API CheckGeo : public SGeo
     int                lookup_mtline(int mtindex) const ; 
     std::string        desc_mt() const ; 
 
+
     stree*             getTree() const ; 
+
+
+    void upload();
+
+
 
 };
 

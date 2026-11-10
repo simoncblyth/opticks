@@ -1,3 +1,42 @@
+/**
+CSGFoundry.cc
+==============
+
+CSGFoundry handles:
+
+1. mechanics of creating CSGSolid/CSGPrim/CSGNode geometry model from stree/snode/sn
+2. support API for CSGOptiX to convert CSGSolid/CSGPrim/CSGNode model into optix geometry
+3. load/save of CSGSolid/CSGPrim/CSGNode geometry model + SSim
+4. access to frame info - that should be elsewhere (stree) - and now mostly is
+
+SSim
+   On one level the sim member looks a bit like a passenger,
+   but because it is serialized and saved together with the
+   geom info it is expedient to be a member - so one folder
+   can contain geom and physics info.
+
+Ideas for improved flexibility
+
+When considering how to handle an alternate node model (like srpn.h) first
+idea was to pare down CSGOptiX use of CSGFoundry to the SFoundry.h base API.
+Such that could then create a CSGFoundryLite that fulfils SFoundry.h.
+
+But considering how much CSGFoundry does that approach would duplicate
+too much. Plus want the same persisted geometry directory to contain
+both geometry models.
+
+This makes me think the better approach is to partition off just
+the "CSGGeometryModel" heart of CSGFoundry. With different model flavors
+being alternative hearts - in separate folders (load/save managed with NPFold.h).
+
+Perhaps SFoundry.h => SGeometryModel.h so CSGOptiX can consume either model.
+
+The aim is to allow experiments with alternate models without
+infrastructure duplication.
+
+**/
+
+
 #include <iostream>
 #include <iomanip>
 #include <array>
@@ -56,6 +95,8 @@
 #include "CSGMaker.h"
 #include "CSGImport.h"
 #include "CSGCopy.h"
+
+#include "SDeviceGeometry.h"
 
 #ifdef WITH_RPN
 #include "srpn.h"
@@ -449,6 +490,8 @@ std::string CSGFoundry::desc_mt() const
     assert(sim);
     return sim->desc_mt() ;
 }
+
+
 
 
 /**
@@ -1808,6 +1851,8 @@ CSGNode* CSGFoundry::addNode(CSGNode nd)
     int solidLocalNodeIdx = addNode_solidLocalNodeIdx() ;  // depends on node.size so must call before below push_back
 
     node.push_back(nd);
+
+
     last_added_node = node.data() + globalNodeIdx ;
 
     last_added_node->setIndex( solidLocalNodeIdx );  // TRY AUTOMATIC CSGNode::index a.nix
@@ -1815,6 +1860,13 @@ CSGNode* CSGFoundry::addNode(CSGNode nd)
     return last_added_node ;
 }
 
+/**
+CSGFoundry::addNode
+--------------------
+
+Adds a zero node and returns pointer ready for population
+
+**/
 
 CSGNode* CSGFoundry::addNode()
 {
@@ -2840,6 +2892,8 @@ template double      CSGFoundry::getMeta<double>(const char*, double );
 template std::string CSGFoundry::getMeta<std::string>(const char*, std::string );
 
 bool CSGFoundry::hasMeta() const {  return meta.empty() == false ; }
+const std::string& CSGFoundry::getMeta() const { return meta ; }
+
 
 
 void CSGFoundry::load()
@@ -3432,6 +3486,48 @@ bool CSGFoundry::isUploaded() const
 }
 
 
+
+
+/**
+CSGFoundry::setupDeviceGeometry
+---------------------------------
+
+This is used from CSGOptiX::initGeometry
+
+Note that only the inverse transforms "itra" are used on device
+as that is applied to the ray (not the geometry).
+
+**/
+
+void CSGFoundry::setupDeviceGeometry( SDeviceGeometry* geom ) const
+{
+    bool is_uploaded = isUploaded();
+
+    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGFoundry::setupGeometryDeviceParam " ;
+    assert( is_uploaded );
+
+    geom->node = d_node ;
+    geom->plan = d_plan ;
+    geom->tran = nullptr ;  // d_tran is not needed on device
+    geom->itra = d_itra ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void CSGFoundry::inst_find_unique()
 {
     qat4::find_unique_gas( inst, gas );
@@ -4021,7 +4117,9 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
 CSGFoundry::exportTreeSceneFrame
 ---------------------------------
 
-
+* invoked by CSGOptiX::initGLM
+* tree and scene both come from SSim
+* outcome is to update the view math for the geometry (?)
 
 **/
 
@@ -4035,3 +4133,14 @@ void CSGFoundry::exportTreeSceneFrame( SGLM* gm ) const
     gm->setTreeScene(tree, scene);
     gm->set_frame();   // MOI frame initially
 }
+
+
+
+
+
+
+
+
+
+
+

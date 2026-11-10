@@ -998,9 +998,9 @@ extern "C" __global__ void __intersection__is()
     int nodeOffset = hg->prim.nodeOffset ;
     int globalPrimIdx = hg->prim.globalPrimIdx ;
 
-    const CSGNode* node = params.node + nodeOffset ;  // root of tree
-    const float4* plan = params.plan ;
-    const qat4*   itra = params.itra ;
+    const CSGNode* node = params.geom.node + nodeOffset ;  // root of tree
+    const float4* plan = params.geom.plan ;
+    const qat4*   itra = params.geom.itra ;
 
     const float  t_min = optixGetRayTmin() ;
     const float3 ray_origin = optixGetObjectRayOrigin();

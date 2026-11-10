@@ -1098,6 +1098,17 @@ int sn_test::OrderPrim_()
 int sn_test::rpn_0()
 {
     std::cout << "[rpn_0\n" ;
+
+    int it = 0 ;
+    sn* t = manual_tree(it);
+    t->labeltree();
+
+    std::cout << t->render() ;
+
+
+
+
+
     std::cout << "]rpn_0\n" ;
     return 0 ; 
 }

@@ -224,7 +224,7 @@ Canonical invokation from CSGOptiX::CSGOptiX//CSGOptiX::initGeometry
 
 **/
 
-void SBT::setFoundry(const CSGFoundry* foundry_)
+void SBT::setFoundry(const SFoundry* foundry_)
 {
     foundry = foundry_ ;          // analytic
     scene = foundry->getScene();  // triangulated

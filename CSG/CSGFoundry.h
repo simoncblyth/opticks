@@ -12,6 +12,7 @@ struct stree ;
 struct SScene ;
 struct SGLM ;
 struct SMeshGroup ;
+struct SDeviceGeometry ;
 
 #include "scuda.h"
 #include "squad.h"
@@ -102,21 +103,9 @@ from stree this complication can be removed ?
 
 #define FRAME_TRANSITION 1
 
+#include "SFoundry.h"
 
-#ifdef WITH_RPN
-struct srpn ;
-struct srpn_parm ;
-#endif
-
-
-
-#define WITH_SGEO 1
-
-#ifdef WITH_SGEO
-struct CSG_API CSGFoundry : public SGeo
-#else
-struct CSG_API CSGFoundry
-#endif
+struct CSG_API CSGFoundry : public SFoundry
 {
     static const plog::Severity LEVEL ;
     static const int  VERBOSE ;
@@ -139,9 +128,6 @@ struct CSG_API CSGFoundry
     static constexpr const char* _Load_DUMP = "CSGFoundry__Load_DUMP" ;
     static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel=RELDIR );
-
-    void setOverrideSim( const SSim* ssim );
-    const SSim* getSim() const ;
 
     // TODO: farm off comparison machinery into another struct
 
@@ -374,6 +360,9 @@ struct CSG_API CSGFoundry
 
     void upload();
     bool isUploaded() const ;
+    void setupDeviceGeometry( SDeviceGeometry* devgeo ) const ;
+
+
 
     void inst_find_unique();
     unsigned getNumUniqueGAS() const ;
@@ -442,6 +431,9 @@ struct CSG_API CSGFoundry
     int lookup_mtline(int mtindex) const ;
     std::string desc_mt() const ;
 
+
+    void setOverrideSim( const SSim* ssim );
+    const SSim* getSim() const ;
     stree* getTree() const ;  // from contained (const SSim*)sim
     SScene* getScene() const ;
     void setOverrideScene(SScene* _scene);
@@ -471,13 +463,8 @@ struct CSG_API CSGFoundry
     std::vector<qat4>      itra ;
     std::vector<qat4>      inst ;
 
-#ifdef WITH_RPN
-    std::vector<srpn>        rpn_node ;
-    std::vector<srpn_parm>   rpn_parm ;
-    std::vector<qat4>        rpn_tran ;
-#endif
 
-
+    // set to device pointers by CSGFoundry::upload
     CSGPrim*    d_prim ;
     CSGNode*    d_node ;
     float4*     d_plan ;
@@ -502,6 +489,8 @@ struct CSG_API CSGFoundry
 
 
     void setPrimBoundary(unsigned primIdx, const char* bname) ;
+    const std::string& getMeta() const ;
+
     int  mtime ;
 
     std::string meta ;

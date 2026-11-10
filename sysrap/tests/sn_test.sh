@@ -63,6 +63,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
+    printf "%s - START BUILD \n" "$(date)"
     gcc $name.cc \
         ../sn.cc \
         ../s_tv.cc \
@@ -76,6 +77,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -lm \
         $opt -g -std=c++17 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
+    printf "%s - END BUILD \n" "$(date)"
 fi
 
 if [ "${arg/run}" != "$arg" ]; then

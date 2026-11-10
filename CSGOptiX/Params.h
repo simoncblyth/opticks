@@ -6,10 +6,14 @@ Params.h
 
 * CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods
 
+* note the use of nested struct - as only POD types are used nesting them
+  does not change memory layout compatibility - so can still CUDA copy
+
 **/
 
 #include <optix.h>
 #include <vector_types.h>
+#include "SDeviceGeometry.h"
 
 struct CSGNode ;
 struct qat4 ;
@@ -21,13 +25,10 @@ struct sevent ;
 
 struct __align__(16) Params // Force 16-byte structural alignment boundary
 {
+    // Grouped geometry pointers (32 bytes total, 16-byte aligned)
+    SDeviceGeometry geom ;
+
     // 1. 64-bit (8 byte) pointers and handles : need pairs of them to stay 16-byte aligned
-    CSGNode*   node ;
-    float4*    plan ;
-
-    qat4*      tran ;
-    qat4*      itra ;
-
     uchar4*    pixels ;
     float4*    isect ;
 

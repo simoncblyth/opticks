@@ -44,3 +44,10 @@ stree* CheckGeo::getTree() const
     return nullptr ; 
 }
 
+void CheckGeo::upload()
+{
+}
+
+
+
+

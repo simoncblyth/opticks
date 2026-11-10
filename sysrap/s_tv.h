@@ -41,6 +41,14 @@ struct SYSRAP_API s_tv
     static void Serialize( _s_tv& p, const s_tv* o );
     static s_tv* Import(  const _s_tv* p, const std::vector<_s_tv>& buf );
 
+    template<typename T>
+    static T Maxdiff_from_Identity(const glm::tmat4x4<T>& m);
+
+    template<typename T>
+    static bool IsIdentity(const glm::tmat4x4<T>& m, T epsilon );
+
+    bool is_identity() const ;
+
     s_tv();
     ~s_tv();
     s_tv* copy() const ;
@@ -78,6 +86,37 @@ inline s_tv* s_tv::Import( const _s_tv* p, const std::vector<_s_tv>& ) // static
     o->t = p->t ;
     o->v = p->v ;
     return o ;
+}
+
+
+
+
+template<typename T>
+inline T s_tv::Maxdiff_from_Identity(const glm::tmat4x4<T>& m)
+{
+    T mxdif = 0. ;
+    for(int j=0 ; j < 4 ; j++ )
+    for(int k=0 ; k < 4 ; k++ )
+    {
+        T val = m[j][k] ;
+        T xval = j == k ? T(1) : T(0) ;
+        T dif = std::abs( val - xval ) ;
+        if(dif > mxdif) mxdif = dif ;
+    }
+    return mxdif ;
+}
+
+template<typename T>
+inline bool s_tv::IsIdentity(const glm::tmat4x4<T>& m, T epsilon )
+{
+    T mxdif = Maxdiff_from_Identity(m);
+    return mxdif < epsilon ;
+}
+
+inline bool s_tv::is_identity() const
+{
+    double epsilon = 1e-5 ;
+    return IsIdentity(t, epsilon) && IsIdentity(v, epsilon) ;
 }
 
 

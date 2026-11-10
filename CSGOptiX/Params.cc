@@ -37,11 +37,7 @@ Params_Helper::Params_Helper( Params* _params, int raygenmode_, unsigned width, 
 
 void Params_Helper::init()
 {
-    params->node = nullptr ;
-    params->plan = nullptr ;
-
-    params->tran = nullptr ;
-    params->itra = nullptr ;
+    params->geom.init();
 
     params->pixels = nullptr ;
     params->isect = nullptr ;
@@ -249,11 +245,10 @@ std::string Params_Helper::detail() const
         << "(values)" << std::endl
         << desc()
         << std::endl
-        << "(device pointers)" << std::endl
-        << std::setw(20) << " node " << std::setw(10) << params->node  << std::endl
-        << std::setw(20) << " plan " << std::setw(10) << params->plan  << std::endl
-        << std::setw(20) << " tran " << std::setw(10) << params->tran  << std::endl
-        << std::setw(20) << " itra " << std::setw(10) << params->itra  << std::endl
+        << "(device pointers)"
+        << std::endl
+        << params->geom.detail()
+        << std::endl
         << std::setw(20) << " pixels " << std::setw(10) << params->pixels  << std::endl
         << std::setw(20) << " isect " << std::setw(10) << params->isect  << std::endl
         << std::setw(20) << " sim " << std::setw(10) << params->sim  << std::endl

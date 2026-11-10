@@ -63,6 +63,12 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include "stra.h"    // glm transform utilities
 #include "sgeomtools.h"
 
+#ifdef WITH_RPN
+#include "srpn.h"
+#endif
+
+
+
 #include "NPFold.h"
 
 struct _sn
@@ -310,15 +316,22 @@ struct SYSRAP_API sn
     void preorder( std::vector<const sn*>& order ) const ;
     void inorder(  std::vector<const sn*>& order ) const ;
     void postorder(std::vector<const sn*>& order ) const ;
+#ifdef WITH_RPN
+    void rpn( std::vector<srpn>& tape ) const ;
+#endif
+
+
 
     void preorder_r( std::vector<const sn*>& order, int d ) const ;
     void inorder_r(  std::vector<const sn*>& order, int d ) const ;
     void postorder_r(std::vector<const sn*>& order, int d ) const ;
+#ifdef WITH_RPN
+    void rpn_r(std::vector<srpn>& tape, int d ) const ;
+    static srpn ConvertToRPN(const sn* n);
+#endif
 
     void inorder_(std::vector<sn*>& order ) ;
     void inorder_r_(std::vector<sn*>& order, int d );
-
-
 
 
     std::string desc_order(const std::vector<const sn*>& order ) const ;
@@ -1888,6 +1901,23 @@ inline void sn::postorder(std::vector<const sn*>& order ) const
     postorder_r(order, 0);
 }
 
+#ifdef WITH_RPN
+inline void sn::rpn( std::vector<srpn>& tape ) const
+{
+    rpn_r(tape, 0);
+}
+#endif
+
+
+
+
+
+
+
+
+
+
+
 
 inline void sn::preorder_r(std::vector<const sn*>& order, int d ) const
 {
@@ -1927,6 +1957,9 @@ inline void sn::inorder_r(std::vector<const sn*>& order, int d ) const
     if(right) right->inorder_r(order, d+1) ;
 #endif
 }
+
+
+
 inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 {
 #ifdef WITH_CHILD
@@ -1937,6 +1970,72 @@ inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 #endif
     order.push_back(this);
 }
+
+
+
+#ifdef WITH_RPN
+inline void sn::rpn_r(std::vector<srpn>& tape, int d ) const
+{
+#ifdef WITH_CHILD
+    for(int i=0 ; i < int(child.size()) ; i++) child[i]->rpn_r(tape, d+1) ;
+#else
+    if(left) left->rpn_r(tape, d+1) ;
+    if(right) right->rpn_r(tape, d+1) ;
+#endif
+    srpn rpn = ConvertToRPN(this);
+    tape.push_back(rpn);
+}
+#endif
+
+
+
+#ifdef WITH_RPN
+
+/**
+Need to review lifecycle of the param and tran to
+know how and when can do this...
+
+Forming the tape must be combined with forming the
+rpn_parm
+
+
+**/
+
+
+inline srpn sn::ConvertToRPN(const sn* n) // static
+{
+    srpn rpn = {} ;
+
+    if(n->is_operator())
+    {
+        unsigned nc = n->num_child();
+        assert( nc == 2 );
+#ifdef WITH_CHILD
+        unsigned leftspan = n->child[0]->num_node() ;
+        unsigned rightspan = n->child[1]->num_node();
+#else
+        unsigned leftspan = n->left->num_node() ;
+        unsigned rightspan = n->right->num_node();
+#endif
+        rpn.set_opernode( n->typecode, leftspan, rightspan );
+    }
+    else if(n->is_listnode())
+    {
+        unsigned num_listprim = n->num_child();
+        rpn.set_listnode( n->typecode, num_listprim );
+    }
+    else if(n->is_primitive())
+    {
+        unsigned index = 0 ; // COMBINED INDEX TO ADDRESS PARM AND TRAN
+        bool xform_identity = n->xform->is_identity();
+        rpn.set_primnode( n->typecode, n->is_complement(), xform_identity, index );
+    }
+    return rpn ;
+}
+#endif
+
+
+
 
 
 inline void sn::inorder_(std::vector<sn*>& order )

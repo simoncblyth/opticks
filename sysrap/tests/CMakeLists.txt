@@ -120,8 +120,6 @@ set(TEST_SOURCES
    SDirTest.cc
    SDiceTest.cc
 
-   stranTest.cc
-   stranRotateTest.cc
 
    SCenterExtentGenstepTest.cc
    SFrameGenstep_MakeCenterExtentGensteps_Test.cc
@@ -159,9 +157,16 @@ set(TEST_SOURCES
    SEvt__createInputGenstep_configuredTest.cc
    SEvt_AddEnvMeta_Test.cc
 
+   stranTest.cc
+   stranRotateTest.cc
+
 )
 
 
+set( PARKED_TEST_SOURCES
+
+
+)
 
 
 
