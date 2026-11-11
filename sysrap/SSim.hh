@@ -132,8 +132,8 @@ public:
     void afterPopulated();
 
     void serialize();
-    bool hasTop() const ;
-
+    bool    hasTop() const ;
+    NPFold* getTop() const ;
 
 public:
 

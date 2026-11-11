@@ -67,10 +67,9 @@ infrastructure duplication.
 
 #include "smeta.h"
 #include "SSim.hh"
-#include "SStr.hh"
 
-// TODO: migrate to spath.h
-#include "SPath.hh"
+#include "spath.h"
+#include "sdirectory.h"
 
 #include "s_time.h"
 #include "SBitSet.h"
@@ -78,6 +77,7 @@ infrastructure duplication.
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
 #include "NP.hh"
+#include "NPFold.h"
 
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -131,13 +131,6 @@ std::string CSGFoundry::descComp() const
 }
 
 
-void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname )
-{
-    assert( sim );
-    int bidx = sim->getBndIndex(bname);
-    assert( bidx > -1 );
-    setPrimBoundary(primIdx, bidx);
-}
 
 CSGFoundry* CSGFoundry::INSTANCE = nullptr ;
 CSGFoundry* CSGFoundry::Get(){ return INSTANCE ; }
@@ -974,7 +967,7 @@ CSGFoundry::findSolidIdx
 
 Find multiple idx with labels starting with the provided string, eg "r1", "r2", "r1p" or "r2p"
 
-This uses SStr:SimpleMatch which implements simple pattern matching with '$'
+This uses sstr:SimpleMatch which implements simple pattern matching with '$'
 indicating the terminator forcing exact entire match of what is prior to the '$'
 
 Q: why the awkward external solid_selection vector ?
@@ -988,7 +981,7 @@ void CSGFoundry::findSolidIdx(std::vector<unsigned>& solid_idx, const char* labe
     std::vector<unsigned>& ss = solid_idx ;
 
     std::vector<std::string> elem ;
-    SStr::Split(label, ',', elem );
+    sstr::Split(label, ',', elem );
 
     for(unsigned i=0 ; i < elem.size() ; i++)
     {
@@ -997,7 +990,7 @@ void CSGFoundry::findSolidIdx(std::vector<unsigned>& solid_idx, const char* labe
         {
             const CSGSolid& so = solid[j];
 
-            bool match = SStr::SimpleMatch(so.label, ele.c_str()) ;
+            bool match = sstr::MatchToTerminator(so.label, ele.c_str()) ;
             unsigned count = std::count(ss.begin(), ss.end(), j );  // count if j is already collected
             if(match && count == 0) ss.push_back(j) ;
         }
@@ -1105,6 +1098,20 @@ int CSGFoundry::getPrimBoundary_( const CSGPrim* pr ) const
 }
 
 
+
+
+
+
+
+
+void CSGFoundry::setPrimBoundary(unsigned primIdx, const char* bname )
+{
+    assert( sim );
+    int bidx = sim->getBndIndex(bname);
+    assert( bidx > -1 );
+    setPrimBoundary(primIdx, bidx);
+}
+
 /**
 CSGFoundry::setPrimBoundary
 ---------------------------------------
@@ -1155,13 +1162,13 @@ std::string CSGFoundry::detailPrim(unsigned primIdx) const
 
     std::stringstream ss ;
     ss
-        << std::setw(10) << SStr::Format(" pri:%d", primIdx )
-        << std::setw(10) << SStr::Format(" lpr:%d", pr_primIdx )
-        << std::setw(8)  << SStr::Format(" gas:%d", gasIdx )
-        << std::setw(8)  << SStr::Format(" msh:%d", meshIdx)
-        << std::setw(8)  << SStr::Format(" bnd:%d", boundary)
-        << std::setw(8)  << SStr::Format(" nno:%d", numNode )
-        << std::setw(10)  << SStr::Format(" nod:%d", nodeOffset )
+        << std::setw(10) << sstr::Format(" pri:%d", primIdx )
+        << std::setw(10) << sstr::Format(" lpr:%d", pr_primIdx )
+        << std::setw(8)  << sstr::Format(" gas:%d", gasIdx )
+        << std::setw(8)  << sstr::Format(" msh:%d", meshIdx)
+        << std::setw(8)  << sstr::Format(" bnd:%d", boundary)
+        << std::setw(8)  << sstr::Format(" nno:%d", numNode )
+        << std::setw(10)  << sstr::Format(" nod:%d", nodeOffset )
         << " ce "
         << "(" << std::setw(10) << std::fixed << std::setprecision(2) << ce.x
         << "," << std::setw(10) << std::fixed << std::setprecision(2) << ce.y
@@ -2518,8 +2525,9 @@ is for example /tmp/$USER/opticks/$GEOM/SProc::ExecutableName
 
 const char* CSGFoundry::getBaseDir(bool create) const
 {
-    const char* cfbase_default = SPath::Resolve(BASE, create ? DIRPATH : NOOP );  //
+    const char* cfbase_default = spath::Resolve(BASE);
     const char* cfbase = ssys::getenvvar("CFBASE", cfbase_default );
+    if(create && cfbase) sdirectory::MakeDirs(cfbase);
     return cfbase ? strdup(cfbase) : nullptr ;
 }
 
@@ -2599,7 +2607,7 @@ on loading
 **/
 void CSGFoundry::save_(const char* dir_) const
 {
-    const char* dir = SPath::Resolve(dir_, DIRPATH);
+    const char* dir = spath::Resolve(dir_);
     LOG(LEVEL) << dir ;
 
     if(meshname.size() > 0 && save__("meshname")) NP::WriteNames( dir, "meshname.txt", meshname );
@@ -2632,11 +2640,98 @@ void CSGFoundry::save_(const char* dir_) const
 }
 
 
+
+/**
+CSGFoundry::serialize
+----------------------
+
+
+In principal the primname need not be saved - as the info
+is duplicated within the lvid indices within the prim
+which reference meshname : however it is expedient to
+export for debugging and for easy python access to the names
+
+**/
+
+NPFold* CSGFoundry::serialize() const
+{
+    std::vector<std::string> primname ;
+    getPrimName(primname);
+
+    NPFold* fold = new NPFold ;
+    fold->meta = meta ;
+
+    NP* _solid = NPX::ArrayFromVec<int,   CSGSolid>( solid, 3, 4 ) ; _solid->names = mmlabel ;
+    NP* _prim  = NPX::ArrayFromVec<float, CSGPrim>(  prim,  4, 4 ) ; _prim->names = primname ;
+    NP* _node  = NPX::ArrayFromVec<float, CSGNode>(  node,  4, 4 ) ;
+    NP* _plan  = NPX::ArrayFromVec<float, float4>(   plan,  1, 4 ) ;
+    NP* _tran  = NPX::ArrayFromVec<float, qat4>(     tran,  4, 4 ) ;
+    NP* _itra  = NPX::ArrayFromVec<float, qat4>(     itra,  4, 4 ) ;
+    NP* _inst  = NPX::ArrayFromVec<float, qat4>(     inst,  4, 4 ) ;
+
+    fold->add("meshname", NPX::Holder(meshname) );
+    fold->add("solid", _solid );
+    fold->add("prim" , _prim );
+    fold->add("node" , _node );
+    fold->add("plan" , _plan );
+    fold->add("tran" , _tran );
+    fold->add("itra" , _itra );
+    fold->add("inst" , _inst );
+
+    NPFold* sim_top = sim->getTop();
+    if(sim_top) fold->add_subfold(SSim::RELDIR, sim_top );
+
+    return fold ;
+}
+
+void CSGFoundry::import_(const NPFold* fold)
+{
+    meta = fold->meta ;
+    const NP* _meshname = fold->get("meshname");
+    _meshname->get_names(meshname);
+    NPX::VecFromArray<CSGSolid>(solid, fold->get("solid") );
+    NPX::VecFromArray<CSGPrim>( prim,  fold->get("prim")  );
+    NPX::VecFromArray<CSGNode>( node , fold->get("node")  );
+    NPX::VecFromArray<float4>(  plan , fold->get("plan")  );
+    NPX::VecFromArray<qat4>(    tran , fold->get("tran")  );
+    NPX::VecFromArray<qat4>(    itra , fold->get("itra")  );
+    NPX::VecFromArray<qat4>(    inst , fold->get("inst")  );
+}
+
+void CSGFoundry::save2(const char* dir_) const
+{
+    NPFold* fold = serialize();
+    const char* dir = spath::Resolve(dir_);
+    fold->save(dir);
+}
+void CSGFoundry::load2(const char* dir_)
+{
+    const char* dir = spath::Resolve(dir_);
+    NPFold* fold = NPFold::Load(dir);
+    import_(fold);
+}
+
+
+
+
+/**
+CSGFoundry::save__
+--------------------
+
+If save_opt is not defined this always returns true.
+
+When save_opt is defined, eg via the below envvar, it configures
+which parts of CSGFoundry to save::
+
+    CSGFoundry__SAVE_OPT
+
+**/
+
+
 bool CSGFoundry::save__(const char* elem) const
 {
     return save_opt == nullptr ? true : ( strstr(save_opt, elem) != nullptr ) ;
 }
-
 void CSGFoundry::setSaveOpt(const char* save_opt_)
 {
     save_opt = save_opt_ ? strdup(save_opt_) : nullptr ;
@@ -2728,7 +2823,7 @@ void CSGFoundry::load(const char* base_, const char* rel)
     LOG_IF(fatal, !conventional) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ;
     assert(conventional);
 
-    const char* base = SPath::Resolve(base_, NOOP);
+    const char* base = spath::Resolve(base_);
     setCFBase(base);
 
     std::stringstream ss ;
@@ -2866,7 +2961,7 @@ Load array from a cfbase relative path
 
 NP* CSGFoundry::loadAux(const char* auxrel ) const
 {
-    const char* auxpath = cfbase ? SPath::Join(cfbase, auxrel ) : nullptr ;
+    const char* auxpath = cfbase ? spath::Resolve(cfbase, auxrel ) : nullptr ;
     NP* aux = auxpath && NP::Exists(auxpath) ? NP::Load(auxpath) : nullptr ;
     return aux ;
 }
@@ -2882,8 +2977,8 @@ Use STime::Format(mtime) to convert the int into a timestamp string
 int CSGFoundry::MTime(const char* dir, const char* fname_) // static
 {
     const char* fname = fname_ ? fname_ : "solid.npy" ;
-    const char* path = SPath::Resolve(dir, fname, NOOP);
-    return SPath::mtime(path);
+    const char* path = spath::Resolve(dir, fname);
+    return spath::mtime(path);
 }
 
 
@@ -3148,17 +3243,24 @@ const SSim* CSGFoundry::getSim() const
 }
 
 
+/**
+CSGFoundry::setFold
+---------------------
+
+Last directory element is required to be "CSGFoundry"
+
+**/
 
 void CSGFoundry::setFold(const char* fold_)
 {
-    const char* rel = SPath::Basename(fold_);
+    const char* rel = spath::Basename(fold_);
 
     bool rel_expect = strcmp( rel, "CSGFoundry" ) == 0 ;
     assert( rel_expect );
     if(!rel_expect) std::raise(SIGINT);
 
     fold = strdup(fold_);
-    cfbase = SPath::Dirname(fold_) ;
+    cfbase = spath::Dirname(fold_) ;
 }
 
 const char* CSGFoundry::getFold() const

@@ -144,6 +144,7 @@ public:
     static bool is_readable(const char* path );
 
     static int64_t last_write_time(const char* path, bool dump=false);
+    static int     mtime(const char* path);
 
 
 };
@@ -1250,5 +1251,12 @@ inline int64_t spath::last_write_time(const char* path, bool dump)
 }
 
 
+inline int spath::mtime(const char* path)
+{
+     struct stat st;
+     int ierr = stat(path, &st );
+     int mtime = st.st_mtime;
+     return ierr == 0 ? mtime : 0 ;
+}
 
 

@@ -34,6 +34,8 @@ struct sstr
     static bool MatchEnd(   const char* s, const char* q);
     static bool EndsWith(   const char* s, const char* q);
 
+    static bool MatchToTerminator(const char* s, const char* q );
+
     static bool StartsWithElem(const char* s, const char* qq,  char delim=',' );
     static bool StartsWithElem(const char* s, std::vector<std::string>& qq );
 
@@ -215,6 +217,11 @@ inline bool sstr::MatchAll( const char* s, const char* q)
     return s && q && strcmp(s, q) == 0 ;
 }
 
+
+
+
+
+
 /**
 sstr::MatchStart (NB this can replace SStr::StartsWith with same args)
 -------------------------------------------------------------------------
@@ -272,6 +279,52 @@ inline bool sstr::EndsWith( const char* s, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+
+
+
+
+
+
+
+
+
+/**
+sstr::MatchToTerminator (same impl as the former from SStr::SimpleMatch)
+--------------------------------------------------------------------------
+
+Return if the argument string s matches the query string q
+where if  q ends with '$' or '@' require a full match up to
+the terminator.
+
+sstr:SimpleMatch which implements simple pattern match using '$' or '@'
+in the query string to indicate the "terminator" forcing exact entire match
+of what is prior to the "terminator"
+
+Possible "
+
+
+**/
+inline bool sstr::MatchToTerminator(const char* s, const char* q )
+{
+    unsigned ls = strlen(s);
+    unsigned lq = strlen(q);
+
+    if(ls == 0 ) return false ;
+    if(lq == 0 ) return false ;
+
+    bool qed = q[lq-1] == '$' || q[lq-1] == '@' ;                   // q ends with '$' or '@'
+    bool qed_match = 0 == strncmp(s, q, lq - 1) && ls == lq - 1 ;   // exact match up to the dollar
+    return qed ? qed_match : StartsWith(s, q) ;
+}
+
+
+
+
+
+
+
+
+
 
 
 inline bool sstr::StartsWithElem(const char* s, const char* _qq, char delim )

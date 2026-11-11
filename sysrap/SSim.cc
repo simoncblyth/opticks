@@ -689,8 +689,10 @@ bool SSim::hasTop() const
    return top != nullptr ;
 }
 
-
-
+NPFold* SSim::getTop() const
+{
+    return top ;
+}
 
 
 template<typename ... Args>

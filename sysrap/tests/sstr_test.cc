@@ -11,6 +11,7 @@ TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 
 TEST=ParseDict ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseStringList  ~/opticks/sysrap/tests/sstr_test.sh
+TEST=MatchToTerminator ~/opticks/sysrap/tests/sstr_test.sh
 
 
 **/
@@ -614,7 +615,7 @@ struct sstr_test
     static int ParseStringList(const char* list);
     static int ParseStringList();
     static int ExtractSize();
-
+    static int MatchToTerminator();
 
     static int Main();
 };
@@ -837,9 +838,98 @@ int sstr_test::ExtractSize()
             ;
     }
     return 0 ;
-
-
 }
+
+
+int sstr_test::MatchToTerminator()
+{
+    std::vector<std::string> labels = {
+        "r0",
+        "r1",
+        "r2",
+        "r3",
+        "r1p0",
+        "r1p1",
+        "r1p2",
+        "r1p3",
+        "r2p0",
+        "r2p1",
+        "r2p2",
+        "r2p3",
+        "R3P0N0",
+        "R3P0N1",
+        "R3P0N2",
+        "R3P1N0",
+        "R3P1N1",
+        "R3P1N2",
+        "R3P1N3",
+    };
+
+    std::vector<std::string> querys = {
+         "r2",
+         "r2$",
+         "r2p",
+         "r2p$",
+         "r2p2$",
+         "R3P1",
+         "R3P1*",
+         "R3P1N",
+         "R3P1N?",
+         "R3P1N2$",
+         "R3P?N0",
+         "R3P1*",
+      } ;
+
+    for(int i=0 ; i < int(querys.size()) ; i++)
+    {
+        const char* q = querys[i].c_str() ;
+        unsigned lq = strlen(q);
+        bool qed = q[lq-1] == '$' ;
+
+        std::cout
+            << " q " << q
+            << " lq " << lq
+            << " qed: " << ( qed ? "Y" : "N" )
+            << std::endl
+            ;
+
+
+        for(int j=0 ; j < int(labels.size()) ; j++)
+        {
+            const char* s = labels[j].c_str();
+            bool sm = sstr::MatchToTerminator(s,q);
+            bool wm = sstr::Match(s,q);
+            std::cout
+                << " sstr::MatchToTerminator("
+                << std::setw(7) << s
+                << " , "
+                << std::setw(7) << q
+                << " )  : "
+                << "[" << ( sm ? "Y" : "n" ) << "]"
+                ;
+
+            std::cout
+                << " sstr::Match("
+                << std::setw(7) << s
+                << " , "
+                << std::setw(7) << q
+                << " )  : "
+                << "[" << ( wm ? "Y" : "n" ) << "]"
+                ;
+
+           std::cout << std::endl ;
+        }
+    }
+    return 0 ;
+}
+
+
+
+
+
+
+
+
 
 
 int sstr_test::Main()
@@ -883,6 +973,7 @@ int sstr_test::Main()
     if(ALL||0==strcmp(TEST,"ParseDict"))      rc += ParseDict();
     if(ALL||0==strcmp(TEST,"ParseStringList"))  rc += ParseStringList();
     if(ALL||0==strcmp(TEST,"ExtractSize"))    rc += ExtractSize();
+    if(ALL||0==strcmp(TEST,"MatchToTerminator"))    rc += MatchToTerminator();
 
 
     return rc ;

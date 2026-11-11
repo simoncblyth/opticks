@@ -24,9 +24,16 @@ defarg="info_run"
 arg=${1:-$defarg}
 
 source $HOME/.opticks/GEOM/GEOM.sh
-export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
-export TEST=Load_Save
-#export TEST=getPrimName
+#export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+
+
+test=getPrimName
+#test=Load_Save
+#test=Load_Save2
+test=Load_Save2_Load2
+
+export TEST=${TEST:-$test}
+
 export CSGFoundry__SAVE_OPT=meshname
 
 if [ "${arg/info}" != "$arg" ]; then

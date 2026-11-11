@@ -7,6 +7,7 @@
 
 struct SBitSet ;
 struct NP ;
+struct NPFold ;
 struct SSim ;
 struct stree ;
 struct SScene ;
@@ -300,6 +301,12 @@ struct CSG_API CSGFoundry : public SFoundry
     const char* getBaseDir(bool create) const ;
 
     void save_(const char* dir) const ;
+    NPFold*   serialize() const ;
+    void      import_(const NPFold* fold);
+    void save2(const char* dir_) const;
+    void load2(const char* dir_);
+
+
     bool save__(const char* elem) const ;
     void setSaveOpt(const char* save_opt_);
     const char* getSaveOpt() const ;
@@ -332,13 +339,9 @@ struct CSG_API CSGFoundry : public SFoundry
     bool isUploaded() const ;
     void setupDeviceGeometry( SDeviceGeometry* geom ) const ;
 
-
     void inst_find_unique();
     unsigned getNumUniqueGAS() const ;
     unsigned getNumUniqueIAS() const ;
-    /*
-    unsigned getNumUniqueINS() const ;
-    */
 
     unsigned getNumInstancesIAS(int ias_idx, unsigned long long emm) const ;
     void     getInstanceTransformsIAS(std::vector<qat4>& select_inst, int ias_idx, unsigned long long emm ) const ;
@@ -349,8 +352,6 @@ struct CSG_API CSGFoundry : public SFoundry
 
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
-
-
 
 
 
@@ -379,6 +380,8 @@ struct CSG_API CSGFoundry : public SFoundry
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
 #endif
+
+
 
 
 
@@ -438,11 +441,8 @@ struct CSG_API CSGFoundry : public SFoundry
     // MEMBERS
 
 
-    // HMM "meshname" is historical, should be "lvname" or "soname" ?
-
-
-    std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
-    std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
+    std::vector<std::string> meshname ;  // "meshname" is historical, should be "lvname" or "soname" (G4VSolid names from Geant4)
+    std::vector<std::string> mmlabel ;   // eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
     std::vector<CSGSolid>  solid ;
     std::vector<CSGPrim>   prim ;

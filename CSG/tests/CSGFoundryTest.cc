@@ -286,6 +286,36 @@ void test_Load_Save()
 }
 
 
+void test_Load_Save2()
+{
+    LOG(info) << "[" ;
+    SSim::Create();
+    CSGFoundry* fd = CSGFoundry::Load() ;
+
+    const char* out = "$TMP/CSG/CSGFoundryTest/test_Load_Save2";
+    fd->save2(out);
+    LOG(info) << " out[" << out << "]" ;
+
+    LOG(info) << "]" ;
+}
+
+void test_Load_Save2_Load2()
+{
+    LOG(info) << "[" ;
+    SSim::Create();
+    CSGFoundry* a = CSGFoundry::Load() ;
+
+    const char* dir = "$TMP/CSG/CSGFoundryTest/test_Load_Save2_Load2";
+    a->save2(dir);
+    LOG(info) << " dir[" << dir << "]" ;
+
+    CSGFoundry* b = new CSGFoundry ;
+    b->load2(dir);
+
+    LOG(info) << "]" ;
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -293,7 +323,8 @@ int main(int argc, char** argv)
 
     //const char* DEF = "ALL" ;
     //const char* DEF = "Load_Save" ;
-    const char* DEF = "getPrimName" ;
+    const char* DEF = "Load_Save2" ;
+    //const char* DEF = "getPrimName" ;
     const char* TEST = ssys::getenvvar("TEST", DEF) ;
     bool ALL = TEST && strcmp(TEST, "ALL") == 0 ;
 
@@ -308,7 +339,8 @@ int main(int argc, char** argv)
     if(ALL||strcmp(TEST,"setMeta_getMeta")==0) test_setMeta_getMeta();
     if(ALL||strcmp(TEST,"getPrimName")==0) test_getPrimName();
     if(ALL||strcmp(TEST,"Load_Save")==0) test_Load_Save();
-
+    if(ALL||strcmp(TEST,"Load_Save2")==0) test_Load_Save2();
+    if(ALL||strcmp(TEST,"Load_Save2_Load2")==0) test_Load_Save2_Load2();
 
     return 0 ;
 }
