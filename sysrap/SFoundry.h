@@ -24,14 +24,12 @@ struct CSGPrim ;
 struct SFoundry
 {
     virtual void upload()                                              = 0 ;
-    virtual bool isUploaded() const                                    = 0 ;
-    virtual void setupDeviceGeometry( SDeviceGeometry* geom ) const    = 0 ;
+    virtual const SDeviceGeometry* getDeviceGeometry() const             = 0 ;
 
     virtual std::string descBase() const                               = 0 ;
     virtual const SSim* getSim() const                                 = 0 ;
     virtual void exportTreeSceneFrame( SGLM* gm ) const                = 0 ;
     virtual SScene* getScene() const                                   = 0 ;
-
 
     virtual unsigned getNumSolid() const                               = 0 ;
     virtual unsigned getNumPrim() const                                = 0 ;

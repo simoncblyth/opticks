@@ -36,14 +36,14 @@ CSGImport::CSGImport( CSGFoundry* fd_ )
 
 
 /**
-CSGImport::import : populate CSGFoundry using geometry info from stree.h
+CSGImport::import_ : populate CSGFoundry using geometry info from stree.h
 --------------------------------------------------------------------------
 
 Former equivalent from hybrid old+new morass wass CSG_GGeo_Convert
 
 **/
 
-void CSGImport::import()
+void CSGImport::import_()
 {
     LOG(LEVEL) << "[" ;
 

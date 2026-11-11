@@ -1,11 +1,14 @@
 #pragma once
 /**
-CSGImport.h 
+CSGImport.h
 ==============
+
+Populates CSGFoundry/CSGSolid/CSGPrim/CSGNode model
+from stree/snode/sn model
 
 See::
 
-    sysrap/tests/stree_load_test.sh 
+    sysrap/tests/stree_load_test.sh
     CSG/tests/CSGFoundry_importTree_Test.sh
 
 
@@ -21,48 +24,48 @@ CAUTION : SOME PARALLEL DEV NEEDS REVIEW, CONSOLIDATION::
 #include <string>
 #include "plog/Severity.h"
 
-struct stree ; 
-struct snode ; 
-struct sn ; 
+struct stree ;
+struct snode ;
+struct sn ;
 
-struct CSGFoundry ; 
-struct CSGSolid ; 
-struct CSGPrim ; 
-struct CSGNode ; 
+struct CSGFoundry ;
+struct CSGSolid ;
+struct CSGPrim ;
+struct CSGNode ;
 
 #include "CSG_API_EXPORT.hh"
 
 
-struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ? 
+struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
 {
-    static const plog::Severity LEVEL ; 
-    static const int LVID ; 
-    static const int NDID ; 
+    static const plog::Severity LEVEL ;
+    static const int LVID ;
+    static const int NDID ;
 
     static constexpr const char* CSGImport__DUMP_LISTNODE = "CSGImport__DUMP_LISTNODE" ;
     static bool DUMP_LISTNODE ;
 
 
-    CSGFoundry*  fd ; 
-    const stree* st ; 
+    CSGFoundry*  fd ;
+    const stree* st ;
 
-    CSGImport( CSGFoundry* fd );  
- 
-    void import(); 
-    void importNames(); 
-    void importSolid(); 
-    void importInst(); 
+    CSGImport( CSGFoundry* fd );
 
-    CSGSolid* importSolidRemainder_OLD(int ridx, const char* rlabel); 
+    void import_();
+    void importNames();
+    void importSolid();
+    void importInst();
+
+    CSGSolid* importSolidRemainder_OLD(int ridx, const char* rlabel);
 
     CSGSolid* importSolidGlobal(       int ridx, char ridx_type );
-    CSGSolid* importSolidFactor(       int ridx, char ridx_type ); 
+    CSGSolid* importSolidFactor(       int ridx, char ridx_type );
 
-    CSGPrim*  importPrim( int primIdx, const snode& node ); 
-    CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const sn* nd); 
-    CSGNode*  importListnode(int nodeOffset, int partIdx, const snode& node, const sn* nd); 
+    CSGPrim*  importPrim( int primIdx, const snode& node );
+    CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const sn* nd);
+    CSGNode*  importListnode(int nodeOffset, int partIdx, const snode& node, const sn* nd);
 
-}; 
+};
 
 
 

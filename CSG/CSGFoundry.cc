@@ -93,16 +93,10 @@ infrastructure duplication.
 #include "OpticksCSG.h"
 #include "CSGSolid.h"
 
-#ifdef WITH_CUDA
 #include "CU.h"
-#endif
 
 #include "CSGFoundry.h"
 #include "SName.h"
-
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-#include "CSGTarget.h"
-#endif
 
 #include "CSGImport.h"
 #include "CSGCopy.h"
@@ -154,21 +148,14 @@ can be CSGImported from SSim it is no longer so passive.
 
 CSGFoundry::CSGFoundry()
     :
-    d_prim(nullptr),
-    d_node(nullptr),
-    d_plan(nullptr),
-    d_itra(nullptr),
+    meta(),
     sim(SSim::Get()),
-    import(new CSGImport(this)),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-    target(new CSGTarget(this)),
-#endif
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
+    last_added_node(nullptr),
     mtime(s_time::EpochSeconds()),
-    meta(),
     fold(nullptr),
     cfbase(nullptr),
     geom(nullptr),
@@ -1384,7 +1371,7 @@ Better for SBT creation not to be mixed up with geometry selection.
 
 SCSGPrimSpec CSGFoundry::getPrimSpec(unsigned solidIdx) const
 {
-    SCSGPrimSpec ps = d_prim ? getPrimSpecDevice(solidIdx) : getPrimSpecHost(solidIdx) ;
+    SCSGPrimSpec ps = dgeom.prim ? getPrimSpecDevice(solidIdx) : getPrimSpecHost(solidIdx) ;
     LOG_IF(info, ps.device == false) << "WARNING using host PrimSpec, upload first " ;
     return ps ;
 }
@@ -1397,9 +1384,9 @@ SCSGPrimSpec CSGFoundry::getPrimSpecHost(unsigned solidIdx) const
 }
 SCSGPrimSpec CSGFoundry::getPrimSpecDevice(unsigned solidIdx) const
 {
-    assert( d_prim );
+    assert( dgeom.prim );
     const CSGSolid* so = solid.data() + solidIdx ;  // get the primOffset from CPU side solid
-    SCSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ;
+    SCSGPrimSpec ps = CSGPrim::MakeSpec( dgeom.prim,  so->primOffset, so->numPrim ); ;
     ps.device = true ;
     return ps ;
 }
@@ -1543,21 +1530,6 @@ unsigned CSGFoundry::getSolidIdx(const CSGSolid* so) const
 }
 
 
-
-/**
-CSGFoundry::importSim
-----------------------
-
-Instanciatation grabs the (SSim)sim instance
-
-**/
-
-
-void CSGFoundry::importSim()
-{
-    assert(sim);
-    import->import();
-}
 
 
 
@@ -3024,6 +2996,8 @@ const char* CSGFoundry::descELV() const
 CSGFoundry::CreateFromSim
 ---------------------------
 
+Canonical invokation from on high : G4CXOpticks::setGeometry
+
 Instanciation grabs the (SSim)sim instance
 
 **/
@@ -3033,9 +3007,14 @@ CSGFoundry* CSGFoundry::CreateFromSim()
 {
     assert(SSim::Get() != nullptr);
     CSGFoundry* fd = new CSGFoundry ;
-    fd->importSim();
+    CSGImport* importer = new CSGImport(fd);
+    importer->import_();
+
     return fd ;
 }
+
+
+
 
 
 
@@ -3334,37 +3313,28 @@ void CSGFoundry::upload()
     assert( tran.size() == itra.size() );
 
 
-#ifdef WITH_CUDA
-    bool is_uploaded_0 = isUploaded();
+    bool is_uploaded_0 = dgeom.is_uploaded();
     LOG_IF(fatal, is_uploaded_0) << "HAVE ALREADY UPLOADED : THIS CANNOT BE DONE MORE THAN ONCE " ;
     assert(is_uploaded_0 == false);
 
     // allocates and copies
-    d_prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ;
-    d_node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ;
-    d_plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ;
-    d_itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ;
+    dgeom.init();
+    dgeom.prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ;
+    dgeom.node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ;
+    dgeom.plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ;
+    dgeom.itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ;
 
-    bool is_uploaded_1 = isUploaded();
+    bool is_uploaded_1 = dgeom.is_uploaded();
     LOG_IF(fatal, !is_uploaded_1) << "FAILED TO UPLOAD" ;
     assert(is_uploaded_1 == true);
-#else
-    LOG(fatal) << " COMPILATION WITH_CUDA required to upload " ;
-    std::exit(1);
-#endif
 
-}
-
-bool CSGFoundry::isUploaded() const
-{
-    return d_prim != nullptr && d_node != nullptr ;
 }
 
 
 
 
 /**
-CSGFoundry::setupDeviceGeometry
+CSGFoundry::getDeviceGeometry()
 ---------------------------------
 
 This is used from CSGOptiX::initGeometry
@@ -3374,17 +3344,9 @@ as that is applied to the ray (not the geometry).
 
 **/
 
-void CSGFoundry::setupDeviceGeometry( SDeviceGeometry* geom ) const
+const SDeviceGeometry* CSGFoundry::getDeviceGeometry() const
 {
-    bool is_uploaded = isUploaded();
-
-    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGFoundry::setupGeometryDeviceParam " ;
-    assert( is_uploaded );
-
-    geom->node = d_node ;
-    geom->plan = d_plan ;
-    geom->tran = nullptr ;  // d_tran is not needed on device
-    geom->itra = d_itra ;
+    return &dgeom ; 
 }
 
 
@@ -3401,12 +3363,18 @@ void CSGFoundry::setupDeviceGeometry( SDeviceGeometry* geom ) const
 
 
 
+/**
+CSGFoundry::inst_find_unique
+-----------------------------
+
+Invoked at head of CSGFoundry::upload
+
+**/
 
 
 void CSGFoundry::inst_find_unique()
 {
     qat4::find_unique_gas( inst, gas );
-    //qat4::find_unique( inst, ins, gas, sensor_identifier, sensor_index );
 }
 
 unsigned CSGFoundry::getNumUniqueGAS() const
@@ -3417,14 +3385,6 @@ unsigned CSGFoundry::getNumUniqueIAS() const
 {
     return 1 ;
 }
-
-/*
-unsigned CSGFoundry::getNumUniqueINS() const
-{
-    return ins.size();
-}
-*/
-
 
 
 unsigned CSGFoundry::getNumInstancesIAS(int ias_idx, unsigned long long emm) const
@@ -3518,426 +3478,6 @@ std::string CSGFoundry::descGAS() const
 
 
 
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-
-/**
-CSGFoundry::parseMOI
--------------------------
-
-MOI lookups Meshidx-meshOrdinal-Instanceidx, examples of moi strings::
-
-   sWorld:0:0
-   sWorld:0
-   sWorld
-
-   0:0:0
-   0:0
-   0
-
-The first colon delimited field can be lv index or solid name.
-
-**/
-void CSGFoundry::parseMOI(int& midx, int& mord, int& iidx, const char* moi) const
-{
-    id->parseMOI(midx, mord, iidx, moi );  // SName::parseMOI
-}
-const char* CSGFoundry::getName(unsigned midx) const
-{
-    return id->getName(midx);
-}
-
-
-
-
-/**
-CSGFoundry::getFrame
----------------------
-
-Replacing most of CSGOptiX::setComposition
-
-**/
-
-const char* CSGFoundry::getFrame_NOTES = R"(
-CSGFoundry::getFrame_NOTES
-===========================
-
-When CSGFoundry::getFrame fails due to the MOI/FRS string used to target
-a volume of the geometry failing to find the targetted volume
-it is usually due to the spec not being appropriate for the geometry.
-
-First thing to check is the configured GEOM envvar using GEOM bash function.
-
-With simple test geometries the lack of frames can be worked around
-using special cased MOI in some cases, for example::
-
-    MOI=EXTENT:200 ~/o/cxr_min.sh
-
-
-When using U4VolumeMaker it is sometimes possible to
-debug the bad specification string by rerunning with the below
-envvars set in order to dump PV/LV/SO names from the full and sub trees.::
-
-   export U4VolumeMaker_PVG_WriteNames=1
-   export U4VolumeMaker_PVG_WriteNames_Sub=1
-
-This writes the names for the full volume tree to eg::
-
-   /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames
-   /tmp/$USER/opticks/U4VolumeMaker_PVG_WriteNames_Sub
-
-Grab these from remote with::
-
-   u4
-   ./U4VolumeMaker.sh grab
-
-
-)" ;
-
-
-sframe CSGFoundry::getFrame() const // TODO: MIGRATE TO sfr.h
-{
-    const char* moi_or_iidx = ssys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
-    return getFrame(moi_or_iidx);
-}
-
-/**
-CSGFoundry::getFrame
---------------------
-
-The FRAME_TRANSITION starts moving away from sframe by
-switching to stree::getFrame to provide sfr which is used to
-populate the sframe
-
-Currently sframe::populate lacks handling of the grid metadata
-needed for simtrace. Actually seems that metadata not much used and
-anyhow if it was needed could include into the genstep metadata.
-
-**/
-
-
-sframe CSGFoundry::getFrame(const char* q_spec) const //  TODO: MIGRATE TO sfr.h
-{
-    sframe fr = {} ;
-
-#ifdef FRAME_TRANSITION
-    stree* tree = getTree();
-    assert(tree);
-    sfr f = tree->get_frame(q_spec);
-    fr.populate(f);
-#else
-    const char* arg = frs ? frs : sframe::DEFAULT_FRS ;
-    int rc = getFrame(fr, arg );
-    LOG_IF(error, rc != 0) << " arg" << arg << std::endl << getFrame_NOTES ;
-    if(rc != 0) std::raise(SIGINT);
-#endif
-    fr.prepare();  // creates Tran<double>
-
-    return fr ;
-}
-
-
-
-#ifndef FRAME_TRANSITION
-
-/**
-CSGFoundry::getFrame
----------------------
-
-
-FRAME_TRANSITION SEEKS TO ELIMINATE THIS
-
-
-
-
-
-frs
-    frame specification string is regarded to "looks_like_moi" when
-    it starts with a letter or it contains ":" or it is "-1".
-    For such strings parseMOI is used to extract midx, mord, oodx
-
-    Otherwise the string is assumed to be inst_idx and iidxg
-    parsed as an integer
-
-
-Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into inst_idx and vice versa ?
-
-* NO not for global prims : for example for all the repeated prims in the global geometry
-  there is only one inst_idx (zero) but there are many possible MOI
-
-* NO not for most instanced prim, where all the prim within an instance
-  share the same inst_idx and transform
-
-* BUT for the outer prim of an instance a correspondence is possible
-
-TODO : AVOID DUPLICATION BETWEEN THIS AND stree::get_frame
-
-
-looks_like_raw:true
-    frs contains "," delimiting center_extent CE values eg::
-
-         MOI=0.000,0.000,18935.000,1435.000 FULLSCREEN=0 cxr_min.sh
-
-
-**/
-
-
-
-
-int CSGFoundry::getFrame(sframe& fr, const char* frs ) const  //  TODO: MIGRATE TO sfr.h
-{
-
-    bool VERBOSE = ssys::getenvbool(getFrame_VERBOSE) ;
-    LOG(LEVEL) << "[" << getFrame_VERBOSE << "] " << VERBOSE ;
-
-    int rc = 0 ;
-
-    bool looks_like_axis = sstr::StartsWith(frs,stree::AXIS_PFX) ;
-    bool looks_like_raw = strstr(frs,",") ;
-    bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ;
-
-    LOG_IF(info, VERBOSE)
-        << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
-        << " frs " << ( frs ? frs : "-" )
-        << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " )
-        << " looks_like_raw " << ( looks_like_raw ? "YES" : "NO " )
-        ;
-
-    if(looks_like_axis)
-    {
-        // ASSERTS WITHOUT THIS FROM TOO MANY ELEM IN PopulateFromRaw
-        // BUT SUSPECT THE sframe NOT REALLY USED
-        //
-        // ABOVE IS NOT TRUE, THE PERSISTED sframe STILL USED FROM CSGOptiX/cxt_min.py for simtrace plotting
-        // SO STILL MUST DO THINGS IN DUPLICATE
-        sfr lf = sfr::MakeFromAxis<float>(frs + strlen(stree::AXIS_PFX), ',');
-        fr.populate(lf);
-    }
-    else if(looks_like_raw)
-    {
-        rc = sframe::PopulateFromRaw(fr, frs, ',' );
-    }
-    else if(looks_like_moi)
-    {
-        int midx, mord, gord ;  // mesh-index, mesh-ordinal, gas-ordinal
-        parseMOI(midx, mord, gord,  frs );
-
-        rc = getFrame(fr, midx, mord, gord);
-        // NB gas ordinal is not the same as gas index
-
-        LOG_IF(info, VERBOSE)
-            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
-            << " frs " << ( frs ? frs : "-" )
-            << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " )
-            << " midx " << midx
-            << " mord " << mord
-            << " gord " << gord
-            << " rc " << rc
-            ;
-
-    }
-    else
-    {
-        int inst_idx = SName::ParseIntString(frs, 0) ;
-        rc = getFrame(fr, inst_idx);
-
-        LOG_IF(info, VERBOSE)
-            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
-            << " frs " << ( frs ? frs : "-" )
-            << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " )
-            << " inst_idx " << inst_idx
-            << " rc " << rc
-            ;
-    }
-
-    fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() );
-    fr.frs = strdup(frs);
-    fr.prepare();  // needed for spawn_lite to work
-
-    LOG_IF(info, VERBOSE)
-        << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
-        << "[fr.desc\n"
-        << fr.desc()
-        << "]fr.desc\n"
-        ;
-
-    LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;
-    return rc ;
-}
-#endif
-
-
-int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
-{
-    return target->getFrame( fr, inst_idx );
-}
-
-/**
-CSGFoundry::getFrame
-----------------------
-
-midx
-    mesh index (aka lv)
-mord
-    mesh ordinal (picking between multipler occurrences of midx
-gord
-    GAS ordinal [NB this is not the GAS index]
-
-
-NB the GAS index is determined from (midx, mord)
-and then gord picks between potentially multiple occurrences
-
-**/
-
-int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int gord) const
-{
-    int rc = 0 ;
-    if( midx == -1 )
-    {
-        unsigned ias_idx = 0 ; // only one IAS
-        unsigned long long emm = 0ull ;   // hmm instance var ?
-        iasCE(fr.ce, ias_idx, emm);
-    }
-    else
-    {
-        rc = target->getFrame( fr, midx, mord, gord );
-    }
-    return rc ;
-}
-
-
-/**
-CSGFoundry::getFrameE
------------------------
-
-The frame and corresponding transform used can be controlled by several envvars,
-see CSGFoundry::getFrameE. Possible envvars include:
-
-+------------------------------+----------------------------+
-| envvar                       | Examples                   |
-+==============================+============================+
-| INST                         |                            |
-+------------------------------+----------------------------+
-| MOI                          | Hama:0:1000 NNVT:0:1000    |
-+------------------------------+----------------------------+
-| OPTICKS_INPUT_PHOTON_FRAME   |                            |
-+------------------------------+----------------------------+
-
-
-The sframe::set_ekv records into frame metadata the envvar key and value
-that picked the frame.
-
-
-Q: WHY NOT DO THIS AT LOWER LEVEL ?
-A: Probably because it needs getFrame and it predates the stree.h reorganization
-   that made frame access at sysrap level possible.
-
-
-NB this is called both by the below CSGFoundry::AfterLoadOrCreate and by CSGOptiX::initFrame
-   so that should mean that frame annotation always gets done for running from
-   persisted or live geometry  (HMM perhaps called twice though)
-
-**/
-
-
-
-sframe CSGFoundry::getFrameE() const
-{
-    bool VERBOSE = ssys::getenvbool(getFrameE_VERBOSE) ;
-    LOG(LEVEL) << "[" << getFrameE_VERBOSE << "] " << VERBOSE ;
-
-    sframe fr = {} ;
-
-    if(ssys::getenvbool("INST"))
-    {
-        int INST = ssys::getenvint("INST", 0);
-        LOG_IF(info, VERBOSE) << " INST " << INST ;
-        getFrame(fr, INST ) ;
-
-        fr.set_ekv("INST");
-    }
-    else if(ssys::getenvbool("MOI"))
-    {
-        const char* MOI = ssys::getenvvar("MOI", nullptr) ;
-        LOG_IF(info, VERBOSE) << " MOI " << MOI ;
-        fr = getFrame() ;
-        fr.set_ekv("MOI");
-    }
-    else
-    {
-        const char* ipf_ = SEventConfig::InputPhotonFrame();  // OPTICKS_INPUT_PHOTON_FRAME
-        const char* ipf = ipf_ ? ipf_ : "0" ;
-        LOG_IF(info, VERBOSE) << " ipf " << ipf ;
-        fr = getFrame(ipf);
-
-        fr.set_ekv(SEventConfig::kInputPhotonFrame, ipf );
-    }
-
-
-    SSim::AnnotateFrame(fr, elv, "CSGFoundry::getFrameE"  );  // set tree and dynamic digests into the frame
-
-    return fr ;
-}
-
-
-
-
-
-/**
-CSGFoundry::getCenterExtent
--------------------------------
-
-For midx -1 returns ce obtained from the ias bbox,
-otherwise uses CSGTarget to lookup the center extent.
-
-For global geometry which typically means a default gord of 0
-there is special handling for gord -1/-2/-3 in CSGTarget::getCenterExtent
-
-gord -1
-    uses getLocalCenterExtent
-
-gord -2
-    uses SCenterExtentFrame xyzw : ordinary XYZ frame
-
-gord -3
-    uses SCenterExtentFrame rtpw : tangential RTP frame
-
-
-NB gord is the gas ordinal index
-(it was formerly named iidx which was confusing as this is NOT the global instance index)
-
-
-**/
-
-int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int gord, qat4* m2w, qat4* w2m  ) const
-{
-    int rc = 0 ;
-    if( midx == -1 )
-    {
-        unsigned long long emm = 0ull ;   // hmm instance var ?
-        iasCE(ce, emm);
-    }
-    else
-    {
-        rc = target->getFrameComponents(ce, midx, mord, gord, m2w, w2m );
-    }
-
-    if( rc != 0 )
-    {
-        LOG(error) << " non-zero RC from CSGTarget::getCenterExtent " ;
-    }
-    return rc ;
-}
-
-
-
-
-
-int CSGFoundry::getTransform(qat4& q, int midx, int mord, int gord) const
-{
-    return target->getTransform(q, midx, mord, gord);
-}
-#endif
-
 
 /**
 CSGFoundry::kludgeScalePrimBBox
@@ -4013,14 +3553,6 @@ void CSGFoundry::exportTreeSceneFrame( SGLM* gm ) const
     gm->setTreeScene(tree, scene);
     gm->set_frame();   // MOI frame initially
 }
-
-
-
-
-
-
-
-
 
 
 

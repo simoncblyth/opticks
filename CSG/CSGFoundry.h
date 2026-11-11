@@ -13,18 +13,14 @@ struct stree ;
 struct SScene ;
 struct SGLM ;
 struct SMeshGroup ;
-struct SDeviceGeometry ;
 
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
 #include "saabb.h"
 #include "stran.h"
+#include "SDeviceGeometry.h"
 
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-struct sframe ;
-struct CSGTarget ;
-#endif
 
 struct SName ;
 struct CSGImport ;
@@ -293,8 +289,6 @@ struct CSG_API CSGFoundry : public SFoundry
     void addInstancePlaceholder();
 
 
-    void importSim();
-
     static void DumpAABB(const char* msg, const float* aabb);
 
 
@@ -336,8 +330,8 @@ struct CSG_API CSGFoundry : public SFoundry
     template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false );
 
     void upload();
-    bool isUploaded() const ;
-    void setupDeviceGeometry( SDeviceGeometry* geom ) const ;
+    const SDeviceGeometry*  getDeviceGeometry() const ;
+
 
     void inst_find_unique();
     unsigned getNumUniqueGAS() const ;
@@ -352,38 +346,6 @@ struct CSG_API CSGFoundry : public SFoundry
 
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
-
-
-
-
-
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-
-    // id
-    void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
-    const char* getName(unsigned midx) const ;
-
-    static const char* getFrame_NOTES ;
-    sframe getFrame() const ;
-    sframe getFrame(const char* moi_or_iidx) const ;
-
-    static constexpr const char* getFrame_VERBOSE = "CSGFoundry__getFrame_VERBOSE" ;
-
-    int getFrame(sframe& fr, const char* frs ) const ;
-    int getFrame(sframe& fr, int midx, int mord, int gord) const ;
-    int getFrame(sframe& fr, int ins_idx ) const ;
-
-    static constexpr const char* getFrameE_VERBOSE = "CSGFoundry__getFrameE_VERBOSE" ;
-    sframe getFrameE() const ;
-
-    // target
-    int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
-    int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
-#endif
-
-
-
-
 
 
 
@@ -438,9 +400,9 @@ struct CSG_API CSGFoundry : public SFoundry
 
 
 
-    // MEMBERS
+    // PERSISTED MEMBERS
 
-
+    std::string meta ;
     std::vector<std::string> meshname ;  // "meshname" is historical, should be "lvname" or "soname" (G4VSolid names from Geant4)
     std::vector<std::string> mmlabel ;   // eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
@@ -453,35 +415,28 @@ struct CSG_API CSGFoundry : public SFoundry
     std::vector<qat4>      inst ;
 
 
-    // set to device pointers by CSGFoundry::upload
-    CSGPrim*    d_prim ;
-    CSGNode*    d_node ;
-    float4*     d_plan ;
-    qat4*       d_itra ;
 
 
+    // MEMBERS SET AT UPLOAD
+    SDeviceGeometry dgeom = {} ;
     std::vector<int> gas ;
 
 
+
     const SSim* sim ;
-    CSGImport*  import ;
     SName*    id ;   // holds the meshname vector of G4VSolid names
 
-#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
-    CSGTarget*  target ;
-#endif
+    bool        deepcopy_everynode_transform ;  // config
 
-    bool        deepcopy_everynode_transform ;
-
-
-    CSGSolid*   last_added_solid ;
+    CSGSolid*   last_added_solid ;  // transients while building
     CSGPrim*    last_added_prim ;
     CSGNode*    last_added_node ;
 
 
+
+
     int  mtime ;
 
-    std::string meta ;
     const char* fold ;
     const char* cfbase ;
     const char* geom ;
@@ -490,5 +445,7 @@ struct CSG_API CSGFoundry : public SFoundry
     const CSGFoundry* origin ;
     const SBitSet*    elv ;
     const char* save_opt ;
+
+
 };
 

@@ -610,15 +610,15 @@ from the uploaded CSGFoundry with SBT::createGeom.
 
 void CSGOptiX::initGeometry()
 {
-    bool is_uploaded =  foundry->isUploaded() ;
-    LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;
-    assert( is_uploaded );
-
-
     LOG(LEVEL) << "[" ;
     Params* params = params_helper->params ;
 
-    foundry->setupDeviceGeometry( &params->geom );
+    const SDeviceGeometry* dgeom = foundry->getDeviceGeometry();
+    bool is_uploaded =  dgeom->is_uploaded() ;
+    LOG_IF(fatal, !is_uploaded) << " must upload CSGFoundry geometry before CSGOptiX::initGeometry " ;
+    assert(is_uploaded);
+
+    params->geom = *dgeom ;
 
     LOG(LEVEL) << "[ sbt.setFoundry " ;
     sbt->setFoundry(foundry);
