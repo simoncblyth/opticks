@@ -39,12 +39,7 @@ struct CSGDemoTest
 };
 
 
-// IT IS EXPEDIENT FOR ALL TEST GEOMETRIES TO LIVE IN THE SAME TREE 
-#ifdef __APPLE__
-const char* CSGDemoTest::BASE = "$TMP/GeoChain_Darwin" ;
-#else
 const char* CSGDemoTest::BASE = "$TMP/GeoChain" ;
-#endif
 
 
 CSGDemoTest::CSGDemoTest(const char* geom_)

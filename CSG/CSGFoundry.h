@@ -19,13 +19,13 @@ struct SDeviceGeometry ;
 #include "sqat4.h"
 #include "saabb.h"
 #include "stran.h"
-#include "SGeo.hh"
 
+#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
 struct sframe ;
 struct CSGTarget ;
+#endif
 
 struct SName ;
-struct CSGMaker ;
 struct CSGImport ;
 
 #include "CSGEnum.h"
@@ -89,14 +89,6 @@ itra
 plan
     array of float4 planes
 
-
-
-TODO: Remove WITH_SGEO SGeo pure virtual base struct
------------------------------------------------------
-
-The SGeo base enables holding pointer to CSGFoundry within SEvt
-using SEvt::setGeo. But now that all geometry info is better accessed
-from stree this complication can be removed ?
 
 **/
 
@@ -316,13 +308,7 @@ struct CSG_API CSGFoundry : public SFoundry
     void addInstancePlaceholder();
 
 
-    // via maker
-    void makeDemoSolids();
     void importSim();
-
-
-    CSGSolid* make(const char* name);
-
 
     static void DumpAABB(const char* msg, const float* aabb);
 
@@ -360,8 +346,7 @@ struct CSG_API CSGFoundry : public SFoundry
 
     void upload();
     bool isUploaded() const ;
-    void setupDeviceGeometry( SDeviceGeometry* devgeo ) const ;
-
+    void setupDeviceGeometry( SDeviceGeometry* geom ) const ;
 
 
     void inst_find_unique();
@@ -380,6 +365,14 @@ struct CSG_API CSGFoundry : public SFoundry
 
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
+
+
+
+
+
+
+
+#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
 
     // id
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
@@ -401,6 +394,11 @@ struct CSG_API CSGFoundry : public SFoundry
     // target
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
+#endif
+
+
+
+
 
 
     template <typename T> void setMeta( const char* key, T value );
@@ -478,8 +476,10 @@ struct CSG_API CSGFoundry : public SFoundry
     CSGImport*  import ;
     SName*    id ;   // holds the meshname vector of G4VSolid names
 
+#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
     CSGTarget*  target ;
-    CSGMaker*   maker ;
+#endif
+
     bool        deepcopy_everynode_transform ;
 
 

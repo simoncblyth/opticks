@@ -30,7 +30,6 @@ set(CUDA_TEST_SOURCES
 
     CUTest.cc
 
-    CSGNameTest.cc
     CSGNodeTest.cc
     CSGPrimTest.cc
     CSGPrimSpecTest.cc
@@ -38,7 +37,6 @@ set(CUDA_TEST_SOURCES
     CSGNodeImpTest.cc
     CSGFoundry_IntersectPrimTest.cc
     CSGFoundry_SGeo_SEvt_Test.cc
-    CSGTargetGlobalTest.cc
     CSGFoundry_addPrimNodes_Test.cc
 
 
@@ -53,13 +51,11 @@ set(CUDA_TEST_SOURCES
 
     CSGFoundryTest.cc
 
-    CSGFoundry_getCenterExtent_Test.cc
 
     CSGFoundry_CreateFromSimTest.cc
 
     CSGFoundry_MakeCenterExtentGensteps_Test.cc
     CSGFoundry_getFrame_Test.cc
-    CSGFoundry_getFrameE_Test.cc
     CSGFoundry_getMeshName_Test.cc
 
     CSGFoundry_ResolveCFBase_Test.cc
@@ -68,7 +64,6 @@ set(CUDA_TEST_SOURCES
     CSGScanTest.cc
 
 
-    CSGTargetTest.cc
 
     CSGLogTest.cc
     CSGMakerTest.cc
@@ -94,6 +89,22 @@ set(CUDA_TEST_SOURCES
 
 
 )
+
+
+set(WITH_OBSOLETE_FOUNDRY_FRAME NO)
+
+if(WITH_OBSOLETE_FOUNDRY_FRAME)
+list(APPEND CUDA_TEST_SOURCES
+
+    CSGFoundry_getCenterExtent_Test.cc
+    CSGTargetGlobalTest.cc
+    CSGTargetTest.cc
+    CSGNameTest.cc
+    CSGFoundry_getFrameE_Test.cc
+)
+endif()
+
+
 
 
 set( DEFERRED_TEST_SOURCES

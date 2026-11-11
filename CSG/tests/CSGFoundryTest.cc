@@ -21,7 +21,7 @@
 void test_layered()
 {
     CSGFoundry fd ;
-    CSGMaker* mk = fd.maker ;
+    CSGMaker* mk = new CSGMaker(&fd) ;
 
     CSGSolid* s0 = mk->makeLayered("sphere", 100.f, 10 );
     CSGSolid* s1 = mk->makeLayered("sphere", 1000.f, 10 );
@@ -49,7 +49,9 @@ void test_layered()
 void test_PrimSpec()
 {
     CSGFoundry fd ;
-    fd.maker->makeDemoSolids();
+    CSGMaker* mk = new CSGMaker(&fd) ;
+    mk->makeDemoSolids();
+
     for(unsigned i = 0 ; i < fd.solid.size() ; i++ )
     {
         unsigned solidIdx = i ;
@@ -81,8 +83,9 @@ void test_makeClustered()
 {
     std::cout << "[test_makeClustered" << std::endl ;
     CSGFoundry fd ;
+    CSGMaker* mk = new CSGMaker(&fd) ;
     bool inbox = false ;
-    fd.maker->makeClustered("sphe", -1,2,1, -1,2,1, -1,2,1, 1000., inbox );
+    mk->makeClustered("sphe", -1,2,1, -1,2,1, -1,2,1, 1000., inbox );
     fd.dumpPrim(0);
     std::cout << "]test_makeClustered" << std::endl ;
 }
@@ -90,7 +93,8 @@ void test_makeClustered()
 void test_Load()
 {
     CSGFoundry fd ;
-    fd.maker->makeDemoSolids();
+    CSGMaker* mk = new CSGMaker(&fd) ;
+    mk->makeDemoSolids();
     fd.addInstancePlaceholder() ;  // Loading fails when no inst
 
 
@@ -112,7 +116,8 @@ void test_Load()
 void test_Compare()
 {
     CSGFoundry fd ;
-    fd.maker->makeDemoSolids();
+    CSGMaker* mk = new CSGMaker(&fd) ;
+    mk->makeDemoSolids();
 
     int cmp = CSGFoundry::Compare(&fd, &fd);
     std::cout << "test_Compare " << cmp << std::endl ;
@@ -121,7 +126,8 @@ void test_Compare()
 void test_getInstanceTransformsGAS()
 {
     CSGFoundry fd ;
-    fd.maker->makeDemoGrid();
+    CSGMaker* mk = new CSGMaker(&fd) ;
+    mk->makeDemoGrid();
     fd.inst_find_unique();
     LOG(info) << fd.descGAS() ;
 
@@ -142,7 +148,8 @@ void test_getInstanceTransformsGAS()
 void test_getInstance_with_GAS_ordinal()
 {
     CSGFoundry fd ;
-    fd.maker->makeDemoGrid();
+    CSGMaker* mk = new CSGMaker(&fd) ;
+    mk->makeDemoGrid();
     LOG(info) << fd.descGAS() ;
 
     unsigned gas_idx = fd.getNumSolid()/2 ;

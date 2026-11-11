@@ -91,8 +91,11 @@ infrastructure duplication.
 
 #include "CSGFoundry.h"
 #include "SName.h"
+
 #include "CSGTarget.h"
 #include "CSGMaker.h"
+
+
 #include "CSGImport.h"
 #include "CSGCopy.h"
 
@@ -157,8 +160,9 @@ CSGFoundry::CSGFoundry()
     sim(SSim::Get()),
     import(new CSGImport(this)),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
+#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
     target(new CSGTarget(this)),
-    maker(new CSGMaker(this)),
+#endif
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
     last_added_prim(nullptr),
@@ -1751,17 +1755,6 @@ unsigned CSGFoundry::getSolidIdx(const CSGSolid* so) const
     return idx ;
 }
 
-
-
-
-void CSGFoundry::makeDemoSolids()
-{
-    maker->makeDemoSolids();
-}
-CSGSolid* CSGFoundry::make(const char* name)
-{
-    return maker->make(name);
-}
 
 
 /**
@@ -3643,6 +3636,7 @@ std::string CSGFoundry::descGAS() const
 
 
 
+#ifdef WITH_OBSOLETE_FOUNDRY_FRAME
 
 /**
 CSGFoundry::parseMOI
@@ -4053,10 +4047,14 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int gord, qat4* 
 }
 
 
+
+
+
 int CSGFoundry::getTransform(qat4& q, int midx, int mord, int gord) const
 {
     return target->getTransform(q, midx, mord, gord);
 }
+#endif
 
 
 /**

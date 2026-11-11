@@ -22,7 +22,7 @@
 DemoGeo::DemoGeo(CSGFoundry* foundry_, const char* geom)
     :
     foundry(foundry_),
-    maker(foundry->maker)
+    maker(new CSGMaker(foundry))
 {
     init(geom);
 }

@@ -1440,7 +1440,7 @@ Formerly was CSGFoundry::MakeGeom
 CSGFoundry*  CSGMaker::MakeGeom(const char* geom) // static
 {
     CSGFoundry* fd = new CSGFoundry();  
-    CSGMaker* mk = fd->maker ;
+    CSGMaker* mk = new CSGMaker(fd) ;
     CSGSolid* so = mk->make( geom );
     fd->setGeom(geom);  
 
@@ -1471,7 +1471,11 @@ Formerly was CSGFoundry::MakeDemo
 CSGFoundry*  CSGMaker::MakeDemo()
 {
     CSGFoundry* fd = new CSGFoundry();
-    fd->makeDemoSolids(); 
+
+    CSGMaker* mk = new CSGMaker(fd);
+
+    mk->makeDemoSolids();
+ 
     return fd ; 
 }
 

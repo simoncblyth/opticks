@@ -8,6 +8,16 @@ Protocol base used to facilitate lower level package access
 to limited geometry information, by passing the higher level
 CSGFoundry instance down to it cast down to this SGeo protocol base.
 
+
+The SGeo base was formerly used to enables holding a pointer to CSGFoundry
+within SEvt using SEvt::setGeo.
+But now that all geometry info is better accessed
+from stree this complication is obsolete - and SFoundry.h
+base type of CSGFoundry now focusses on the subset of the API
+that is used from CSGOptiX.
+
+
+
 **/
 
 #include "plog/Severity.h"
