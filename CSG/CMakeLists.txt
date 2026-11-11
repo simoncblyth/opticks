@@ -46,6 +46,7 @@ list(APPEND SOURCES
     CSGPrim.cc
     CSGSolid.cc
     CSGFoundry.cc
+    CSGFoundryCompare.cc
     CSGCopy.cc
     CSGMaker.cc
     CSGImport.cc
@@ -78,6 +79,7 @@ list(APPEND CSG_HEADERS
     CSGParams.h
 
     CSGFoundry.h
+    CSGFoundryCompare.h
 
     CSGCopy.h
     CSGMaker.h

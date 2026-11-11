@@ -14,6 +14,7 @@
 
 
 #include "CSGFoundry.h"
+#include "CSGFoundryCompare.h"
 #include "CSGMaker.h"
 
 
@@ -105,7 +106,7 @@ void test_Load()
     CSGFoundry* fdl = CSGFoundry::Load(dir, rel);
     fdl->dump();
 
-    int cmp = CSGFoundry::Compare(&fd, fdl);
+    int cmp = CSGFoundryCompare::Compare(&fd, fdl);
     std::cout << "test_Load " << cmp << std::endl ;
 
     std::cout << "fd.desc()  " << fd.desc() << std::endl ;
@@ -119,7 +120,7 @@ void test_Compare()
     CSGMaker* mk = new CSGMaker(&fd) ;
     mk->makeDemoSolids();
 
-    int cmp = CSGFoundry::Compare(&fd, &fd);
+    int cmp = CSGFoundryCompare::Compare(&fd, &fd);
     std::cout << "test_Compare " << cmp << std::endl ;
 }
 

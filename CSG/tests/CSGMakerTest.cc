@@ -2,12 +2,12 @@
 CSGMakerTest.cc
 =================
 
-HMM: this was stomping on standard GEOM folder  
+HMM: this was stomping on standard GEOM folder
 USING MakeGeom/LoadGeom needs to effectively change GEOM to the name argument
-and standard corresponding folder 
+and standard corresponding folder
 
 NOPE : THIS IS DOING SOMETHING NON-STANDARD
-SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY 
+SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY
 
 **/
 
@@ -16,6 +16,7 @@ SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY
 #include "spath.h"
 #include "SSim.hh"
 #include "CSGFoundry.h"
+#include "CSGFoundryCompare.h"
 #include "CSGMaker.h"
 #include "OPTICKS_LOG.hh"
 
@@ -23,64 +24,64 @@ SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY
 GetNames
 ---------
 
-Populate the names vector with all CSGMaker names or just the 
-one provided when envvar CSGMakerTest_GEOM is defined. 
-For listnames:true dump the names to stdout. 
+Populate the names vector with all CSGMaker names or just the
+one provided when envvar CSGMakerTest_GEOM is defined.
+For listnames:true dump the names to stdout.
 
 **/
 
 void GetNames( std::vector<std::string>& names, bool listnames )
 {
-     const char* geom = ssys::getenvvar("CSGMakerTest_GEOM", nullptr ); 
-     // NB ExecutableName_GEOM is treated as GEOM override 
+     const char* geom = ssys::getenvvar("CSGMakerTest_GEOM", nullptr );
+     // NB ExecutableName_GEOM is treated as GEOM override
 
-     if( geom == nullptr ) 
+     if( geom == nullptr )
      {
-         CSGMaker::GetNames(names); 
+         CSGMaker::GetNames(names);
      }
      else
-     { 
-         names.push_back(geom); 
+     {
+         names.push_back(geom);
      }
-     LOG(info) << " names.size " << names.size() ; 
-     if(listnames) for(unsigned i=0 ; i < names.size() ; i++) std::cout << names[i] << std::endl ; 
+     LOG(info) << " names.size " << names.size() ;
+     if(listnames) for(unsigned i=0 ; i < names.size() ; i++) std::cout << names[i] << std::endl ;
 }
 
 int main(int argc, char** argv)
 {
-     const char* arg =  argc > 1 ? argv[1] : nullptr ; 
-     bool listnames = arg && ( strcmp(arg,"N") == 0 || strcmp(arg,"n") == 0 ) ; 
-     OPTICKS_LOG(argc, argv); 
+     const char* arg =  argc > 1 ? argv[1] : nullptr ;
+     bool listnames = arg && ( strcmp(arg,"N") == 0 || strcmp(arg,"n") == 0 ) ;
+     OPTICKS_LOG(argc, argv);
 
-     SSim* sim = SSim::Create(); 
-     assert(sim); 
-     if(!sim) std::raise(SIGINT); 
+     SSim* sim = SSim::Create();
+     assert(sim);
+     if(!sim) std::raise(SIGINT);
 
-     std::vector<std::string> names ; 
-     GetNames(names, listnames); 
-     if(listnames) return 0 ; 
+     std::vector<std::string> names ;
+     GetNames(names, listnames);
+     if(listnames) return 0 ;
 
      for(unsigned i=0 ; i < names.size() ; i++)
      {
-         const char* name = names[i].c_str() ; 
-         LOG(info) << name ; 
+         const char* name = names[i].c_str() ;
+         LOG(info) << name ;
 
-         CSGFoundry* fd = CSGMaker::MakeGeom( name ); 
-         LOG(info) << fd->desc();    
+         CSGFoundry* fd = CSGMaker::MakeGeom( name );
+         LOG(info) << fd->desc();
 
-         const char* base = spath::Join("$TMP/CSGMakerTest",name) ; 
+         const char* base = spath::Join("$TMP/CSGMakerTest",name) ;
 
-         fd->save(base);  
+         fd->save(base);
 
-         CSGFoundry* lfd = CSGFoundry::Load(base); 
+         CSGFoundry* lfd = CSGFoundry::Load(base);
 
 
-         LOG(info) << " lfd.loaddir " << lfd->loaddir ; 
+         LOG(info) << " lfd.loaddir " << lfd->loaddir ;
 
-         int rc = CSGFoundry::Compare(fd, lfd );  
+         int rc = CSGFoundryCompare::Compare(fd, lfd );
          assert( 0 == rc );
-         if(0!=rc) std::raise(SIGINT); 
+         if(0!=rc) std::raise(SIGINT);
      }
 
-     return 0 ; 
+     return 0 ;
 }
