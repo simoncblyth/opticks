@@ -117,6 +117,37 @@ Snapshot Tags History
 
 
 
+v0.7.3 2026/11/12 : Merged Three Species LS from Dingyong, ncu Profiling leads to CSG review and CSGFoundry cleanup aiming to support alt-CSG-model testing
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Goal of testing alternate geometry model motivates CSGFoundry cleanup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-11-11 1c0c09549 - remove obsolete frame methods from CSGFoundry, simplify geometry device pointer holding with SDeviceGeometry.h
+* 2026-11-11 3abac8356 - add NPFold.h based serialization and save2/load2 to CSGFoundry - for flexibility
+* 2026-11-11 bc45ad60f - relocate foundry comparison statics into CSGFoundryCompare
+* 2026-11-11 9f490eaaa - reposition CSGMaker instanciation into tests - not CSGFoundry,  prepare to evict obsolete frame methods from CSGFoundry
+* 2026-11-10 a86da6582 - start looking at ways to try alt geometry model without too much duplication
+* 2026-11-09 709d5e176 - remove some obsolete OpticksCSG.h typecodes - allowing to fit the typecode within 7 bits (0x7f 127) with minimal effort - rewriting typecodes would allow squeezing to 6 or even 5 bits - but that would be difficult and disruptive
+
+
+Profiling leads to review of CSG impl - and ideas for compact RPN (reverse-polish-notation) tape serialization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-11-06 e17976964 - working out how to integrate a tight RPN tape with 32 bit nodes CSG serialization into the geometry conversion
+* 2026-11-05 f62693c8c - split up csg_review.rst into multiple CSG/review documents for clarity
+* 2026-11-04 09c7214f8 - ncu profiling suggests the custom CSG ray trace bottleneck arises from L2 cache thrashing due to the complete binary tree layout with lots of zero padding - Gemini discussion suggests a dense RPN layout can avoid the thrashing - plus splitting node info from primitive params would allow a 32 bit node that can make the tree traversal ultra fast by fitting lots of nodes within the 128 byte L2 cache line
+* 2026-11-02 5765d1a58 - fix SCurandState hangover revealed by sudo ncu running of CSGOptiXSMTest by adding WITH_XORWOW + WITH_PHILOX blocks to QRng
+
+
+Merged Three Species LS from Dingyong
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-11-05 e12f894fc - Merge pull request #16 from prinksx/yangdy_three_species_LS_model_pr3_gpu_generation_propagation
+* 2026-11-02 501333729 - prepare icdf_three, const_three and prop_three from the LS material and use them for the JUNO three-species generation and propagation on the GPU <yangdy>
+
+
+
 
 v0.7.2 2026/10/30 : Optimization with SER, Release, optixir, slimming + Contributions + Start Three Species LS support from Dingyong
 --------------------------------------------------------------------------------------------------------------------------------------

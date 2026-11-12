@@ -79,8 +79,7 @@ float SEventConfig::_MergeWindowDefault = 0.f ;  // ns
 float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
 float SEventConfig::_MaxTimeDomainDefault = 10.f ; // ns
 
-const char* SEventConfig::_SERDefault = "hintMethod:1,coherenceHintBits:0,bounceInterval:0" ;
-//const char* SEventConfig::_SERDefault   = "hintMethod:1,coherenceHintBits:4,bounceInterval:4" ;
+const char* SEventConfig::_SERDefault = "hintMethod:15,coherenceHintBits:0,bounceInterval:1" ; // close to fastest for cxs_min_ser.sh
 
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ;
 const char* SEventConfig::_OutNameDefault = nullptr ;

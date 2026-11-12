@@ -1147,6 +1147,12 @@ std::string CSGFoundry::detailPrim(unsigned primIdx) const
 
     float4 ce = pr->ce();
 
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+
     std::stringstream ss ;
     ss
         << std::setw(10) << sstr::Format(" pri:%d", primIdx )
@@ -1166,8 +1172,13 @@ std::string CSGFoundry::detailPrim(unsigned primIdx) const
         << " bndName "  << std::setw(15) << ( bndName  ? bndName  : "-" )
         ;
 
-    std::string s = ss.str();
-    return s ;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+    std::string str = ss.str();
+    return str ;
 }
 
 
