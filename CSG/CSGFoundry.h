@@ -25,6 +25,9 @@ struct SMeshGroup ;
 struct SName ;
 struct CSGImport ;
 
+struct s_RPN ;
+
+
 #include "CSGEnum.h"
 #include "CSGSolid.h"
 #include "CSGPrim.h"
@@ -400,6 +403,15 @@ struct CSG_API CSGFoundry : public SFoundry
 
 
 
+    void        setAlt(CSGFoundry* fd);
+    CSGFoundry* getAlt() const ;
+
+    void        setMode(const char* mode);
+    const char* getMode() const ;
+    bool        isRPN() const ;
+
+
+
     // PERSISTED MEMBERS
 
     std::string meta ;
@@ -414,7 +426,7 @@ struct CSG_API CSGFoundry : public SFoundry
     std::vector<qat4>      itra ;
     std::vector<qat4>      inst ;
 
-
+    s_RPN*                 rpn ;
 
 
     // MEMBERS SET AT UPLOAD
@@ -445,6 +457,9 @@ struct CSG_API CSGFoundry : public SFoundry
     const CSGFoundry* origin ;
     const SBitSet*    elv ;
     const char* save_opt ;
+
+    CSGFoundry* alt ;  // experimental alternative geometry
+    const char* mode ; // eg alternative CSG mode "RPN"
 
 
 };

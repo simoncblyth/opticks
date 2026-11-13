@@ -10,6 +10,8 @@
 #include "snd.hh"
 #include "s_bb.h"
 
+#include "s_RPN.h"
+
 #include "ssys.h"
 #include "SLOG.hh"
 
@@ -27,7 +29,8 @@ bool CSGImport::DUMP_LISTNODE = ssys::getenvbool(CSGImport__DUMP_LISTNODE) ;
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
     fd(fd_),
-    st(nullptr)
+    st(nullptr),
+    RPN(fd ? fd->isRPN() : false)
 {
     LOG_IF(fatal, fd == nullptr) << " fd(CSGFoundry) required " ;
     assert( fd ) ;
@@ -267,7 +270,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
 CSGImport::importPrim
 ----------------------
 
-Converting *snd/scsg* n-ary tree with compounds (eg multiunion and polycone)
+Converting *sn/scsg* n-ary tree with compounds (eg multiunion and polycone)
 into the CSGNode serialized binary tree with list node constituents appended using
 subNum/subOffset referencing.
 
@@ -302,10 +305,6 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     const sn* rt = sn::GetLVRoot(lvid);
     assert(rt);
     int idx_rc = rt->check_idx("CSGImport::importPrim.check_idx");
-
-#ifdef WITH_RPN
-    importPrim_RPN(primIdx, node);
-#endif
 
     // 1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
 
@@ -464,24 +463,23 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
 
 
-#ifdef WITH_RPN
 /**
 CSGImport::importPrim_RPN
 --------------------------
 
-RPN node order is different to complete binary tree approach
+RPN node count and node order will be very different from complete binary tree approach
 - so cannot do this just at importNode level
 
 **/
 
 CSGPrim* CSGImport::importPrim_RPN(int primIdx, const snode& node )
 {
+    int lvid = node.lvid ;
+    const sn* rt = sn::GetLVRoot(lvid);
+    assert(rt);
+
     return nullptr ;
 }
-#endif
-
-
-
 
 
 
@@ -554,7 +552,7 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     if(nd) assert( node.lvid == nd->lvid );
 
     int  typecode = nd ? nd->typecode : CSG_ZERO ;
-    bool leaf = CSG::IsLeaf(typecode) ;
+    bool leaf = CSG::IsLeaf(typecode) ;  // primitive (ie not operator or listnode)
 
     bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode);
     // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
@@ -577,13 +575,53 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, out, t_stack ) : nullptr ;
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
+    bool is_complement = nd ? nd->complement : false ;
+    const double* PA_data =  nd ? nd->getPA_data() : nullptr ;
+    const double* BB_data = aabb ? aabb : nullptr  ;
+
     CSGNode* n = fd->addNode();
-    n->setTypecode(typecode);
-    n->setBoundary(node.boundary);
-    n->setComplement( nd ? nd->complement : false );
-    n->setTransform(tranIdx);
-    n->setParam_Narrow( nd ? nd->getPA_data() : nullptr );
-    n->setAABB_Narrow(aabb ? aabb : nullptr  );
+
+    n->setTypecode( typecode );
+    n->setBoundary( node.boundary );
+    n->setComplement( is_complement );
+    n->setTransform( tranIdx );
+    n->setParam_Narrow( PA_data );
+    n->setAABB_Narrow( BB_data );
+
+    if(RPN && fd->rpn)
+    {
+        if(nd->is_operator())
+        {
+            unsigned nc = nd->num_child();
+            assert( nc == 2 );
+    #ifdef WITH_CHILD
+            unsigned leftspan = nd->child[0]->num_node() ;
+            unsigned rightspan = nd->child[1]->num_node();
+    #else
+            unsigned leftspan = nd->left->num_node() ;
+            unsigned rightspan = nd->right->num_node();
+    #endif
+            fd->rpn->add_opernode( nd->typecode, leftspan, rightspan );
+        }
+        else if(nd->is_listnode())
+        {
+            unsigned num_listprim = nd->num_child();
+            fd->rpn->add_listnode( nd->typecode, num_listprim );
+        }
+        else if(nd->is_primitive())
+        {
+            bool is_identity_xf = nd->xform->is_identity();  // NOPE - NEED TO GET FROM tv
+
+            sparm pa = {} ;
+            pa.set6( PA_data );
+
+            qat4 it = {} ;
+
+            fd->rpn->add_primnode( nd->typecode, is_complement, is_identity_xf, pa, it );
+        }
+    }
+
+
 
     return n ;
 }

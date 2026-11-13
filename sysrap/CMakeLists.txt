@@ -625,21 +625,16 @@ set(HEADERS
 )
 
 
-set(WITH_RPN NO)
-if(WITH_RPN)
+# experimental alternative CSG serialization under test
+list(APPEND HEADERS
 
-    list(APPEND HEADERS
+s_RPN.h
+srpn.h
+srpn_error.h
+srpn_tranche.h
+sparm.h
 
-    srpn.h
-    srpn_error.h
-    srpn_tranche.h
-
-
-    )
-endif()
-
-
-
+)
 
 
 

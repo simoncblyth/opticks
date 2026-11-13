@@ -62,12 +62,7 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include "st.h"      // complete binary tree math
 #include "stra.h"    // glm transform utilities
 #include "sgeomtools.h"
-
-#ifdef WITH_RPN
 #include "srpn.h"
-#endif
-
-
 
 #include "NPFold.h"
 
@@ -316,19 +311,13 @@ struct SYSRAP_API sn
     void preorder( std::vector<const sn*>& order ) const ;
     void inorder(  std::vector<const sn*>& order ) const ;
     void postorder(std::vector<const sn*>& order ) const ;
-#ifdef WITH_RPN
     void rpn( std::vector<srpn>& tape ) const ;
-#endif
-
-
 
     void preorder_r( std::vector<const sn*>& order, int d ) const ;
     void inorder_r(  std::vector<const sn*>& order, int d ) const ;
     void postorder_r(std::vector<const sn*>& order, int d ) const ;
-#ifdef WITH_RPN
     void rpn_r(std::vector<srpn>& tape, int d ) const ;
     static srpn ConvertToRPN(const sn* n);
-#endif
 
     void inorder_(std::vector<sn*>& order ) ;
     void inorder_r_(std::vector<sn*>& order, int d );
@@ -1901,12 +1890,10 @@ inline void sn::postorder(std::vector<const sn*>& order ) const
     postorder_r(order, 0);
 }
 
-#ifdef WITH_RPN
 inline void sn::rpn( std::vector<srpn>& tape ) const
 {
     rpn_r(tape, 0);
 }
-#endif
 
 
 
@@ -1973,7 +1960,6 @@ inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 
 
 
-#ifdef WITH_RPN
 inline void sn::rpn_r(std::vector<srpn>& tape, int d ) const
 {
 #ifdef WITH_CHILD
@@ -1985,22 +1971,28 @@ inline void sn::rpn_r(std::vector<srpn>& tape, int d ) const
     srpn rpn = ConvertToRPN(this);
     tape.push_back(rpn);
 }
-#endif
 
 
 
-#ifdef WITH_RPN
 
 /**
+sn::ConvertToRPN
+-----------------
+
 Need to review lifecycle of the param and tran to
 know how and when can do this...
 
 Forming the tape must be combined with forming the
-rpn_parm
+rpn_parm and rpn_itra as they need to share an index
 
+As every prim will need to reference its
+param just need to check for the transform being
+identity as add the parm and tran,itra to their buffers.
+
+Q: In non-alt where are the xform collected ?
+A: CSGImport::importNode  (HMM reuse that in alt)
 
 **/
-
 
 inline srpn sn::ConvertToRPN(const sn* n) // static
 {
@@ -2027,12 +2019,11 @@ inline srpn sn::ConvertToRPN(const sn* n) // static
     else if(n->is_primitive())
     {
         unsigned index = 0 ; // COMBINED INDEX TO ADDRESS PARM AND TRAN
-        bool xform_identity = n->xform->is_identity();
-        rpn.set_primnode( n->typecode, n->is_complement(), xform_identity, index );
+        bool is_identity_xf = n->xform->is_identity();  // NOPE - TOO EARLY TO TELL HERE - SEE CSGImport::importNode
+        rpn.set_primnode( n->typecode, n->is_complement(), is_identity_xf, index );
     }
     return rpn ;
 }
-#endif
 
 
 

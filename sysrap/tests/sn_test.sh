@@ -23,7 +23,7 @@ script=$name.py
 defarg="info_build_run"
 arg=${1:-$defarg}
 
-opt="-DWITH_CHILD -DWITH_RPN"
+opt="-DWITH_CHILD"
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}

@@ -21,6 +21,7 @@ const plog::Severity SGeoConfig::LEVEL = SLOG::EnvLevel("SGeoConfig", "DEBUG");
 
 
 const char* SGeoConfig::_GEOM = ssys::getenvvar(kGEOM, nullptr );
+const char* SGeoConfig::_CSGAlt = ssys::getenvvar(kCSGAlt, nullptr );
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");
 const char* SGeoConfig::_ELVSelection   = ssys::getenvvar(kELVSelection, nullptr );
 const char* SGeoConfig::_SolidSelection = ssys::getenvvar(kSolidSelection, nullptr );
@@ -30,6 +31,7 @@ const char* SGeoConfig::_ArglistPath    = ssys::getenvvar(kArglistPath  , nullpt
 const char* SGeoConfig::_CXSkipLV       = ssys::getenvvar(kCXSkipLV  , nullptr );
 const char* SGeoConfig::_CXSkipLV_IDXList = ssys::getenvvar(kCXSkipLV_IDXList, nullptr );
 
+void SGeoConfig::SetCSGAlt(        const char* ca){  _CSGAlt         = ca ? strdup(ca) : nullptr ; }
 void SGeoConfig::SetELVSelection(  const char* es){  _ELVSelection   = es ? strdup(es) : nullptr ; }
 void SGeoConfig::SetSolidSelection(const char* ss){  _SolidSelection = ss ? strdup(ss) : nullptr ; }
 void SGeoConfig::SetSolidTrimesh(  const char* st){  _SolidTrimesh   = st ? strdup(st) : nullptr ; }
@@ -47,6 +49,7 @@ const char* SGeoConfig::CXSkipLV_IDXList(){  return _CXSkipLV_IDXList ? _CXSkipL
 
 
 const char* SGeoConfig::GEOM(){           return _GEOM ; }
+const char* SGeoConfig::CSGAlt(){         return _CSGAlt ; }
 const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
 
 

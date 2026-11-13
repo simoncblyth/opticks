@@ -4,7 +4,13 @@
 
 #include <vector>
 #include "ssys.h"
+
+#include "scuda.h"
+#include "squad.h"
 #include "srpn.h"
+
+#include "s_RPN.h"
+
 
 struct srpn_test
 {

@@ -48,6 +48,7 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
 
     CSGFoundry*  fd ;
     const stree* st ;
+    bool        RPN ;
 
     CSGImport( CSGFoundry* fd );
 
@@ -64,6 +65,12 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
     CSGPrim*  importPrim( int primIdx, const snode& node );
     CSGNode*  importNode( int nodeOffset, int partIdx, const snode& node, const sn* nd);
     CSGNode*  importListnode(int nodeOffset, int partIdx, const snode& node, const sn* nd);
+
+    CSGPrim*  importPrim_RPN( int primIdx, const snode& node );
+
+
+
+
 
 };
 

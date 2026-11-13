@@ -419,9 +419,9 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     #pl.enable_point_picking(callback=pvplt_picked_point, use_picker=True)
 
     UL = os.environ.get("UL", "")
-    if not UL is "": pl.add_text( UL, position="upper_left")
+    if UL != "": pl.add_text( UL, position="upper_left")
     LL = os.environ.get("LL", "")
-    if not LL is "": pl.add_text( LL, position="lower_left")
+    if LL != "": pl.add_text( LL, position="lower_left")
     print("pvplt_show title:[%s] TITLE:[%s] UL:[%s] LL:[%s] " % (title, TITLE, UL, LL))
 
 

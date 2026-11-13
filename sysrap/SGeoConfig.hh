@@ -25,6 +25,7 @@ struct SYSRAP_API SGeoConfig
     static std::string DescEMM();
 
     static constexpr const char* kGEOM           = "OPTICKS_GEOM,GEOM" ;
+    static constexpr const char* kCSGAlt         = "OPTICKS_CSG_ALT" ;  // type of alternative CSG experiment eg "RPN"
     static constexpr const char* kEMM            = "OPTICKS_EMM_SELECTION,EMM" ;
     static constexpr const char* kELVSelection   = "OPTICKS_ELV_SELECTION,ELV" ;
     static constexpr const char* kSolidSelection = "OPTICKS_SOLID_SELECTION" ;
@@ -43,6 +44,7 @@ struct SYSRAP_API SGeoConfig
     static constexpr const char* kCXSkipLV_desc = "non-dynamic LV skipping in CSG_GGeo_Convert, PREFERABLE FOR LONG-LIVED SKIPS" ;
 
     static const char* _GEOM ;
+    static const char* _CSGAlt ;
     static unsigned long long _EMM ;
     static const char* _ELVSelection ;
     static const char* _SolidSelection ;
@@ -54,6 +56,7 @@ struct SYSRAP_API SGeoConfig
 
     static unsigned long long EnabledMergedMesh() ;
     static const char* GEOM();
+    static const char* CSGAlt();
     static const char* SolidSelection();
     static const char* SolidTrimesh();
     static const char* FlightConfig();
@@ -73,6 +76,7 @@ struct SYSRAP_API SGeoConfig
     static void SetCXSkipLV_IDXList(const SName* id);
 
     static void SetGEOM(           const char* gm );
+    static void SetCSGAlt(         const char* ca );
     static void SetSolidSelection( const char* ss );
     static void SetSolidTrimesh(   const char* ss );
     static void SetELVSelection(   const char* es );

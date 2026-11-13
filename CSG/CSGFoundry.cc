@@ -39,8 +39,14 @@ being alternative hearts - in separate folders (load/save managed with NPFold.h)
 
 Perhaps SFoundry.h => SGeometryModel.h so CSGOptiX can consume either model.
 
-The aim is to allow experiments with alternate models without
-infrastructure duplication.
+To allow experiments with alternate models without infrastructure duplication,
+CreateFromSim now creates an alternative foundry when the below envvar is defined::
+
+    export OPTICKS_CSG_ALT=RPN
+
+* also added alt pointer and mode member - to access the alt from the standard
+* this is kinda awkward - but realistically if RPN succeeds will adopt it,
+  so the awkwardness is temporary
 
 **/
 
@@ -103,10 +109,9 @@ infrastructure duplication.
 
 #include "SDeviceGeometry.h"
 
-#ifdef WITH_RPN
+
 #include "srpn.h"
-#include "srpn_parm.h"
-#endif
+#include "s_RPN.h"
 
 
 const unsigned CSGFoundry::IMAX = 50000 ;
@@ -149,6 +154,7 @@ can be CSGImported from SSim it is no longer so passive.
 CSGFoundry::CSGFoundry()
     :
     meta(),
+    rpn(new s_RPN),
     sim(SSim::Get()),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
     deepcopy_everynode_transform(true),
@@ -162,7 +168,9 @@ CSGFoundry::CSGFoundry()
     loaddir(nullptr),
     origin(nullptr),
     elv(nullptr),
-    save_opt(ssys::getenvvar(SAVE_OPT))
+    save_opt(ssys::getenvvar(SAVE_OPT)),
+    alt(nullptr),
+    mode(nullptr)
 {
     LOG_IF(fatal, sim == nullptr) << "must SSim::Create before CSGFoundry::CSGFoundry " ;
     assert(sim);
@@ -213,11 +221,6 @@ std::string CSGFoundry::desc() const
        << " num_itra " << itra.size()
        << " num_inst " << inst.size()
        << " gas " << gas.size()
-       /*
-       << " ins " << ins.size()
-       << " sensor_identifier " << sensor_identifier.size()
-       << " sensor_index " << sensor_index.size()
-       */
        << " meshname " << meshname.size()
        << " mmlabel " << mmlabel.size()
        << " mtime " << mtime
@@ -1551,16 +1554,15 @@ unsigned CSGFoundry::getSolidIdx(const CSGSolid* so) const
 CSGFoundry::addNode_solidLocalNodeIdx
 --------------------------------------
 
-Index that would be assigned to the next added node
-within the currently "open" last_added_solid.
-Notice this is counting right across prim making it a bit awkward
-to access.
+Provides a node index local to the currently "open" last_added_solid
+which would be assigned to the next added node. Note how this index
+counts right across potentially multiple prim.
 
-Although awkward in the new workflow it was a rather natural
-thing in the old workflow from the historical GGeo/GMergedMesh splits.
-Actually more precisely its because of the GParts concatenation
-done in the old workflow, where the parts for multiple prim got joined
-together fot persistency convenience.
+I guess the contortions done here are historical to match across
+the geometry transition from GGeo based wityhj GParts concatenation
+through to CSGFoundry.
+
+Q: What is the purpose of this within-the-solid-and-across-the-prim nodeIdx ?
 
 **/
 
@@ -1569,7 +1571,7 @@ int CSGFoundry::addNode_solidLocalNodeIdx() const
     LOG_IF(fatal, !last_added_solid) << "must addSolid prior to addPrim and addNode " ;
     assert( last_added_solid );
 
-    unsigned primOffset = last_added_solid->primOffset ;
+    unsigned primOffset = last_added_solid->primOffset ;  // offset from when the solid was instanciated
     const CSGPrim* first_prim_of_last_added_solid = prim.data() + primOffset ;
     assert( first_prim_of_last_added_solid ) ;
     int nodeOffset = first_prim_of_last_added_solid->nodeOffset() ;
@@ -1740,8 +1742,9 @@ CSGFoundry::addPrimNodes
 
 Trying to make adding prim nodes more self contained
 and less fussy.  HMM: its rather difficult to do this
-add addition to CSGSolid/CSGPrim/CSGNode has lots
-of checks that its done in the prescribed order.
+as addition of CSGSolid/CSGPrim/CSGNode have lots
+of checks the additions happen in the prescribed order
+and with the prescribed counts.
 
 **/
 
@@ -1771,9 +1774,13 @@ CSGPrim* CSGFoundry::addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, con
 
 
 
+/**
+CSGFoundry::addPlan
+---------------------
 
+Adds a float4 plane and returns pointer to it
 
-
+**/
 
 float4* CSGFoundry::addPlan(const float4& pl )
 {
@@ -1801,8 +1808,6 @@ unsigned CSGFoundry::addTran( const Tran<T>* tr  )
 template unsigned CSGFoundry::addTran<float>(const Tran<float>* ) ;
 template unsigned CSGFoundry::addTran<double>(const Tran<double>* ) ;
 
-
-
 template<typename T>
 unsigned CSGFoundry::addTran_( const Tran<T>* tr  )
 {
@@ -1814,6 +1819,15 @@ unsigned CSGFoundry::addTran_( const Tran<T>* tr  )
 
 template unsigned CSGFoundry::addTran_<float>(const Tran<float>* ) ;
 template unsigned CSGFoundry::addTran_<double>(const Tran<double>* ) ;
+
+/**
+CSGFoundry::addTran
+--------------------
+
+Adds transform and inverse to tran and itra and returns
+their shared index.
+
+**/
 
 unsigned CSGFoundry::addTran( const qat4* tr, const qat4* it )
 {
@@ -3016,10 +3030,31 @@ Instanciation grabs the (SSim)sim instance
 
 CSGFoundry* CSGFoundry::CreateFromSim()
 {
+    LOG(LEVEL) << "[" ;
+
     assert(SSim::Get() != nullptr);
     CSGFoundry* fd = new CSGFoundry ;
-    CSGImport* importer = new CSGImport(fd);
-    importer->import_();
+    CSGImport* im = new CSGImport(fd);
+    im->import_();
+
+
+    const char* csg_alt = SGeoConfig::CSGAlt();
+    LOG(LEVEL) << " csg_alt " << ( csg_alt ? csg_alt : "-" ) ;
+
+    CSGFoundry* fd_alt = nullptr ;
+    if(csg_alt)
+    {
+        fd_alt = new CSGFoundry ;
+        fd_alt->setMode(csg_alt);
+
+        CSGImport* im_alt = new CSGImport(fd_alt);
+        im_alt->import_();
+
+    }
+
+    fd->setAlt(fd_alt);
+
+    LOG(LEVEL) << "]" ;
 
     return fd ;
 }
@@ -3357,7 +3392,7 @@ as that is applied to the ray (not the geometry).
 
 const SDeviceGeometry* CSGFoundry::getDeviceGeometry() const
 {
-    return &dgeom ; 
+    return &dgeom ;
 }
 
 
@@ -3563,6 +3598,33 @@ void CSGFoundry::exportTreeSceneFrame( SGLM* gm ) const
     assert(scene);
     gm->setTreeScene(tree, scene);
     gm->set_frame();   // MOI frame initially
+}
+
+
+
+
+
+void CSGFoundry::setAlt( CSGFoundry* fd_alt )
+{
+    alt = fd_alt ;
+}
+CSGFoundry* CSGFoundry::getAlt() const
+{
+    return alt ;
+}
+
+void CSGFoundry::setMode(const char* mode_ )
+{
+    mode = mode_ ? strdup(mode_) : nullptr ;
+}
+const char* CSGFoundry::getMode() const
+{
+    return mode ;
+}
+
+bool CSGFoundry::isRPN() const
+{
+    return mode && 0 == strcmp(mode, "RPN") ;
 }
 
 

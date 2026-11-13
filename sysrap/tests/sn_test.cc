@@ -25,11 +25,6 @@ const char* FOLD = getenv("FOLD");
 
 #include "sn.h"
 
-#ifdef WITH_RPN
-#include "srpn.h"
-#endif
-
-
 void Desc()
 {
 #ifdef WITH_CHILD
@@ -205,9 +200,7 @@ struct sn_test
     static int Serialize_Import();
 
     static int OrderPrim_();
-#ifdef WITH_RPN
     static int rpn_0();
-#endif
 
     static int ALL();
     static int main();
@@ -1094,7 +1087,6 @@ int sn_test::OrderPrim_()
 
 
 
-#ifdef WITH_RPN
 int sn_test::rpn_0()
 {
     std::cout << "[rpn_0\n" ;
@@ -1107,13 +1099,10 @@ int sn_test::rpn_0()
 
 
 
-
-
     std::cout << "]rpn_0\n" ;
     return 0 ; 
 }
 
-#endif
 
 
 
@@ -1206,9 +1195,7 @@ int sn_test::main()
     else if( strcmp(TEST, "Serialize")==0)        rc = Serialize();
     else if( strcmp(TEST, "Import")==0)        rc = Import();
     else if( strcmp(TEST, "OrderPrim")==0)     rc = OrderPrim_();
-#ifdef WITH_RPN
     else if( strcmp(TEST, "rpn_0")==0)         rc = rpn_0();
-#endif
     else if( strcmp(TEST, "ALL")==0)           rc = ALL();
 
     return rc ;

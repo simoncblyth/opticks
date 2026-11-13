@@ -19,6 +19,11 @@ bin=CSGFoundry_CreateFromSimTest
 script=CSGFoundryAB.py
 
 
+export OPTICKS_CSG_ALT=RPN
+# changes CSGFoundry::CreateFromSim to create an additional
+# alternative foundry for experimentation
+
+
 
 srcd=$HOME/.opticks/GEOM
 
