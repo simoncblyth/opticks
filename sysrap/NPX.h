@@ -435,12 +435,19 @@ inline NP* NPX::ArrayFromVec__(const std::vector<S>& v, const std::vector<NP::IN
     NP::INT ni = v.size() ;
     NP::INT nj = sizeof(S) / sizeof(T) ;
 
+
     const T* src = (T*)v.data() ;
 
     std::vector<NP::INT> shape ;
     shape.push_back(ni) ;
 
-    if(itemshape.size() == 0 )
+    // special handling of -1 to suppress extra dimensions
+    if(itemshape.size() == 1 && itemshape[0] == -1)
+    {
+        bool do_suppress = nj == 1 ;
+        if(!do_suppress) shape.push_back(nj) ;
+    }
+    else if(itemshape.size() == 0 )
     {
         shape.push_back(nj) ;
     }

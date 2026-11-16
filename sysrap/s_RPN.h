@@ -14,6 +14,7 @@ s_RPN.h
 #else
 #include <cassert>
 #include <vector>
+#include "NPFold.h"
 #endif
 
 struct s_RPN
@@ -38,6 +39,11 @@ struct s_RPN
     void add_listnode( unsigned typecode, unsigned num_listprim );
     void add_primnode( unsigned typecode, bool complement, bool identity, sparm pa, qat4 tr );
 
+    NPFold* serialize() const ;
+    void import_(const NPFold* fold);
+    void save(const char* dir) const ;
+    void load(const char* dir);
+    std::string desc() const ;
     void upload();
 #endif
 
@@ -72,6 +78,63 @@ inline void s_RPN::add_primnode( unsigned typecode, bool complement, bool identi
     nd.set_primnode( typecode, complement, identity, index );
     node.push_back(nd);
 }
+inline NPFold* s_RPN::serialize() const
+{
+    NPFold* fold = new NPFold ;
+    fold->add("node", NPX::ArrayFromVec<unsigned, srpn>( node, -1 )) ;  // -1:suppress extra dimension
+    fold->add("itra", NPX::ArrayFromVec<float,    qat4>( itra, 4, 4 )) ;
+    fold->add("parm", NPX::ArrayFromVec<float,   sparm>( parm, 2, 4 )) ;
+    return fold ;
+}
+inline void s_RPN::import_(const NPFold* fold)
+{
+    NPX::VecFromArray<srpn>(  node , fold->get("node")  );
+    NPX::VecFromArray<qat4>(  itra , fold->get("itra")  );
+    NPX::VecFromArray<sparm>( parm , fold->get("parm")  );
+}
+
+inline void s_RPN::save(const char* dir) const
+{
+    NPFold* fold = serialize();
+    fold->save(dir);
+}
+inline void s_RPN::load(const char* dir_)
+{
+    const char* dir = spath::Resolve(dir_);
+    NPFold* fold = NPFold::Load(dir);
+    import_(fold);
+}
+
+inline std::string s_RPN::desc() const
+{
+    std::stringstream ss;
+    ss << "[s_RPN " ;
+    ss << " node:" << node.size() << "" ;
+    ss << " itra:" << itra.size() << "" ;
+    ss << " parm:" << parm.size() << "\n" ;
+
+    ss << "-node[\n" ;
+    for(size_t i=0 ; i < node.size() ; i++) ss << node[i].desc() << "\n" ;
+    ss << "-node]\n" ;
+
+    ss << "-itra[\n" ;
+    for(size_t i=0 ; i < itra.size() ; i++) ss << itra[i].desc() << "\n" ;
+    ss << "-itra]\n" ;
+
+    ss << "-parm[\n" ;
+    for(size_t i=0 ; i < parm.size() ; i++) ss << parm[i].desc() << "\n" ;
+    ss << "-parm]\n" ;
+
+
+    ss << "]s_RPN\n" ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
+
 
 inline void s_RPN::upload()
 {

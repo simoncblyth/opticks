@@ -59,7 +59,7 @@ struct srpn
     SRPN_METHOD void set_listnode( unsigned typecode, unsigned num_listprim );   // 7 + 10
     SRPN_METHOD int  listprim() const ;
 
-    SRPN_METHOD void set_primnode( unsigned typecode, bool complement, bool identity, unsigned index ); // 7 + 1 + 1 + 16
+    SRPN_METHOD void set_primnode( unsigned typecode, bool complement, bool identity, unsigned index ); // 7 + 1 + 1 + 16 = 25
     SRPN_METHOD bool identity() const ;
     SRPN_METHOD bool complement() const ;
     SRPN_METHOD int  index() const ;  // shared index into rpn_param + rpn_tran buffers
@@ -73,16 +73,16 @@ struct srpn
 };
 
 
-SRPN_METHOD void srpn::set_opernode(unsigned typecode, unsigned leftspan, unsigned rightspan) // 7 + 11 + 11
+SRPN_METHOD void srpn::set_opernode(unsigned typecode, unsigned leftspan, unsigned rightspan) // 7 + 11 + 11 = 29
 {
     data = (typecode & 0x7Fu) |
            ((leftspan & 0x7FFu) << 7) |
-           ((rightspan & 0x7FFu) << 17);
+           ((rightspan & 0x7FFu) << 18);
 }
 
 SRPN_METHOD int srpn::typecode() const { return  ( data >> 0 ) & 0x7Fu ; }
 SRPN_METHOD int srpn::leftspan() const { return  ( data >> 7 ) & 0x7FFu ; }
-SRPN_METHOD int srpn::rightspan() const { return ( data >> 17 ) & 0x7FFu ; }
+SRPN_METHOD int srpn::rightspan() const { return ( data >> 18 ) & 0x7FFu ; }   // 7 + 11 = 18
 
 
 SRPN_METHOD void srpn::set_listnode(unsigned typecode, unsigned num_listprim) // 7 + 10
@@ -93,7 +93,7 @@ SRPN_METHOD void srpn::set_listnode(unsigned typecode, unsigned num_listprim) //
 SRPN_METHOD int srpn::listprim() const { return (data >> 7) & 0x3FFu; }
 
 
-SRPN_METHOD void srpn::set_primnode(unsigned typecode, bool complement, bool identity, unsigned index) // 7 + 1 + 1 + 16
+SRPN_METHOD void srpn::set_primnode(unsigned typecode, bool complement, bool identity, unsigned index) // 7 + 1 + 1 + 16 = 25
 {
     data = (typecode & 0x7Fu) |
            ((complement ? 1u : 0u) << 7) |

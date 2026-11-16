@@ -15,7 +15,10 @@ name=srpn_test
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
-FOLD=$TMP/$name
+test=oper
+export TEST=${TEST:-$test}
+
+export FOLD=$TMP/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
@@ -23,7 +26,7 @@ defarg="info_gcc_run"
 arg=${1:-$defarg}
 
 
-vv="BASH_SOURCE PWD name tmp TMP FOLD bin defarg arg"
+vv="BASH_SOURCE PWD name tmp TMP FOLD bin defarg arg test TEST"
 
 if [[ "$arg" =~ info ]]; then
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done

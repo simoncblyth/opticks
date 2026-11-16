@@ -23,7 +23,9 @@ struct sparm
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+    PARM_METHOD sparm();
     PARM_METHOD sparm(const double* pa);
+    PARM_METHOD sparm(float p0, float p1, float p2, float p3, float p4, float p5);
     PARM_METHOD void zero();
     PARM_METHOD void set6(const double* pa);
     PARM_METHOD std::string desc() const ;
@@ -34,10 +36,20 @@ struct sparm
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
+PARM_METHOD sparm::sparm()
+{
+    zero();
+}
 PARM_METHOD sparm::sparm(const double* pa)
 {
     zero();
     if(pa) set6(pa);
+}
+
+PARM_METHOD sparm::sparm(float p0, float p1, float p2, float p3, float p4, float p5)
+{
+    q0.f.x = p0  ; q0.f.y = p1  ; q0.f.z = p2  ; q0.f.w = p3  ;
+    q1.f.x = p4 ;  q1.f.y = p5  ; q1.f.z = 0.f ; q1.f.w = 0.f ;
 }
 
 
