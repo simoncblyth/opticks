@@ -25,12 +25,21 @@ const int CSGImport::LVID = ssys::getenvint("LVID", -1);
 const int CSGImport::NDID = ssys::getenvint("NDID", -1);
 bool CSGImport::DUMP_LISTNODE = ssys::getenvbool(CSGImport__DUMP_LISTNODE) ;
 
+/**
+CSGImport::CSGImport
+----------------------
+
+See CSGFoundry::CreateFromSim for how this handles the alternate RPN
+geometry using a separate alt CSGFoundry instance
+
+**/
+
 
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
     fd(fd_),
     st(nullptr),
-    RPN(fd ? fd->isRPN() : false)
+    RPN(fd->isRPN())
 {
     LOG_IF(fatal, fd == nullptr) << " fd(CSGFoundry) required " ;
     assert( fd ) ;
@@ -133,7 +142,7 @@ CSGSolid* CSGImport::importSolidRemainder_OLD(int ridx, const char* rlabel)
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = st->rem[primIdx] ;
-        CSGPrim* pr = importPrim( primIdx, node ) ;
+        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
         assert( pr );
         s_bb::IncludeAABB( bb.data(), pr->AABB() );
     }
@@ -180,7 +189,7 @@ CSGSolid* CSGImport::importSolidGlobal(int ridx, char ridx_type )
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = (*src)[primIdx] ;
-        CSGPrim* pr = importPrim( primIdx, node ) ;
+        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
         assert( pr );
         s_bb::IncludeAABB( bb.data(), pr->AABB() );
     }
@@ -252,7 +261,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = nodes[primIdx] ;   // structural node
 
-        CSGPrim* pr = importPrim( primIdx, node );
+        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node );
         assert( pr );
         pr->setRepeatIdx(ridx);
 
@@ -475,10 +484,73 @@ RPN node count and node order will be very different from complete binary tree a
 CSGPrim* CSGImport::importPrim_RPN(int primIdx, const snode& node )
 {
     int lvid = node.lvid ;
+    const char* name = fd->getMeshName(lvid)  ;
+    bool strip = true ;
+    std::string soname = st->get_lvid_soname(lvid, strip);
+
+
     const sn* rt = sn::GetLVRoot(lvid);
     assert(rt);
+    int idx_rc = rt->check_idx("CSGImport::importPrim_RPN.check_idx");
 
-    return nullptr ;
+    bool dump_LVID = node.lvid == LVID || idx_rc > 0 ;
+
+    std::vector<const sn*> nds ;
+    rt->postfixorder(nds);   // postfix order is like postorder but with special handling of listnode
+    int nn = nds.size();
+
+    if(dump_LVID) std::cout
+        << "[CSGImport::importPrim_RPN.dump_LVID:" << dump_LVID
+        << " node.lvid " << node.lvid
+        << " idx_rc " << idx_rc
+        << " LVID " << LVID
+        << " name " << ( name ? name : "-" )
+        << " soname " << soname
+        << " primIdx " << primIdx
+        << " nn " << nn << "(total nodes)"
+        << "\n"
+        << "[rt.render\n"
+        << rt->render()
+        << "]rt.render\n"
+        ;
+
+
+
+    CSGPrim* pr = fd->addPrim( nn );
+
+    pr->setMeshIdx(lvid);
+    pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
+
+    std::stringstream ss ;
+    std::ostream* out = dump_LVID ? &ss : nullptr  ;
+
+    std::array<float,6> bb = {} ;
+    CSGNode* root = nullptr ;
+
+    for(int i=0 ; i < nn ; i++)
+    {
+        int partIdx = i ;
+        const sn* nd = nds[partIdx];
+        CSGNode* n = importNode(pr->nodeOffset(), partIdx, node, nd ) ;
+
+        assert(n);
+        if(root == nullptr) root = n ;   // first node becomes root
+        if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB(), out );
+    }
+
+    pr->setAABB( bb.data() );
+    assert( root );
+
+    if(dump_LVID) std::cout
+        << "]CSGImport::importPrim_RPN.dump_LVID:" << dump_LVID
+        << " node.lvid " << node.lvid
+        << " LVID " << LVID
+        << " name " << ( name ? name : "-" )
+        << " soname " << soname
+        << std::endl
+        ;
+
+    return pr ;
 }
 
 
@@ -547,8 +619,10 @@ from root.
 
 **/
 
+
 CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
 {
+    // HUH: nodeOffset and partIdx are not used ?
     if(nd) assert( node.lvid == nd->lvid );
 
     int  typecode = nd ? nd->typecode : CSG_ZERO ;
@@ -588,43 +662,29 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     n->setParam_Narrow( PA_data );
     n->setAABB_Narrow( BB_data );
 
-    if(RPN && fd->rpn)
+    if(RPN && fd->rpn && nd)
     {
+        assert( nd->is_zero() == false && " ERROR - SHOULD BE ONLY ACTUAL NODES - NO PADDING CSG_ZERO NODES");
         if(nd->is_operator())
         {
-            unsigned nc = nd->num_child();
-            assert( nc == 2 );
-    #ifdef WITH_CHILD
-            unsigned leftspan = nd->child[0]->num_node() ;
-            unsigned rightspan = nd->child[1]->num_node();
-    #else
-            unsigned leftspan = nd->left->num_node() ;
-            unsigned rightspan = nd->right->num_node();
-    #endif
-            fd->rpn->add_opernode( nd->typecode, leftspan, rightspan );
+            fd->rpn->add_opernode( nd->typecode, nd->leftspan(), nd->rightspan() );
         }
         else if(nd->is_listnode())
         {
-            unsigned num_listprim = nd->num_child();
-            fd->rpn->add_listnode( nd->typecode, num_listprim );
+            fd->rpn->add_listnode( nd->typecode, nd->num_child() );
         }
         else if(nd->is_primitive())
         {
-            bool is_identity_xf = nd->xform->is_identity();  // NOPE - NEED TO GET FROM tv
-
-            sparm pa = {} ;
-            pa.set6( PA_data );
-
-            qat4 it = {} ;
-
-            fd->rpn->add_primnode( nd->typecode, is_complement, is_identity_xf, pa, it );
+            sparm pa(nd->getPA_data());
+            qat4  it( tv ? glm::value_ptr(tv->v) : nullptr ) ;
+            fd->rpn->add_primnode( nd->typecode, nd->is_complement() , it.is_identity(), pa, it );
         }
     }
 
-
-
     return n ;
 }
+
+
 
 CSGNode* CSGImport::importListnode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
 {

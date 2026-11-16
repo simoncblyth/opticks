@@ -62,7 +62,6 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include "st.h"      // complete binary tree math
 #include "stra.h"    // glm transform utilities
 #include "sgeomtools.h"
-#include "srpn.h"
 
 #include "NPFold.h"
 
@@ -272,6 +271,9 @@ struct SYSRAP_API sn
     int num_node() const ;
     int num_node_r(int d) const ;
 
+    int leftspan() const ;
+    int rightspan() const ;
+
     int num_notsupported_node() const ;
     int num_notsupported_node_r(int d) const ;
 
@@ -311,13 +313,12 @@ struct SYSRAP_API sn
     void preorder( std::vector<const sn*>& order ) const ;
     void inorder(  std::vector<const sn*>& order ) const ;
     void postorder(std::vector<const sn*>& order ) const ;
-    void rpn( std::vector<srpn>& tape ) const ;
+    void postfixorder(std::vector<const sn*>& order ) const ; // like postorder but with special handling of listnode
 
     void preorder_r( std::vector<const sn*>& order, int d ) const ;
     void inorder_r(  std::vector<const sn*>& order, int d ) const ;
     void postorder_r(std::vector<const sn*>& order, int d ) const ;
-    void rpn_r(std::vector<srpn>& tape, int d ) const ;
-    static srpn ConvertToRPN(const sn* n);
+    void postfixorder_r(std::vector<const sn*>& order, int d ) const ; // like postorder but with special handling of listnode
 
     void inorder_(std::vector<sn*>& order ) ;
     void inorder_r_(std::vector<sn*>& order, int d );
@@ -839,6 +840,10 @@ inline int  sn::idx() const { return Index(this); } // to match snd.hh
 inline int  sn::index() const { return Index(this); }
 inline int  sn::parent_index() const { return parent ? Index(parent) : -2 ; }
 inline bool sn::is_root() const { return parent == nullptr ; }
+
+
+
+
 
 
 
@@ -1490,7 +1495,7 @@ inline bool sn::is_operator() const
 }
 inline bool sn::is_zero() const
 {
-    return typecode == 0 ;
+    return typecode == CSG_ZERO ;
 }
 inline bool sn::is_lrzero() const
 {
@@ -1551,6 +1556,29 @@ inline int sn::num_node_r(int d) const
 #endif
     return nn ;
 }
+
+
+inline int sn::leftspan() const
+{
+    if(!is_operator()) return 0 ;
+#ifdef WITH_CHILD
+    return child[0]->num_node();
+#else
+    return left->num_node();
+#endif
+}
+
+inline int sn::rightspan() const
+{
+    if(!is_operator()) return 0 ;
+#ifdef WITH_CHILD
+    return child[1]->num_node();
+#else
+    return right->num_node();
+#endif
+}
+
+
 
 
 inline int sn::num_notsupported_node() const
@@ -1889,11 +1917,11 @@ inline void sn::postorder(std::vector<const sn*>& order ) const
 {
     postorder_r(order, 0);
 }
-
-inline void sn::rpn( std::vector<srpn>& tape ) const
+inline void sn::postfixorder(std::vector<const sn*>& order ) const
 {
-    rpn_r(tape, 0);
+    postfixorder_r(order, 0);
 }
+
 
 
 
@@ -1946,6 +1974,18 @@ inline void sn::inorder_r(std::vector<const sn*>& order, int d ) const
 }
 
 
+/**
+sn::postorder_r
+----------------
+
+* WITH_CHILD is standard - left/right impl is retained for elucidatory purposes only
+
+* note that listnodes that are represented by a single node with one or more primitive
+  children would be included in the postorder with the child nodes prior to the listnode
+  compound
+
+**/
+
 
 inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 {
@@ -1960,69 +2000,39 @@ inline void sn::postorder_r(std::vector<const sn*>& order, int d ) const
 
 
 
-inline void sn::rpn_r(std::vector<srpn>& tape, int d ) const
-{
-#ifdef WITH_CHILD
-    for(int i=0 ; i < int(child.size()) ; i++) child[i]->rpn_r(tape, d+1) ;
-#else
-    if(left) left->rpn_r(tape, d+1) ;
-    if(right) right->rpn_r(tape, d+1) ;
-#endif
-    srpn rpn = ConvertToRPN(this);
-    tape.push_back(rpn);
-}
-
-
-
-
 /**
-sn::ConvertToRPN
------------------
+sn::postfixorder_r
+--------------------
 
-Need to review lifecycle of the param and tran to
-know how and when can do this...
-
-Forming the tape must be combined with forming the
-rpn_parm and rpn_itra as they need to share an index
-
-As every prim will need to reference its
-param just need to check for the transform being
-identity as add the parm and tran,itra to their buffers.
-
-Q: In non-alt where are the xform collected ?
-A: CSGImport::importNode  (HMM reuse that in alt)
+Like postorder for non-listnode with children preceeding parents
+but with special handling for listnodes such that
+the listnode preceeds the primitives that it references.
 
 **/
 
-inline srpn sn::ConvertToRPN(const sn* n) // static
+inline void sn::postfixorder_r(std::vector<const sn*>& order, int d ) const
 {
-    srpn rpn = {} ;
-
-    if(n->is_operator())
+    if( is_listnode() )
     {
-        unsigned nc = n->num_child();
-        assert( nc == 2 );
-#ifdef WITH_CHILD
-        unsigned leftspan = n->child[0]->num_node() ;
-        unsigned rightspan = n->child[1]->num_node();
-#else
-        unsigned leftspan = n->left->num_node() ;
-        unsigned rightspan = n->right->num_node();
-#endif
-        rpn.set_opernode( n->typecode, leftspan, rightspan );
+        order.push_back(this);
+    #ifdef WITH_CHILD
+        for(int i=0 ; i < int(child.size()) ; i++) order.push_back(child[i]);
+    #else
+        // listnode requires WITH_CHILD so this makes little sense - as listnode would rarely have only 1 or 2 prim
+        if(left) order.push_back(left);
+        if(right) order.push_back(right) ;
+    #endif
     }
-    else if(n->is_listnode())
+    else
     {
-        unsigned num_listprim = n->num_child();
-        rpn.set_listnode( n->typecode, num_listprim );
+    #ifdef WITH_CHILD
+        for(int i=0 ; i < int(child.size()) ; i++) child[i]->postfixorder_r(order, d+1) ;
+    #else
+        if(left) left->postfixorder_r(order, d+1) ;
+        if(right) right->postfixorder_r(order, d+1) ;
+    #endif
+        order.push_back(this);
     }
-    else if(n->is_primitive())
-    {
-        unsigned index = 0 ; // COMBINED INDEX TO ADDRESS PARM AND TRAN
-        bool is_identity_xf = n->xform->is_identity();  // NOPE - TOO EARLY TO TELL HERE - SEE CSGImport::importNode
-        rpn.set_primnode( n->typecode, n->is_complement(), is_identity_xf, index );
-    }
-    return rpn ;
 }
 
 
