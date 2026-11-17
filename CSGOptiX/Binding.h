@@ -1,11 +1,23 @@
 #pragma once
+/**
+Binding.h
+===========
+
+See SBT::createHitgroup for population of CustomPrim and TriMesh
+
+TODO:
+
+1. remove placeholders
+2. dont need 32 bits, so 16+16 globalPrimIdx_boundary
+3. use globalPrimIdx_boundary in CustomPrim too - as srpn.h does not have space for boundary
+
+**/
+
+
+
 #include <stdint.h>
 #include <vector_types.h>
 
-/**
-TODO: try removing the placeholders
-
-**/
 
 struct RaygenData
 {

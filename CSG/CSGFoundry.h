@@ -104,6 +104,9 @@ struct CSG_API CSGFoundry : public SFoundry
     static const unsigned IMAX ;
     static const char* BASE ;
     static const char* RELDIR ;
+    static const char* RELDIR_RPN ;
+    const char* getRELDIR() const ;
+
     static const constexpr unsigned UNDEFINED = ~0u ;
 
     const char* descELV() const ;

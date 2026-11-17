@@ -154,7 +154,7 @@ can be CSGImported from SSim it is no longer so passive.
 CSGFoundry::CSGFoundry()
     :
     meta(),
-    rpn(new s_RPN),
+    rpn(new s_RPN),      // populated CSGImport::importNode when CSGFoundry::isRPN()
     sim(SSim::Get()),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
     deepcopy_everynode_transform(true),
@@ -2045,6 +2045,8 @@ int CSGFoundry::addPrim_solidLocalPrimIdx() const
 CSGFoundry::addPrim
 ---------------------
 
+Canonically invoked by CSGImport::importPrim
+
 Offsets counts for  node, tran and plan are
 persisted into the CSGPrim.
 Thus must addPrim prior to adding any node,
@@ -2103,7 +2105,8 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
     pr.setTranOffset(tran.size());     // HMM are tranOffset and planOffset used now that use global referencing  ?
     pr.setPlanOffset(plan.size());     // but still handy to keep them for debugging
 
-    pr.setGlobalPrimIdx(globalPrimIdx); // recent addition
+    pr.setGlobalPrimIdx(globalPrimIdx);
+    pr.setBoundary(-1);  // set later by caller CSGImport::importPrim
 
     // setPrimIdx invoked from caller CSGImport::importPrim
 
@@ -2424,6 +2427,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
         cpr->setRepeatIdx(opr->repeatIdx());
         cpr->setPrimIdx(opr->primIdx());
         cpr->setGlobalPrimIdx(opr->globalPrimIdx());
+        cpr->setBoundary(opr->boundary());
 
         for(int nodeIdx=opr->nodeOffset() ; nodeIdx < opr->nodeOffset()+opr->numNode() ; nodeIdx++)
         {
@@ -2510,6 +2514,12 @@ void CSGFoundry::DumpAABB(const char* msg, const float* aabb) // static
 
 const char* CSGFoundry::BASE = "$DefaultGeometryDir" ; // incorporates GEOM if defined
 const char* CSGFoundry::RELDIR = "CSGFoundry"  ;
+const char* CSGFoundry::RELDIR_RPN = "CSGFoundry_RPN"  ;
+const char* CSGFoundry::getRELDIR() const
+{
+    return isRPN() ? RELDIR_RPN : RELDIR ;
+}
+
 
 /**
 CSGFoundry::getBaseDir
@@ -2537,7 +2547,7 @@ void CSGFoundry::save() const
         return ;
     }
     LOG(LEVEL) << " cfbase " << cfbase ;
-    save(cfbase, RELDIR );
+    save(cfbase, getRELDIR() );
 }
 
 
@@ -2545,7 +2555,7 @@ void CSGFoundry::save() const
 
 void CSGFoundry::save(const char* base, const char* rel) const
 {
-    if(rel == nullptr) rel = RELDIR ;
+    if(rel == nullptr) rel = getRELDIR() ;
     std::stringstream ss ;
     ss << base << "/" << rel ;
     std::string dir = ss.str();
@@ -2584,7 +2594,7 @@ void CSGFoundry::saveAlt() const
         << " cfbase_alt " << ( cfbase_alt ? cfbase_alt : "-" )
         ;
 
-    save(cfbase_alt, RELDIR);
+    save(cfbase_alt, getRELDIR());
 }
 
 
@@ -2623,6 +2633,8 @@ void CSGFoundry::save_(const char* dir_) const
     if(tran.size() > 0 && save__("tran")) NP::Write(dir, "tran.npy",   (float*)tran.data(), tran.size(),   4, 4 );
     if(itra.size() > 0 && save__("itra")) NP::Write(dir, "itra.npy",   (float*)itra.data(), itra.size(),   4, 4 );
     if(inst.size() > 0 && save__("inst")) NP::Write(dir, "inst.npy",   (float*)inst.data(), inst.size(),   4, 4 );
+
+    if(rpn && !rpn->is_empty()) rpn->save(dir, "rpn");
 
 
     if(sim && save__("SSim"))
@@ -2675,6 +2687,8 @@ NPFold* CSGFoundry::serialize() const
     fold->add("itra" , _itra );
     fold->add("inst" , _inst );
 
+    if(rpn && !rpn->is_empty()) fold->add_subfold("rpn", rpn->serialize() );
+
     NPFold* sim_top = sim->getTop();
     if(sim_top) fold->add_subfold(SSim::RELDIR, sim_top );
 
@@ -2693,6 +2707,10 @@ void CSGFoundry::import_(const NPFold* fold)
     NPX::VecFromArray<qat4>(    tran , fold->get("tran")  );
     NPX::VecFromArray<qat4>(    itra , fold->get("itra")  );
     NPX::VecFromArray<qat4>(    inst , fold->get("inst")  );
+
+    NPFold* rpn_fold = fold->get_subfold("rpn");
+    if(rpn_fold) rpn->import_(rpn_fold);
+
 }
 
 void CSGFoundry::save2(const char* dir_) const
@@ -2769,7 +2787,7 @@ void CSGFoundry::load()
         LOG(fatal) << "cannot load unless CFBASE envvar defined or geom has been set " ;
         return ;
     }
-    load(cfbase, RELDIR );
+    load(cfbase, getRELDIR() );
 }
 
 
@@ -2816,8 +2834,9 @@ void CSGFoundry::load(const char* base_, const char* rel)
 {
     LOG_IF(error, base_ == nullptr) << load_FAIL_base_null_NOTES ;
     assert(base_);
-    bool conventional = strcmp( rel, RELDIR) == 0  ;
-    LOG_IF(fatal, !conventional) << "Convention is for rel to be named [" << RELDIR << "] not: [" << rel << "]"  ;
+    const char* reldir = getRELDIR();
+    bool conventional = strcmp( rel, reldir) == 0  ;
+    LOG_IF(fatal, !conventional) << "Convention is for rel to be named [" << reldir << "] not: [" << rel << "]"  ;
     assert(conventional);
 
     const char* base = spath::Resolve(base_);
@@ -3044,12 +3063,14 @@ CSGFoundry* CSGFoundry::CreateFromSim()
     CSGFoundry* fd_alt = nullptr ;
     if(csg_alt)
     {
+        LOG(LEVEL) << "[ creating alt CSGFoundry" ;
         fd_alt = new CSGFoundry ;
         fd_alt->setMode(csg_alt);
 
         CSGImport* im_alt = new CSGImport(fd_alt);
         im_alt->import_();
 
+        LOG(LEVEL) << "] creating alt CSGFoundry" ;
     }
 
     fd->setAlt(fd_alt);
@@ -3612,6 +3633,15 @@ CSGFoundry* CSGFoundry::getAlt() const
 {
     return alt ;
 }
+
+/**
+CSGFoundry::setMode
+---------------------
+
+This is invoked on fd_alt from CSGFoundry::CreateFromSim
+
+**/
+
 
 void CSGFoundry::setMode(const char* mode_ )
 {

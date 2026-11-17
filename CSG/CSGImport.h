@@ -48,7 +48,6 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
 
     CSGFoundry*  fd ;
     const stree* st ;
-    bool        RPN ;
 
     CSGImport( CSGFoundry* fd );
 

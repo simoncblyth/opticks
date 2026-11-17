@@ -33,6 +33,11 @@ int main(int argc, char** argv)
     assert( fd_expect  );
     if(!fd_expect) std::raise(SIGINT);
 
+
+    CSGFoundry* fd_alt = fd->getAlt();
+    if(fd_alt) fd_alt->save("$FOLD");
+
+
     return 0 ;
 }
 

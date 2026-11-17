@@ -14,7 +14,7 @@ signbit(-0.f) signaling within mis-normal zeros trick
 ::
 
     [lo] A[blyth@localhost CSG]$ grep -- -0.f *.*
-    csg_intersect_leaf.h:        isect.x = valid_isect ? -isect.x : -0.f ;    // miss needs to signal complement with -0.f signbit 
+    csg_intersect_leaf.h:        isect.x = valid_isect ? -isect.x : -0.f ;    // miss needs to signal complement with -0.f signbit
     csg_intersect_leaf.h:        // even for miss need to signal the complement with a -0.f in isect.x
     csg_intersect_leaf.h:        if(complement) isect.x = -0.f ;
     csg_intersect_leaf_halfspace.h:            isect.y = -0.f;
@@ -24,10 +24,10 @@ signbit(-0.f) signaling within mis-normal zeros trick
     csg_intersect_leaf_phicut.h:   for rays starting on phi0 line which have t_cand -0.f
     csg_intersect_leaf_phicut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
     csg_intersect_leaf_phicut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
-    csg_intersect_leaf_thetacut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
+    csg_intersect_leaf_thetacut.h:        isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity
     csg_intersect_tree.h:                // it is impossible to Miss a complemented (signaled by -0.f) solid as it is unbounded
     CSGNode.cc:    nd.setAABB(  -0.f, -0.f, -0.f,  0.f, 0.f, 0.f  );   // HMM: is negated zero -0.f ever used for anything ?
-    [lo] A[blyth@localhost CSG]$ 
+    [lo] A[blyth@localhost CSG]$
 
 
 
@@ -126,12 +126,12 @@ rewind occurs::
             StackFrame frame;
             frame.token_index = ip; // Mark start
             frame.initial_tmin = ray.tmin;
-            
-            evaluate_primitive(token.id, ray, frame); 
-            
+
+            evaluate_primitive(token.id, ray, frame);
+
             stack[stack_ptr++] = frame;
             ip++;
-        } 
+        }
         else if (token.type == OPERATOR) {
             // Pop right and left operands
             StackFrame right = stack[--stack_ptr];
@@ -144,22 +144,22 @@ rewind occurs::
                 // REWIND REGION
                 ray.tmin = calculate_new_tmin(left, right);
                 ip = left.token_index; // Jump program counter back to start of left subtree
-                
+
                 // Note: right child data is discarded, left will be re-evaluated
-                continue; 
-            } 
+                continue;
+            }
             else if (action == RETRY_RIGHT) {
                 ray.tmin = calculate_new_tmin(right, left);
                 ip = right.token_index; // Jump program counter back to start of right subtree
                 continue;
-            } 
+            }
             else {
                 // Normal resolution: Combine left and right hits into a single resultant frame
                 StackFrame result = combine_hits(left, right, token.op_type);
-                
+
                 // Maintain structural metadata for the parent operator
                 result.token_index = left.token_index; // The whole subtree started at 'left'
-                
+
                 stack[stack_ptr++] = result;
                 ip++;
             }
@@ -216,9 +216,9 @@ all its children::
         int arity;       // 2 for binary, N for list nodes
 
         // Instead of a single span, we track where the children sit in the RPN array.
-        // For local memory efficiency on the GPU, you can store a relative offset 
+        // For local memory efficiency on the GPU, you can store a relative offset
         // to the start of the first child, or a fixed-size array of child start indices.
-        int child_start_indices[MAX_ARITY]; 
+        int child_start_indices[MAX_ARITY];
     };
 
 
@@ -266,15 +266,15 @@ operator can trigger a rewind directly to that specific child's starting index.
             StackFrame frame;
             frame.token_index = ip;
             frame.initial_tmin = ray.tmin;
-            
-            evaluate_primitive(token.id, ray, frame); 
-            
+
+            evaluate_primitive(token.id, ray, frame);
+
             stack[stack_ptr++] = frame;
             ip++;
-        } 
+        }
         else if (token.type == OPERATOR) {
             int N = token.arity;
-            
+
             // Grab pointers to the N children currently sitting on the top of the stack
             // Note: Children are popped in reverse order (right-to-left)
             int children_start_ptr = stack_ptr - N;
@@ -283,28 +283,28 @@ operator can trigger a rewind directly to that specific child's starting index.
             // Process Kensler's logic over the array of N children
             int rewind_child_index = -1;
             float new_tmin = 0.0f;
-            
+
             bool success = evaluate_kensler_n_ary_logic(children, N, token.op_type, rewind_child_index, new_tmin);
 
             if (!success && rewind_child_index != -1) {
                 // REWIND REGION: Kensler logic says child 'rewind_child_index' needs re-evaluation
                 ray.tmin = new_tmin;
-                
+
                 // Jump program counter back to the exact token where that specific child begins
-                ip = children[rewind_child_index].token_index; 
-                
+                ip = children[rewind_child_index].token_index;
+
                 // Clear the stack back to the position of the first child of this operator.
                 // Everything evaluated after that child's start is now invalid and will be recalculated.
-                stack_ptr = children_start_ptr; 
+                stack_ptr = children_start_ptr;
                 continue;
-            } 
+            }
             else {
                 // Normal resolution: Combine all N hits into a single resultant frame
                 StackFrame result = combine_n_hits(children, N, token.op_type);
-                
+
                 // The entire n-ary subtree structurally starts where its first child started
-                result.token_index = children[0].token_index; 
-                
+                result.token_index = children[0].token_index;
+
                 // Collapse the N stack entries into the single result entry
                 stack_ptr = children_start_ptr;
                 stack[stack_ptr++] = result;
@@ -373,14 +373,45 @@ intersection for the listnode.
 
 
 
-Seems in my current JUNO geometry - I am using tesselated geometry not analytic
-CSG for all the low occurrence but complex solids that needed listnode
-treatment.  When I did use listnode I made simplifying assumptions like that
-all children of the listnode where discontiguous primitives. I also simply
-defined the list node to carry an offset and count to access those primitives
-after the binary tree portion of the buffer.  Offsetting like that is not good
-for locality - but it allows the algorithm to stay binary with special
-intersection for the listnode.
+
+It sounds like you have hit a highly pragmatic sweet spot for production GPU
+geometry. By separating your complex, rare shapes into tessellated meshes and
+keeping your CSG strictly binary (with a specialized append-buffer for
+listnodes), you have protected your core traversal loops from a massive amount
+of complexity.
+
+The simplifying assumption that all children of the listnode are discontiguous
+primitives is an elegant shortcut. In ray tracing, if you know that a set of
+shapes (like a collection of completely separated PMT photodetectors or support
+brackets inside the JUNO detector) never overlap or touch in 3D space, you do
+not need Kensler's state-rewind logic at all for that node.
+
+Here is how your current hybrid architecture stacks up against a pure RPN
+implementation, and how you can optimize it for the GPU without losing your
+mind to rewrite-fatigue.
+
+
+
+The "Discontiguous" Shortcut (Why you don't need RPN here)
+
+If the children of your listnode are entirely disjoint/discontiguous:
+
+1. A ray can hit at most one child primitive along its trajectory (or if it
+   hits multiple, their boundaries do not interact or cancel each other out like
+   an intersection/difference would).
+
+2. Because they don't overlap, a ray entering a listnode of Unions simply needs to
+   find the closest valid intersection among all children that falls within the
+   current ray interval (t_min to t_max).
+
+3. There is no shadow-masking or boundary-shifting. Therefore, Kensler's
+   requirement to reset t_min and re-evaluate a subtree from scratch is completely
+   bypassed for this node.
+
+Because of this, trying to force your listnodes into a flattened RPN sequence
+with complex jump-metadata is likely overkill. Your current "binary-tree +
+trailing primitive array" structure is fundamentally solid for this use case.
+
 
 
 
@@ -415,6 +446,12 @@ children sequentially
 
 
 
+How the Traversal Loop Handles It
+
+In your OptiX intersection loop, when an execution thread hits a Listnode
+token, it reads the count. Because the primitives are baked sequentially right
+after the operator, your instruction pointer (ip) simply slides forward:
+
 
 ::
 
@@ -426,9 +463,9 @@ children sequentially
 
         // Loop through the children sitting directly next to this operator in memory
         for (int i = 0; i < child_count; i++) {
-            Token child_prim = tokens[ip + 1 + i]; 
+            Token child_prim = tokens[ip + 1 + i];
             StackFrame child_frame;
-            
+
             if (evaluate_primitive(child_prim.id, ray, child_frame)) {
                 if (child_frame.t_hit < closest_hit.t_hit) {
                     closest_hit = child_frame;
@@ -440,7 +477,7 @@ children sequentially
         stack[stack_ptr++] = closest_hit;
 
         // Skip the instruction pointer past all the inline primitives we just consumed
-        ip += (1 + child_count); 
+        ip += (1 + child_count);
     }
 
 
@@ -482,7 +519,7 @@ not DRAM limited - the entire analytic geometry easily fits within the L2 cache
 
     0984 extern "C" __global__ void __intersection__is()
      985 {
-     986 
+     986
      987 #if defined(DEBUG_PIDXYZ)
      988     const uint3 idx = optixGetLaunchIndex();
      989     const uint3 dim = optixGetLaunchDimensions();
@@ -491,37 +528,37 @@ not DRAM limited - the entire analytic geometry easily fits within the L2 cache
      992 #else
      993     bool dumpxyz = false ;
      994 #endif
-     995 
-     996    
+     995
+     996
      997     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
      998     int nodeOffset = hg->prim.nodeOffset ;
      999     int globalPrimIdx = hg->prim.globalPrimIdx ;
-    1000    
+    1000
     1001     const CSGNode* node = params.node + nodeOffset ;  // root of tree
     1002     const float4* plan = params.plan ;
     1003     const qat4*   itra = params.itra ;
-    1004    
+    1004
     1005     const float  t_min = optixGetRayTmin() ;
     1006     const float3 ray_origin = optixGetObjectRayOrigin();
     1007     const float3 ray_direction = optixGetObjectRayDirection();
-    1008    
+    1008
     1009     float4 isect ; // .xyz normal .w distance
     1010     isect.x = 0.f ;
-    1011     isect.y = 0.f ; 
+    1011     isect.y = 0.f ;
     1012     isect.z = 0.f ;
     1013     isect.w = 0.f ;
-    1014 
+    1014
     1015     bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dumpxyz );
     1016     if(valid_isect)
     1017     {
     1018         const float3 lpos = ray_origin + isect.w*ray_direction ;
     1019         const float lposcost = normalize_cost(lpos);  // scuda.h cosTheta z/len of local(aka Object) frame position
     1020         const float lposfphi = normalize_fphi(lpos);
-    1021 
+    1021
     1022         const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
     1023         const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary
     1024         const unsigned globalPrimIdx_boundary = (( globalPrimIdx & 0xffffu ) << 16 ) | ( boundary & 0xffffu ) ;
-    1025 
+    1025
     1026         if(optixReportIntersection( isect.w, hitKind))
     1027         {
     1028             quad2* prd = SOPTIX_getPRD<quad2>(); // access prd addr from RG program
@@ -586,10 +623,33 @@ will implicitly pre-fetch its children into the fastest cache lines.
 The High-Performance L2 Layout
 
 Instead of using a separate absolute buffer offset for the listnode primitives,
-use a relative array offset.
+use a relative array offset::
+
+
+    // If node is a LISTNODE_UNION, its children sit sequentially right after it
+    if (node->is_listnode()) {
+        int count = node->child_count();
+
+        // The first child is stored exactly 1 slot ahead of the current node pointer
+        const CSGNode* children = node + 1;
+
+        for (int i = 0; i < count; i++) {
+            // This evaluation is an absolute L2 cache hit because 'children[i]'
+            // resides in the exact same cache line or adjacent sector as 'node'
+            evaluate_primitive(&children[i], ...);
+        }
+    }
 
 
 
+
+
+
+
+
+
+CSG_ZERO Warp Stall ~12%
+-------------------------
 
 ncu shows "Warp Stall Sampling" is ~12% of all stalls on the line where
 typecode is compared against CSG_ZERO - due to accessing the typecode from the
@@ -652,14 +712,14 @@ execution loop:
     };
 
     __device__ bool intersect_prim_rpn(
-        float4& final_isect, 
+        float4& final_isect,
         const CSGNode* rpn_base, // Start of this primitive's RPN token array
-        int token_count, 
-        const float4* plan, 
-        const qat4* itra, 
-        float t_min, 
-        const float3& ray_origin, 
-        const float3& ray_direction) 
+        int token_count,
+        const float4* plan,
+        const qat4* itra,
+        float t_min,
+        const float3& ray_origin,
+        const float3& ray_direction)
     {
         RPNFrame stack[MAX_RPN_STACK];
         int stack_ptr = 0;
@@ -667,7 +727,7 @@ execution loop:
 
         while (ip < token_count) {
             // Linear stream out of L2 cache - high locality!
-            const CSGNode* node = rpn_base + ip; 
+            const CSGNode* node = rpn_base + ip;
             int typecode = node->typecode();
 
             if (typecode == CSG_ZERO) {
@@ -681,7 +741,7 @@ execution loop:
                 frame.hit = evaluate_leaf_primitive(node, plan, itra, t_min, ray_origin, ray_direction, frame.isect);
                 stack[stack_ptr++] = frame;
                 ip++;
-            } 
+            }
             else if (typecode == CSG_LISTNODE) {
                 // Handle your specialized listnode inline
                 int child_count = node->child_count();
@@ -702,7 +762,7 @@ execution loop:
                 }
                 stack[stack_ptr++] = closest_hit;
                 ip += (1 + child_count); // Fast forward past inline children
-            } 
+            }
             else {
                 // Standard CSG Boolean Operation (UNION, INTERSECT, DIFFERENCE)
                 // Pop right and left operands
@@ -712,7 +772,7 @@ execution loop:
                 RPNFrame result;
                 // Standard boolean combination based on left/right hit intervals
                 result.hit = combine_boolean_intervals(left, right, typecode, result.isect);
-                
+
                 stack[stack_ptr++] = result;
                 ip++;
             }
@@ -841,7 +901,7 @@ workload, alongside an evaluation of the other options:
 
      * L2 Cache Utilization: Since your working set fits well within the Ada
        Lovelace L2 cache (as shown by your 77.52% L2 throughput), raw device pointer
-       lookups hit the L2 cache with minimal latency. 
+       lookups hit the L2 cache with minimal latency.
 
 
 
@@ -927,7 +987,7 @@ custom primitive intersection program?
         const auto& sbt_data = *reinterpret_cast<const CSGSBTData*>(optixGetSbtDataPointer());
 
         // Ray setup in object space
-        const Ray ray = get_current_ray_object_space(); 
+        const Ray ray = get_current_ray_object_space();
 
         // Register-based interval evaluation stack for CSG
         // Each stack entry holds ray interval [t_min, t_max]
@@ -989,7 +1049,7 @@ not help ?
 You are entirely correct. With the Ada Lovelace architecture's massive 64 MB L2
 cache on the RTX 5000 Ada, a complete analytic Constructive Solid Geometry
 (CSG) tree or subtree for a JUNO detector component (like an 8-inch or 20-inch
-PMT assembly) fits entirely within the L2 working set.   
+PMT assembly) fits entirely within the L2 working set.
 
 
 
@@ -1059,7 +1119,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
     "Ray Tracing CSG Objects Using Single Hit Intersections",  available from
     the below link together with a discussion of the technique as used in the XRT raytracer.
 
-    - http://xrt.wikidot.com/doc:csg 
+    - http://xrt.wikidot.com/doc:csg
 
     - http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
 
@@ -1068,7 +1128,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
                        
                       +-----------------------+
                       |                     B |
-           +------------------+               | 
+           +------------------+               |
            | A        |       |               |
            |          |       |               |
            |          |       |               |
@@ -1092,7 +1152,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
        shooting this ray, classifying the intersection. In this case, the state
        machine enters a new loop.
 
-    For full details of the LUT (lookup table) and the single-intersect CSG implementation below 
+    For full details of the LUT (lookup table) and the single-intersect CSG implementation below
     see tests/CSGClassifyTest.cc and run the below::
 
         CSGClassifyTest U
@@ -1100,7 +1160,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
         CSGClassifyTest D
 
 
-    Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary:: 
+    Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary::
                                                                                                                                               depth    elevation
                                                                           1                                                                      0         4
      
@@ -1126,17 +1186,17 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
         unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
 
 
-    1 << height 
+    1 << height
         leftmost, eg 10000
-    0 = 1 >> 1 
+    0 = 1 >> 1
         one beyond root(1) in the sequence
      
     nodeIdx
          node reached in the current slice of postorder sequence  
-    endIdx 
+    endIdx
          one beyond the last node in the current sequence (for fulltree that is 0)
 
-    leftTree 
+    leftTree
          consider example nodeIdx 111 which has elevation 2 in a height 4 tree
          
          nodeIdx  :  111
@@ -1144,7 +1204,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
          rightIdx : 1111
 
          leftTree.start : leftIdx << (2-1)  : 11100
-         leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence 
+         leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence
 
     rightTree
         again consider nodeIdx 111
@@ -1152,22 +1212,22 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
         nodeIdx   :  111
         rightIdx  : 1111
 
-        rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice 
-        rightTree.end   :nodeIdx 
+        rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice
+        rightTree.end   :nodeIdx
 
 
     Now consider how different things would be with an unbalanced tree : the number of nodes traversed in a leftTree traverse
-    of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence 
+    of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence
     up until the same end points as above.  The rightTree would not change.
 
     Perhaps leftTreeOld should be replaced with leftTreeNew starting all the way from leftmost beginning of the postorder sequence::
 
         unsigned leftTreeOld  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
-        unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ; 
+        unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ;
 
     I suspect that when using balanced trees the leftTreeold can cause spurious intersects
-    due to discontiguity from incomplete geometry as a result of not looping over the 
-    full prior postorder sequence. 
+    due to discontiguity from incomplete geometry as a result of not looping over the
+    full prior postorder sequence.
 
     Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
     so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
@@ -1177,7 +1237,7 @@ Presumably the equivalent is just simple RPN tape entry index slices ?
 
     **/
 
-     
+
 
 
 
@@ -1285,7 +1345,7 @@ pointer chasing:
             self.left = left
             self.right = right
             self.child_count = child_count # Used for your listnodes
-            
+
             # Pre-computed metadata for the GPU
             self.total_span = 0
             self.left_span = 0
@@ -1298,17 +1358,17 @@ pointer chasing:
         if is_primitive(node.typecode):
             node.total_span = 1
             return 1
-            
+
         elif node.typecode == CSG_LISTNODE:
             # A listnode holds its operator plus all inline children
             node.total_span = 1 + node.child_count
             return node.total_span
-            
+
         else: # Standard CSG Binary Operator (UNION, INTERSECT, etc.)
             # Recursively calculate child spans
             node.left_span = compute_rpn_metadata(node.left)
             node.right_span = compute_rpn_metadata(node.right)
-            
+
             # The operator token itself counts as 1
             node.total_span = node.left_span + node.right_span + 1
             return node.total_span
@@ -1338,6 +1398,11 @@ before those subtrees were evaluated.
   result on the stack, but drop the right subtree result.
 
 
+To make this frictionless without storing deep historic states, your StackFrame
+can simply carry a stack_depth_before_eval anchor, or you can calculate it
+directly using your pre-computed spans:
+
+
 ::
 
     // Operator node is at 'ip'
@@ -1347,23 +1412,23 @@ before those subtrees were evaluated.
 
     if (kensler_action == RETRY_LEFT) {
         ray.tmin = advanced_t;
-        
+
         // Jump back to the start of the left subtree tokens
-        ip = ip - right_span - left_span; 
-        
+        ip = ip - right_span - left_span;
+
         // Pop both subtrees off the stack to re-run everything from that point
-        stack_ptr = stack_ptr - 2; 
+        stack_ptr = stack_ptr - 2;
         continue;
-    } 
+    }
     else if (kensler_action == RETRY_RIGHT) {
         ray.tmin = advanced_t;
-        
+
         // Jump back to the start of the right subtree tokens
-        ip = ip - right_span; 
-        
+        ip = ip - right_span;
+
         // Keep the Left child result (which is at stack[stack_ptr - 2])
         // Clear only the Right child result
-        stack_ptr = stack_ptr - 1; 
+        stack_ptr = stack_ptr - 1;
         continue;
     }
 

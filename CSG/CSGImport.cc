@@ -38,8 +38,7 @@ geometry using a separate alt CSGFoundry instance
 CSGImport::CSGImport( CSGFoundry* fd_ )
     :
     fd(fd_),
-    st(nullptr),
-    RPN(fd->isRPN())
+    st(nullptr)
 {
     LOG_IF(fatal, fd == nullptr) << " fd(CSGFoundry) required " ;
     assert( fd ) ;
@@ -142,7 +141,7 @@ CSGSolid* CSGImport::importSolidRemainder_OLD(int ridx, const char* rlabel)
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = st->rem[primIdx] ;
-        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
+        CSGPrim* pr = fd->isRPN() ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
         assert( pr );
         s_bb::IncludeAABB( bb.data(), pr->AABB() );
     }
@@ -189,7 +188,7 @@ CSGSolid* CSGImport::importSolidGlobal(int ridx, char ridx_type )
     {
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = (*src)[primIdx] ;
-        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
+        CSGPrim* pr = fd->isRPN() ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node ) ;
         assert( pr );
         s_bb::IncludeAABB( bb.data(), pr->AABB() );
     }
@@ -261,7 +260,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
         int primIdx = i ;  // primIdx within the CSGSolid
         const snode& node = nodes[primIdx] ;   // structural node
 
-        CSGPrim* pr = RPN ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node );
+        CSGPrim* pr = fd->isRPN() ? importPrim_RPN(primIdx, node) : importPrim( primIdx, node );
         assert( pr );
         pr->setRepeatIdx(ridx);
 
@@ -365,6 +364,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
+    pr->setBoundary(node.boundary);
 
     std::stringstream ss ;
     std::ostream* out = dump_LVID ? &ss : nullptr  ;
@@ -479,6 +479,7 @@ CSGImport::importPrim_RPN
 RPN node count and node order will be very different from complete binary tree approach
 - so cannot do this just at importNode level
 
+
 **/
 
 CSGPrim* CSGImport::importPrim_RPN(int primIdx, const snode& node )
@@ -520,6 +521,7 @@ CSGPrim* CSGImport::importPrim_RPN(int primIdx, const snode& node )
 
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
+    pr->setBoundary(node.boundary); // new - as srpn.h node lacks space for boundary
 
     std::stringstream ss ;
     std::ostream* out = dump_LVID ? &ss : nullptr  ;
@@ -622,7 +624,15 @@ from root.
 
 CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
 {
-    // HUH: nodeOffset and partIdx are not used ?
+    // Although nodeOffset and partIdx are not used below - they are handy for debug
+
+    const char* name = fd->getMeshName(node.lvid)  ;
+    bool strip = true ;
+    std::string soname = st->get_lvid_soname(node.lvid, strip);
+
+
+    bool write_rpn = fd->isRPN() && fd->rpn && nd ;
+
     if(nd) assert( node.lvid == nd->lvid );
 
     int  typecode = nd ? nd->typecode : CSG_ZERO ;
@@ -636,9 +646,17 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
         << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED "
         << " for node of type " << CSG::Name(typecode)
         << " nd.lvid " << ( nd ? nd->lvid : -1 )
+        << " node.lvid " << ( node.lvid )
+        << " soname " << soname
+        << " name " << ( name ? name : "-" )
+        << " write_rpn " << ( write_rpn ? "YES" : "NO " )
         ;
-    assert(expect);
-    if(!expect) std::raise(SIGINT);
+
+    if(!write_rpn)
+    {
+        assert(expect);
+        if(!expect) std::raise(SIGINT);
+    }
 
     std::array<double,6> bb ;
     double* aabb = leaf ? bb.data() : nullptr ;
@@ -662,22 +680,22 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     n->setParam_Narrow( PA_data );
     n->setAABB_Narrow( BB_data );
 
-    if(RPN && fd->rpn && nd)
+    if(write_rpn)
     {
         assert( nd->is_zero() == false && " ERROR - SHOULD BE ONLY ACTUAL NODES - NO PADDING CSG_ZERO NODES");
         if(nd->is_operator())
         {
-            fd->rpn->add_opernode( nd->typecode, nd->leftspan(), nd->rightspan() );
+            fd->rpn->add_opernode( nd->typecode, nd->leftspan(), nd->rightspan(), nd->lvid );
         }
         else if(nd->is_listnode())
         {
-            fd->rpn->add_listnode( nd->typecode, nd->num_child() );
+            fd->rpn->add_listnode( nd->typecode, nd->num_child(), nd->lvid );
         }
         else if(nd->is_primitive())
         {
             sparm pa(nd->getPA_data());
             qat4  it( tv ? glm::value_ptr(tv->v) : nullptr ) ;
-            fd->rpn->add_primnode( nd->typecode, nd->is_complement() , it.is_identity(), pa, it );
+            fd->rpn->add_primnode( nd->typecode, nd->is_complement() , it.is_identity(), pa, it, nd->lvid );
         }
     }
 

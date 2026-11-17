@@ -14,7 +14,7 @@ stage.    Applying SER gave me about factor of 2x. My BNL colleagues who report
 16x from SER with their geometry report 16x from SER.  They do not detail their
 geometry.  Do you think their geometry being less of a bottleneck could explain
 the huge difference in the SER improvement ? Or does it do the otherway.   What
-can I measure to pin this down ? 
+can I measure to pin this down ?
 
 
  The CSG is memory bound. For every CSG intersect the tree of CSGNode must be traversed
@@ -52,7 +52,7 @@ can I measure to pin this down ?
 
     Compute (SM) Throughput           %          37.76
 
-    ----------------------- ----------- -------------- 
+    ----------------------- ----------- --------------
 
 
 
@@ -193,7 +193,7 @@ down to microarchitectural cache line granularity and warp-level working sets.
 
 ::
 
-    TODO : TRY SER HINT WITH THE CSGNode INDEX ? 
+    TODO : TRY SER HINT WITH THE CSGNode INDEX ?
 
 
 
@@ -206,7 +206,7 @@ addresses bouncing back and forth across the buffer.
 To make cache proximity work for analytic CSG:
 
 1. Breadth-First / Heap Layout: Pack node.npy strictly in a breadth-first (heap
-   array) order. In a heap layout, the children of node i are located at 2i and 
+   array) order. In a heap layout, the children of node i are located at 2i and
    2i+1, ensuring parent and child nodes land on adjacent cache lines.
 
 2. Spatial Ordering: Reordering nodes using Morton codes (Z-order curves) based
@@ -219,42 +219,42 @@ Complete Binary Tree Drawbacks
 ----------------------------------
 
 
-The CSGNode comes from sn.h which arranges a complete binary tree layout of nodes:: 
+The CSGNode comes from sn.h which arranges a complete binary tree layout of nodes::
 
     4815 /**
     4816 sn::GetLVNodesComplete_r
     4817 -------------------------
-    4818 
+    4818
     4819 Serializes tree nodes into complete binary tree vector using
     4820 0-based binary tree level order layout of nodes in the vector.
-    4821 
+    4821
     4822 **/
-    4823 
+    4823
     4824 inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx)  // static
     4825 {
     4826     assert( idx < int(nds.size()) );
     4827     nds[idx] = nd ;
-    4828 
+    4828
     4829     int nc = nd->num_child() ;
-    4830 
+    4830
     4831     if( nc > 0 && nd->is_listnode() == false ) // non-list operator node
     4832     {
     4833         assert( nc == 2 ) ;
     4834         for(int i=0 ; i < nc ; i++)
     4835         {
     4836             const sn* child = nd->get_child(i) ;
-    4837 
+    4837
     4838             int cidx = 2*idx + 1 + i ; // 0-based complete binary tree level order indexing
-    4839 
+    4839
     4840             GetLVNodesComplete_r(nds, child, cidx );
     4841         }
     4842     }
     4843 }
-    4844 
+    4844
 
 That works well for simple shapes where the tree is not very deep. But for
 complex shapes with deep trees lots of time is spent traversing empty ZERO
-nodes. 
+nodes.
 
 
 That code snippet highlights the classic architectural tradeoff of complete
@@ -324,53 +324,53 @@ comparing the typecode to CSG_ZERO shows up the worst offender in ncu.
 276 TREE_FUNC
 277 void intersect_tree( bool& valid_isect, float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 278 {
-279     const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1 
-280     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
-281     float propagate_epsilon = 0.0001f ;  // ? 
+279     const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1
+280     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4
+281     float propagate_epsilon = 0.0001f ;  // ?
 282     int ierr = 0 ;
-283 
+283
 284     LUT lut ;
 285     Tranche tr ;
 286     tr.curr = -1 ;
-287 
+287
 288     unsigned fullTree = PACK4(0,0, 1 << height, 0 ) ;  // leftmost: 1<<height,  root:1>>1 = 0 ("parent" of root)  
 302     tranche_push( tr, fullTree, t_min );
-303 
+303
 304     CSG_Stack csg ;
 305     csg.curr = -1 ;
-309 
+309
 310     while (tr.curr > -1)
 311     {
 315         unsigned slice ;
-316         float tmin ;    // NB different from t_min when looping 
-317 
+316         float tmin ;    // NB different from t_min when looping
+317
 318         ierr = tranche_pop(tr, slice, tmin );
 319         if(ierr) break ;
-320 
-321         // nodeIdx, beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height 
+320
+321         // nodeIdx, beginIdx, endIdx are 1-based level order tree indices, root:1 leftmost:1<<height
 322         unsigned beginIdx = UNPACK4_2(slice);
 323         unsigned endIdx   = UNPACK4_3(slice);
-324 
+324
 331         unsigned nodeIdx = beginIdx ;
 332         while( nodeIdx != endIdx )
 333         {
 334             unsigned depth = TREE_DEPTH(nodeIdx) ;
 335             unsigned elevation = height - depth ;
-336 
-337             const CSGNode* nd = node + nodeIdx - 1 ;   // nodeIdx is 1-based level order index 
+336
+337             const CSGNode* nd = node + nodeIdx - 1 ;   // nodeIdx is 1-based level order index
 338             OpticksCSG_t typecode = (OpticksCSG_t)nd->typecode() ;
-345 
+345
 346             if( typecode == CSG_ZERO )
 347             {
 348                 nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
 349                 continue ;
 350             }
 351             bool node_or_leaf = typecode >= CSG_NODE ;
-355 
+355
 356             if(node_or_leaf)
 357             {
 358                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;
-359 
+359
 360                 bool nd_valid_isect(false);
 361                 intersect_node( nd_valid_isect, nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dumpxyz );
 
@@ -439,17 +439,17 @@ The execution loop becomes a simple, dense linear scan or a compact jump table::
         const CSGNode& node = tape[i];
         OpticksCSG_t typecode = (OpticksCSG_t)node.typecode();
 
-        if (typecode < CSG_NODE) { 
+        if (typecode < CSG_NODE) {
             // 1. It's a Primitive (Sphere, Cylinder, etc.)
             float4 isect;
             bool valid = intersect_primitive(node, ray_origin, ray_direction, isect);
             stack[++stack_ptr] = isect; // Push interval onto register stack
-        } 
+        }
         else {
             // 2. It's an Operator (UNION, INTERSECTION, DIFFERENCE)
             float4 right_isect = stack[stack_ptr--]; // Pop right
             float4 left_isect  = stack[stack_ptr--]; // Pop left
-            
+
             float4 combined = combine_intervals(typecode, left_isect, right_isect);
             stack[++stack_ptr] = combined; // Push result back
         }
@@ -484,7 +484,7 @@ dense postfix evaluation tape instead of a complete binary tree?::
     sn::GetLVNodesPostfix_r
     -------------------------
 
-    Serializes tree nodes into a dense postfix (RPN) evaluation vector 
+    Serializes tree nodes into a dense postfix (RPN) evaluation vector
     using a post-order traversal (Left -> Right -> Operator).
     **/
 
@@ -544,7 +544,7 @@ solids with many non-overlapping holes cut out of them - the listnode very
 efficiently handles the union of all those cutaways without wasting nodes on
 representing a list inside a tree.  So how could RPN support listnode ? I
 suppose just directly ?
-  
+
 
 
 You hit on the exact reason why listnodes were invented in the first place. In
@@ -615,6 +615,182 @@ Why This is Superior for L2 Cache Performance
 
 
 
+A description of the  current CSG tree intersection implementation is below. It
+is based on slices of the postorder sequence - in order to repeat parts of the
+intersections of sub-trees.  How do you suggest to do this with RPN ?
+Presumably the equivalent is just simple RPN tape entry index slices ?::
 
+    /**
+    intersect_tree
+    -----------------
+
+    The principal of the approach is described in a note by Andrew Kensler
+    "Ray Tracing CSG Objects Using Single Hit Intersections",  available from
+    the below link together with a discussion of the technique as used in the XRT raytracer.
+
+    - http://xrt.wikidot.com/doc:csg
+
+    - http://xrt.wdfiles.com/local--files/doc%3Acsg/CSG.pdf
+
+
+
+                       
+                      +-----------------------+
+                      |                     B |
+           +------------------+               |
+           | A        |       |               |
+           |          |       |               |
+           |          |       |               |
+           |   0- - - 1 - - - 2 - - - - - - -[3]
+           |          |       |               |
+           |          |       |               |
+           |          +-------|---------------+
+           |                  |
+           |                  |
+           +------------------+
+
+    A ray is shot at each sub-object to find the nearest intersection, then the
+    intersection with the sub-object is classified as one of entering, exiting or
+    missing it. Based upon the combination of the two classifications, one of
+    several actions is taken:
+
+    1. returning a hit
+
+    2. returning a miss
+    3. changing the starting point of the ray for one of the objects and then
+       shooting this ray, classifying the intersection. In this case, the state
+       machine enters a new loop.
+
+    For full details of the LUT (lookup table) and the single-intersect CSG implementation below
+    see tests/CSGClassifyTest.cc and run the below::
+
+        CSGClassifyTest U
+        CSGClassifyTest I
+        CSGClassifyTest D
+
+
+    Complete binary tree of height 4 (31 nodes) with 1-based nodeIdx in binary::
+                                                                                                                                              depth    elevation
+                                                                          1                                                                      0         4
+     
+                                          10                                                            11                                       1         3
+
+                              100                        101                            110                           [111]                       2         2
+
+                     1000            1001          1010         1011             1100          1101            *1110*           1111              3         1
+     
+                 10000  10001    10010 10011    10100 10101   10110 10111     11000 11001   11010  11011   *11100* *11101*   11110   11111          4         0
+                                                                                                         
+
+
+    CSG looping in the below implementation has been using the below complete binary tree slices(tranche)::
+
+        unsigned fullTree  = PACK4(  0,  0,  1 << height, 0 ) ;    
+
+        unsigned leftIdx = 2*nodeIdx  ;    // left child of nodeIdx
+        unsigned rightIdx = leftIdx + 1 ; // right child of nodeIdx  
+
+        unsigned endTree   = PACK4(  0,  0,  nodeIdx,  endIdx  );
+        unsigned leftTree  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+        unsigned rightTree = PACK4(  0,  0,  rightIdx << (elevation-1), nodeIdx );
+
+
+    1 << height
+        leftmost, eg 10000
+    0 = 1 >> 1
+        one beyond root(1) in the sequence
+     
+    nodeIdx
+         node reached in the current slice of postorder sequence  
+    endIdx
+         one beyond the last node in the current sequence (for fulltree that is 0)
+
+    leftTree
+         consider example nodeIdx 111 which has elevation 2 in a height 4 tree
+         
+         nodeIdx  :  111
+         leftIdx  : 1110  
+         rightIdx : 1111
+
+         leftTree.start : leftIdx << (2-1)  : 11100
+         leftTree.end   : rightIdx << (2-1) : 11110    one beyond the leftIdx subtree of three nodes in the postorder sequence
+
+    rightTree
+        again consider nodeIdx 111
+
+        nodeIdx   :  111
+        rightIdx  : 1111
+
+        rightTree.start : rightIdx << (2-1) : 11110     same one beyond end of leftTree is the start of the rightTree slice
+        rightTree.end   :nodeIdx
+
+
+    Now consider how different things would be with an unbalanced tree : the number of nodes traversed in a leftTree traverse
+    of an unbalanced tree would be much more... the leftTree  would encompass the entirety of the postorder sequence
+    up until the same end points as above.  The rightTree would not change.
+
+    Perhaps leftTreeOld should be replaced with leftTreeNew starting all the way from leftmost beginning of the postorder sequence::
+
+        unsigned leftTreeOld  = PACK4(  0,  0,  leftIdx << (elevation-1), rightIdx << (elevation-1)) ;
+        unsigned leftTreeNew  = PACK4(  0,  0,  1 << height , rightIdx << (elevation-1)) ;
+
+    I suspect that when using balanced trees the leftTreeold can cause spurious intersects
+    due to discontiguity from incomplete geometry as a result of not looping over the
+    full prior postorder sequence.
+
+    Tried using leftTreeNew with a balanced tree and it still gives spurious intersects on internal boundariues,
+    so it looks like tree balanching and the CSG algorithm as it stands are not compatible.  
+
+    TODO: need to confirm exactly what is happening using CSGRecord, have not extinguished all hope of getting balanced
+    to work yet, as it seems like it should be possible in principle.
+
+    **/
+
+
+
+
+Yes, exactly. The equivalent of those bit-shifted postorder slices in an RPN
+layout is simply contiguous tape index slices ([start_idx, end_idx]).
+
+The reason Kensler's algorithm can slice and repeat sub-tree evaluations in the
+first place relies on a fundamental property of post-order traversals: every
+subtree, no matter how complex or unbalanced, always occupies a single,
+perfectly contiguous block of nodes on a post-order tape.
+
+Why RPN Makes Slicing Native and Robust
+
+In your current complete binary tree implementation, you have to use
+bit-shifting (leftIdx << (elevation-1)) because the tree is padded with
+CSG_ZERO nodes to maintain a rigid, uniform height. That rigid math is
+precisely why your experiments with leftTreeNew and unbalanced trees
+failed—rigid level-order indexing breaks down when branches aren't symmetrical,
+leading to misalignment and spurious intersects on internal boundaries.
+
+In an RPN tape, you drop the rigid elevation math entirely. Because nodes are
+serialized strictly in post-order (Left -> Right -> Operator), a node's left
+child subtree and right child subtree are guaranteed to sit immediately
+preceding it on the tape in contiguous blocks.
+
+
+How to Represent Tranche Slices in RPN
+
+Instead of computing ranges dynamically via bit-twiddling, your CPU-side
+serialization can record the exact start and end tape indices for each
+sub-expression and bake them right into the operator node struct, or push
+explicit index ranges onto your Tranche stack::
+
+    struct RPNTranche {
+        int tape_start;  // Inclusive start index on the RPN tape for this subtree
+        int tape_end;    // Inclusive end index on the RPN tape for this subtree
+        float t_min;     // Minimum intersection distance for this slice
+    };
+
+
+
+When Kensler's lookup table (LUT) dictates that you need to re-evaluate a
+sub-tree (e.g., re-shooting a ray into sub-tree A after intersecting sub-tree
+B), your state machine doesn't need bit-shifts. It simply pushes a new
+RPNTranche with the pre-calculated [tape_start, tape_end] bounds of sub-tree A
+onto the tranche stack.
 
 

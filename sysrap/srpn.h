@@ -51,7 +51,7 @@ struct srpn
     SRPN_METHOD explicit srpn(unsigned raw) : data(raw) {}
 
 
-    SRPN_METHOD void set_opernode( unsigned typecode, unsigned leftspan, unsigned rightspan );  // 7 + 11 + 11
+    SRPN_METHOD void set_opernode( unsigned typecode, unsigned leftspan, unsigned rightspan );  // 7 + 11 + 11 = 29
     SRPN_METHOD int  typecode() const ;
     SRPN_METHOD int  leftspan() const ;
     SRPN_METHOD int  rightspan() const ;

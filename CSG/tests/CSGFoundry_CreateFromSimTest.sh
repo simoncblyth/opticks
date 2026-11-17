@@ -3,6 +3,10 @@ usage(){ cat << EOU
 CSGFoundry_CreateFromSimTest.sh testing CSGFoundry::CreateFromSim
 =====================================================================
 
+::
+
+    ~/o/CSG/tests/CSGFoundry_CreateFromSimTest.sh
+
 This is a technical test that are able to copy one CSGFoundry
 to another, rather than a comparison of two routes.
 This is because when using U4TreeCreate start from gdml
@@ -76,6 +80,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
 fi

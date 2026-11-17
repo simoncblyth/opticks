@@ -88,14 +88,14 @@ s_RPN* srpn_test::populate()
 
 int srpn_test::save()
 {
-    const char* dir = "$FOLD/rpn";
+    const char* rel = "rpn";
 
     s_RPN* rpn0 = populate();
-    rpn0->save(dir);
+    rpn0->save("$FOLD", rel);
     std::cout << "rpn0\n" << rpn0->desc() << "\n\n" ;
 
     s_RPN* rpn1 = new s_RPN ;
-    rpn1->load(dir);
+    rpn1->load("$FOLD", rel);
     std::cout << "rpn1\n" << rpn1->desc() << "\n\n" ;
 
     return 0 ;

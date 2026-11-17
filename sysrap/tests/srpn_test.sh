@@ -15,7 +15,9 @@ name=srpn_test
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
-test=oper
+#test=oper
+test=save
+
 export TEST=${TEST:-$test}
 
 export FOLD=$TMP/$name

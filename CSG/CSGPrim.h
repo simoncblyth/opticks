@@ -50,7 +50,7 @@ CSGPrim : references contiguous sequence of *numNode* CSGNode starting from *nod
     +----+----------------+----------------+----------------+----------------+-------------------------------------------------+
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
-    | q3 |  BBMax_y       |  BBMax_z       |                |  globalPrimIdx |                                                 |
+    | q3 |  BBMax_y       |  BBMax_z       |  boundary      |  globalPrimIdx |                                                 |
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
@@ -114,6 +114,9 @@ struct CSG_API CSGPrim
 
     PRIM_METHOD unsigned primIdx() const {            return q1.u.w ; }
     PRIM_METHOD void   setPrimIdx(unsigned pidx){     q1.u.w = pidx ; }
+
+    PRIM_METHOD unsigned boundary() const {       return q3.u.z ; }
+    PRIM_METHOD void setBoundary(unsigned bnd){ q3.u.z = bnd ; }
 
     PRIM_METHOD unsigned globalPrimIdx() const {       return q3.u.w ; }
     PRIM_METHOD void setGlobalPrimIdx(unsigned gpidx){ q3.u.w = gpidx ; }
