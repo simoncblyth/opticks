@@ -1,4 +1,9 @@
+/**
+csg_intersect_prim_test.cc
+===========================
 
+
+**/
 #include "NPFold.h"
 
 #include "scuda.h"
@@ -31,6 +36,7 @@ struct csg_intersect_prim_test
     static NP* XY(CSGNode* nd, int nx, int ny, float x0, float x1, float y0, float y1, float z, float _t_min, float3 d);
 
     static int One(CSGNode* nd, float t_min, const float3 o, const float3 d);
+
     static int SphereOne();
     static int CylinderOne();
     static int HalfSpaceOne();

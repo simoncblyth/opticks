@@ -34,13 +34,13 @@ struct SFoundry
     virtual unsigned getNumSolid() const                               = 0 ;
     virtual unsigned getNumPrim() const                                = 0 ;
 
-    virtual bool              isSolidTrimesh(int gas_idx) const            = 0 ;
+    virtual bool              isSolidTrimesh(int gas_idx) const            = 0 ;  // getting from CSGSolid should avoid this
     virtual const CSGSolid*   getSolid(unsigned solidIdx) const            = 0 ;
-    virtual SCSGPrimSpec getPrimSpec( unsigned solidIdx) const             = 0 ;
+    virtual SCSGPrimSpec getPrimSpec( unsigned solidIdx) const             = 0 ;  // could get from SDeviceGeometry + CSGSolid
     virtual const std::string& getSolidMMLabel(unsigned solidIdx) const    = 0 ;
 
     virtual const CSGPrim*    getPrim(unsigned primIdx) const              = 0 ;
-    virtual int               getPrimBoundary_( const CSGPrim* pr ) const  = 0 ;
+    virtual int               getPrimBoundary_( const CSGPrim* pr ) const  = 0 ; // CSGPrim::boundary should relegate this to debug only
 
     virtual unsigned getNumUniqueIAS() const                               = 0 ;
     virtual unsigned getNumInst() const                                    = 0 ;

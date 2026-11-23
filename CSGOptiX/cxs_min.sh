@@ -122,9 +122,9 @@ EOU
 #test=input_photon_poolcover_refine
 
 
-#test=medium_evt
+test=medium_evt
 #test=small_evt
-test=tiny_evt
+#test=tiny_evt
 
 #test=large_evt
 #test=vlarge_evt

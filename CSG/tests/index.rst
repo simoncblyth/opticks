@@ -8,12 +8,25 @@ Overview
 Categorize the test scripts.
 
 
-Working Scripts
------------------
+
+Revived 2026/11/17 scripts
+--------------------------
 
 CSGPrimTest.sh
-CSGFoundryTest.sh
 CSGNodeTest.sh
+
+
+NEXT to review
+----------------
+
+csg_intersect_prim_test.sh
+
+
+[OLD] Working Scripts
+----------------------
+
+
+CSGFoundryTest.sh
 CSGSolidTest.sh
 CSGScanTest.sh
 qat4Test.sh

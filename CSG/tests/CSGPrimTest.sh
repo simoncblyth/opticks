@@ -1,29 +1,23 @@
-#!/bin/bash -l
+#!/bin/bash
+usage(){ cat << EOU
 
-CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU 
+~/o/CSG/tests/CSGPrimTest.sh
+
+EOU
+}
+
+
+cd $(dirname $(realpath $BASH_SOURCE))
+
+source $HOME/.opticks/GEOM/GEOM.sh
+#export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 
 name=CSGPrimTest
-srcs="$name.cc ../CSGPrim.cc ../CU.cc"
+bin=$name
 
-gcc -g \
-    $srcs \
-    -I.. \
-    -I${CUDA_PREFIX}/include \
-    -std=c++11  -lstdc++ \
-    -L${CUDA_PREFIX}/lib -lcudart  \
-    -o /tmp/$name 
 
-[ $? -ne 0 ] && echo compile error && exit 1
-
-case $(uname) in
-  Darwin) var=DYLD_LIBRARY_PATH debugger=lldb_  ;;
-  Linux)  var=LD_LIBRARY_PATH   debugger=gdb    ;;
-esac
-
-cmd="$var=${CUDA_PREFIX}/lib  /tmp/$name $*"
-echo $cmd
-eval $cmd
+$bin
 [ $? -ne 0 ] && echo run error && exit 2
 
-exit 0 
+exit 0
 

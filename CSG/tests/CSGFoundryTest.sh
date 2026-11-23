@@ -8,7 +8,7 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-source ../../bin/dbg__.sh
+source dbg__.sh
 
 
 logging()

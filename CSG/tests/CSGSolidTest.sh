@@ -1,17 +1,21 @@
-#!/bin/bash -l 
+#!/bin/bash
 
+
+cd $(dirname $(realpath $BASH_SOURCE))
 name=CSGSolidTest 
-srcs="$name.cc ../CSGSolid.cc"
+script=$name.py
+
 
 
 gcc -g \
-   $srcs \
+   $name.cc \
+   ../CSGSolid.cc \
    -I.. \
    -I${OPTICKS_PREFIX}/include/SysRap \
    -I${OPTICKS_PREFIX}/externals/plog/include \
-   -lstdc++ -std=c++11 \
+   -lstdc++ -std=c++17 \
    -I/usr/local/cuda/include \
-   -L${OPTICKS_PREFIX}/lib \
+   -L${OPTICKS_PREFIX}/lib64 \
    -lSysRap \
    -o /tmp/$name 
 

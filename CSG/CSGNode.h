@@ -203,6 +203,8 @@ where it means there are lots of CSG_ZERO padding nodes.
 
 **/
 
+
+
 struct CSG_API CSGNode
 {
     quad q0 ;
@@ -438,6 +440,42 @@ struct CSG_API CSGNode
 #endif
 
 };
+
+
+
+/**
+CSGNode_traits
+---------------
+
+Traits aiming to allow testing alternate node impl without lots of code duplication.
+NB accessors must follow signatures of srpn_traits from s_RPN.h
+
+**/
+
+
+struct sparm ;
+#include "sqat4.h"
+
+struct CSGNode_traits
+{
+    using NodePtr = const CSGNode* ;
+
+    NODE_METHOD static void getParm(NodePtr node, quad& q0, quad& q1, const sparm* /*parm*/)
+    {
+        q0 = node->q0 ;
+        q1 = node->q1 ;
+    }
+
+    NODE_METHOD static const qat4* getItra(NodePtr node, const qat4* itra)
+    {
+        const unsigned gtransformIdx = node->gtransformIdx() ;  // gtransformIdx is 1-based, 0 meaning None (ie identity)
+        return gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;
+    }
+
+};
+
+
+
 
 
 

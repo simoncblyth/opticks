@@ -11,11 +11,48 @@ s_RPN.h
 #include "sqat4.h"
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+#    define SRPN_METHOD __host__ __device__ __forceinline__
+#else
+#    define SRPN_METHOD inline
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <cassert>
 #include <vector>
 #include "NPFold.h"
 #endif
+
+
+/**
+srpn_traits
+------------
+
+Traits aiming to allow testing alternate node impl without lots of code duplication.
+NB accessors must follow signatures of CSGNode_traits from CSGNode.h
+
+**/
+
+
+struct srpn_traits
+{
+    using NodePtr = const srpn* ;
+
+    SRPN_METHOD static void getParm(NodePtr node, quad& q0, quad& q1, const sparm* parm)
+    {
+        int idx = node->index();
+        q0 = parm[idx].q0 ;
+        q1 = parm[idx].q1 ;
+    }
+
+    SRPN_METHOD static const qat4* getItra(NodePtr node, const qat4* itra)
+    {
+        return node->identity() ? nullptr : itra + node->index() ;     // index is 0-based  - only non-identity transforms are stored
+    }
+
+};
+
 
 struct s_RPN
 {

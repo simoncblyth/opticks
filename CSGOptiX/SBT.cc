@@ -1056,6 +1056,10 @@ void SBT::createHitgroup()
                 int boundary = foundry->getPrimBoundary_(prim);
                 assert( boundary > -1 );
 
+                //int boundary_0 = prim->boundary();
+                //assert( boundary_0 == boundary );  // NOT-YET NEED TO UPDATE PERSISTED GEOM FIRST
+
+
                 if( trimesh == false )  // analytic
                 {
                     setPrimData( hg->data.prim, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data

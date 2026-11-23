@@ -1,6 +1,7 @@
 /**
-intersect_prim_test.cc
-========================
+intersect_prim_test.cc : testing top level intersect_prim from csg_intersect_tree.h
+=====================================================================================
+
 
 ~/opticks/CSG/tests/intersect_prim_test.sh
 
