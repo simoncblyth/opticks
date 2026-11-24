@@ -8,9 +8,13 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.7.4  | 74  | 2026/11/24 | Add alt CSGFoundry in which are testing full geom conversion into RPN CSG, add node traits in preparation for RPN CSG intersect dev                           |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| v0.7.3  | 73  | 2026/11/12 | Merged Three Species LS from Dingyong, ncu Profiling leads to CSG review and CSGFoundry cleanup aiming to support alt-CSG-model testing                       |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.7.2  | 72  | 2026/10/30 | Optimization with SER, Release, optixir, slimming + Contributions + Start Three Species LS support from Dingyong                                              |
-|         |     |            |                                                                                                                                                               | 
-|         |     |            | * cvmfs distrib for v0.7.2 switched to Release build - so users of cvmfs release can benefit from optimization enhancements                                   |  
+|         |     |            |                                                                                                                                                               |
+|         |     |            | * cvmfs distrib for v0.7.2 switched to Release build - so users of cvmfs release can benefit from optimization enhancements                                   |
 |         |     |            | * if no issues with the Release distrib will continue with this for subsequent cvmfs distributions                                                            |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.7.1  | 71  | 2026/09/08 | Yet another expedient release following bug fix in J and OJ packaging fix                                                                                     |
@@ -114,6 +118,19 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+
+
+v0.7.4 2026/11/24 : Add alt CSGFoundry in which are testing full geom conversion into RPN CSG, add node traits in preparation for RPN CSG intersect dev
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-11-23 3ff12a2d8 - add srpn_traits CSGNode_traits to allow testing alternative node impl without code duplication, revive CSG test scripts
+* 2026-11-17 812a3b504 - add full RPN geometry persisting to CSG/tests/CSGFoundry_CreateFromSimTest.sh - reviewing how to impl RPN intersect
+* 2026-11-16 8d79faca7 - add save/load to s_RPN.h to facilitate checking the full geometry conersion
+* 2026-11-16 7561144a9 - integrate s_RPN.h population for the full stree/snode/sn to CSGFoundry/CSGPrim/CSGNode conversion within an alt CSGFoundry controlled from CSGFoundry::CreateFromSim
+* 2026-11-13 a7044e376 - remove WITH_RPN, instead control at runtime with eg OPTICKS_CSG_ALT=RPN - first cut at integrating srpn.h node into CSGImport geometry conversion using an alt CSGFoundry in which to experiment
 
 
 v0.7.3 2026/11/12 : Merged Three Species LS from Dingyong, ncu Profiling leads to CSG review and CSGFoundry cleanup aiming to support alt-CSG-model testing
