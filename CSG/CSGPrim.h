@@ -51,7 +51,7 @@ CSGPrim : references contiguous sequence of *numNode* CSGNode starting from *nod
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
     | q3 |  BBMax_y       |  BBMax_z       |  boundary      |  globalPrimIdx |                                                 |
-    |    |                |                |                |                |                                                 |
+    |    |                |                |  2026/11       |                |                                                 |
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
     |    |                |                |                |                |                                                 |
