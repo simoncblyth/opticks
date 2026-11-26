@@ -138,7 +138,7 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
         case CSG_CYLINDER:         distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
         case CSG_BOX3:             distance = distance_leaf_box3(              local_position, node->q0 )           ; break ;
         case CSG_CONE:             distance = 0.f                                                                   ; break ; 
-        case CSG_CONVEXPOLYHEDRON: distance = distance_leaf_convexpolyhedron(  local_position, node, plan )         ; break ;
+        case CSG_CONVEXPOLYHEDRON: distance = distance_leaf_convexpolyhedron(  local_position, node->q0, plan )     ; break ;
         case CSG_HYPERBOLOID:      distance = 0.f                                                                   ; break ; 
         case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
@@ -217,7 +217,7 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
         case CSG_CYLINDER:         intersect_leaf_cylinder(         valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_BOX3:             intersect_leaf_box3(             valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_CONE:             intersect_leaf_newcone(          valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_CONVEXPOLYHEDRON: intersect_leaf_convexpolyhedron( valid_isect, isect, node, plan,             t_min, origin, direction ) ; break ;
+        case CSG_CONVEXPOLYHEDRON: intersect_leaf_convexpolyhedron( valid_isect, isect, node->q0, plan,         t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      intersect_leaf_hyperboloid(      valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PHICUT:           intersect_leaf_phicut_simple(    valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_HALFSPACE:        intersect_leaf_halfspace(        valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;

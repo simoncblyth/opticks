@@ -4707,6 +4707,9 @@ inline std::string stree::desc_solids() const
             << " is_force_triangulate " << ( ift ? "YES" : "NO " )
             << " is_auto_triangulate " << ( iat ? "YES" : "NO " )
             << " is_triangulate " << ( it ? "YES" : "NO " )
+            << " maxdepth " << std::setw(2) << root->maxdepth()
+            << " num_node " << std::setw(3) << root->num_node()
+            << " num_leaf " << std::setw(3) << root->num_leaf()
             << " soname[lvid] " << std::setw(60) << ( son ? son : "-" )
             << " " << ( root ? root->rbrief() : "" )
             << "\n"
@@ -5285,7 +5288,7 @@ inline bool stree::is_auto_triangulate( int lvid ) const
     const char* NAMES = ssys::getenvvar(stree__is_auto_triangulate_NAMES, names);
     std::vector<int> tcq ;
     CSG::TypeCodeVec(tcq, NAMES, ',');
-    int minsubdepth = 0;
+    int minsubdepth = 0;  // 0:entire tree
     int count = root->typecodes_count(tcq, minsubdepth );
     return count > 0 ;
 }

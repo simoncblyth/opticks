@@ -146,6 +146,8 @@ inline std::string s_unique_desc(
     ss << std::setw(15) << " num_inverse "  << std::setw(8) << num_inverse << "\n" ;
     ss << std::setw(15) << " num_original " << std::setw(8) << num_original << "\n" ;
 
+    ss << " uv: unique values, cn: count, ix: index, un:  \n" ;
+
     std::size_t cn_total = 0 ;
     for(std::size_t u=0 ; u < num_uvals ; u++ )
     {

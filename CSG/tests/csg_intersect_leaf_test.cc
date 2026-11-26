@@ -13,6 +13,14 @@ csg_intersect_leaf_test.cc
 4. intersects saved into NPFold for python analysis
 
 
+csg_intersect_leaf.h
+   original impl that works with CSGNode only
+
+csg_intersect_leaf_alt.h
+    node traits template function intended to enable use
+    with both CSGNode and srpn nodes without code duplication
+
+
 **/
 
 #include <cstdio>
@@ -21,20 +29,30 @@ csg_intersect_leaf_test.cc
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
+
 #include "csg_intersect_leaf.h"
+
+#ifdef WITH_CSG_ALT
+#include "sparm.h"
+#include "csg_intersect_leaf_alt.h"
+#include "s_RPN.h"
+#endif
 
 #include "CSGNode.h"
 #include "NPFold.h"
-
 
 struct Geometry
 {
     CSGNode nd ;
     const float4* plan ;
     const CSGNode* node ;
+#ifdef WITH_CSG_ALT
+    s_RPN* rpn ;
+#endif
 
-    std::vector<qat4> tran ;
-    std::vector<qat4> itra ;
+    std::vector<qat4>  tran ;
+    std::vector<qat4>  itra ;
+    std::vector<sparm> parm ;
 
     Geometry(float z_scale=0.5f);
 
@@ -45,9 +63,12 @@ struct Geometry
 
 inline Geometry::Geometry(float z_scale)
     :
-    nd(CSGNode::Sphere(100.f)),
-    plan(nullptr),
-    node(&nd)
+    nd(CSGNode::Sphere(100.f))
+    ,plan(nullptr)
+    ,node(&nd)
+#ifdef WITH_CSG_ALT
+    ,rpn(new s_RPN)
+#endif
 {
     std::array<float,16> ta = { 1.f , 0.f, 0.f, 0.f,
                                 0.f , 1.f, 0.f, 0.f,
@@ -66,6 +87,20 @@ inline Geometry::Geometry(float z_scale)
     itra.push_back(v);
 
     nd.setTransform( 1u + 0u );   // 0u means none
+
+    unsigned typecode = nd.typecode();
+    bool complement = nd.is_complement();
+    bool identity = t.is_identity();
+    int lvid = 0 ;
+
+#ifdef WITH_CSG_ALT
+    sparm pa = {} ;
+    pa.q0 = nd.q0 ;
+    pa.q1 = nd.q1 ;
+    rpn->add_primnode( typecode, complement, identity, pa, v, lvid );
+#endif
+
+
 }
 
 /**
@@ -90,7 +125,27 @@ bool Geometry::simtrace( quad4& p, bool norm ) const
     float4& isect = p.q0.f ;
     bool valid_isect = false ;
     bool dumpxyz = false ;
+
+#ifdef WITH_CSG_ALT
+
+    {
+        //intersect_leaf_alt<CSGNode_traits>(valid_isect, isect, node, plan, itra.data(), parm.data(), t_min, *ray_origin, *ray_direction, dumpxyz ) ;
+    }
+
+    {
+        srpn*    rpn_node = rpn->node.data();
+        float4*  rpn_plan = rpn->plan.data();
+        qat4*    rpn_itra = rpn->itra.data();
+        sparm*   rpn_parm = rpn->parm.data();
+
+        intersect_leaf_alt<srpn_traits>(valid_isect, isect, rpn_node, rpn_plan, rpn_itra, rpn_parm, t_min, *ray_origin, *ray_direction, dumpxyz ) ;
+    }
+
+#else
     intersect_leaf(valid_isect, isect, node, plan, itra.data(), t_min, *ray_origin, *ray_direction, dumpxyz ) ;
+#endif
+
+
     if( valid_isect )
     {
         if(norm)

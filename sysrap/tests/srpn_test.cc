@@ -37,8 +37,8 @@ int srpn_test::init()
 
     tape[2].set_primnode(CSG_SPHERE, true, true, 0xffffu );
     assert( tape[2].typecode() == CSG_SPHERE );
-    assert( tape[2].complement() == true );
-    assert( tape[2].identity() == true );
+    assert( tape[2].is_complement() == true );
+    assert( tape[2].is_identity_transform() == true );
     assert( tape[2].index() == 0xffffu );
 
     tape[3].set_primnode(0x7fu, true, true, 0xffffu );
@@ -70,17 +70,20 @@ int srpn_test::oper()
 s_RPN* srpn_test::populate()
 {
     s_RPN* rpn = new s_RPN ;
+    int lvid = 0 ;
     {
         sparm pa( 100.f, 0.f, 0.f, 0.f, 0.f, 0.f ) ;
         qat4  it( 0.f, 0.f, 100.f );
-        rpn->add_primnode( CSG_SPHERE, false, it.is_identity(), pa, it );
+        rpn->add_primnode( CSG_SPHERE, false, it.is_identity(), pa, it, lvid );
     }
     {
         sparm pa( 100.f, 0.f, 0.f, 0.f, 0.f, 0.f ) ;
         qat4  it( 0.f, 0.f, 50.f );
-        rpn->add_primnode( CSG_SPHERE, false, it.is_identity(), pa, it );
+        rpn->add_primnode( CSG_SPHERE, false, it.is_identity(), pa, it, lvid );
     }
-    rpn->add_opernode( CSG_UNION, 1, 1 );
+    {
+        rpn->add_opernode( CSG_UNION, 1, 1, lvid );
+    }
     return rpn ;
 }
 

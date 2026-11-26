@@ -11,36 +11,45 @@ Purely CPU side testing of headers used with CUDA GPU side.
     MODE=2 ~/o/CSG/tests/csg_intersect_leaf_test.sh ana
     MODE=2 ~/o/CSG/tests/csg_intersect_leaf_test.sh ana
 
+
+NB avoid library incompatibility between the build and conda libs
+by using IPYTHON with "pdb" instead of "ana"
+
 EOU
 }
 
 name=csg_intersect_leaf_test
-SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
 
-TMP=${TMP:-/tmp/$USER/opticks}
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+
 export FOLD=$TMP/$name
 mkdir -p $FOLD
+
 bin=$FOLD/$name
-script=$SDIR/$name.py
+script=$name.py
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-defarg="info_build_run_ana"
+defarg="info_build_run_pdb"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE name TMP FOLD bin CUDA_PREFIX arg script"
+vars="BASH_SOURCE name tmp TMP FOLD bin CUDA_PREFIX OPTICKS_PREFIX arg script"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
+    which gcc
     gcc \
-       $SDIR/$name.cc \
-       $SDIR/../CSGNode.cc \
+       $name.cc \
+       ../CSGNode.cc \
        -std=c++17 -lstdc++ -lm \
-       -I$SDIR/..  \
+       -I..  \
+       -DWITH_CSG_ALT \
        -I${OPTICKS_PREFIX}/externals/plog/include \
        -I${OPTICKS_PREFIX}/include/OKConf \
        -I${OPTICKS_PREFIX}/include/SysRap \
@@ -52,6 +61,7 @@ if [ "${arg/build}" != "$arg" ]; then
        -o $bin
 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
+    ldd $bin
 fi
 
 if [ "${arg/run}" != "$arg" ]; then

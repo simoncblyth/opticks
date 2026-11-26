@@ -48,7 +48,7 @@ struct srpn_traits
 
     SRPN_METHOD static const qat4* getItra(NodePtr node, const qat4* itra)
     {
-        return node->identity() ? nullptr : itra + node->index() ;     // index is 0-based  - only non-identity transforms are stored
+        return node->is_identity_transform() ? nullptr : itra + node->index() ;     // index is 0-based  - only non-identity transforms are stored
     }
 
 };
@@ -60,9 +60,12 @@ struct s_RPN
     srpn*   node ;
     sparm*  parm ;
     qat4*   itra ;
+    float4* plan ;
+
     unsigned num_node ;
     unsigned num_parm ;
     unsigned num_itra ;
+    unsigned num_plan ;
 #else
     srpn*  d_node ;
     sparm* d_parm ;
@@ -71,6 +74,7 @@ struct s_RPN
     std::vector<srpn>   node ;
     std::vector<sparm>  parm ;
     std::vector<qat4>   itra ;
+    std::vector<float4> plan ;   // WIP - HMM would need to get planIdx planNum from q0
     std::vector<int>    lvid ;   // debug only
 
     bool is_empty() const ;

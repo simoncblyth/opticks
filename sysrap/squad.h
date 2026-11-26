@@ -54,7 +54,16 @@ union quad
     float4 f ;
     int4   i ;
     uint4  u ;
+
+    // used by CSG/csg_intersect_leaf_convexpolyhedron.h
+    SQUAD_METHOD unsigned planeIdx() const { return u.x ; }  // 1-based, 0 meaning none
+    SQUAD_METHOD unsigned planeNum() const { return u.y ; }
+    SQUAD_METHOD void setPlaneIdx(unsigned idx){  u.x = idx ; }
+    SQUAD_METHOD void setPlaneNum(unsigned num){  u.y = num ; }
+
 };
+
+
 
 union hquad
 {

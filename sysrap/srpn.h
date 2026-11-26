@@ -52,16 +52,16 @@ struct srpn
 
 
     SRPN_METHOD void set_opernode( unsigned typecode, unsigned leftspan, unsigned rightspan );  // 7 + 11 + 11 = 29
-    SRPN_METHOD int  typecode() const ;
-    SRPN_METHOD int  leftspan() const ;
-    SRPN_METHOD int  rightspan() const ;
+    SRPN_METHOD unsigned typecode() const ;
+    SRPN_METHOD unsigned leftspan() const ;
+    SRPN_METHOD unsigned rightspan() const ;
 
     SRPN_METHOD void set_listnode( unsigned typecode, unsigned num_listprim );   // 7 + 10
     SRPN_METHOD int  listprim() const ;
 
     SRPN_METHOD void set_primnode( unsigned typecode, bool complement, bool identity, unsigned index ); // 7 + 1 + 1 + 16 = 25
-    SRPN_METHOD bool identity() const ;
-    SRPN_METHOD bool complement() const ;
+    SRPN_METHOD bool is_identity_transform() const ;
+    SRPN_METHOD bool is_complement() const ;
     SRPN_METHOD int  index() const ;  // shared index into rpn_param + rpn_tran buffers
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -80,9 +80,9 @@ SRPN_METHOD void srpn::set_opernode(unsigned typecode, unsigned leftspan, unsign
            ((rightspan & 0x7FFu) << 18);
 }
 
-SRPN_METHOD int srpn::typecode() const { return  ( data >> 0 ) & 0x7Fu ; }
-SRPN_METHOD int srpn::leftspan() const { return  ( data >> 7 ) & 0x7FFu ; }
-SRPN_METHOD int srpn::rightspan() const { return ( data >> 18 ) & 0x7FFu ; }   // 7 + 11 = 18
+SRPN_METHOD unsigned srpn::typecode() const { return  ( data >> 0 ) & 0x7Fu ; }
+SRPN_METHOD unsigned srpn::leftspan() const { return  ( data >> 7 ) & 0x7FFu ; }
+SRPN_METHOD unsigned srpn::rightspan() const { return ( data >> 18 ) & 0x7FFu ; }   // 7 + 11 = 18
 
 
 SRPN_METHOD void srpn::set_listnode(unsigned typecode, unsigned num_listprim) // 7 + 10
@@ -100,8 +100,8 @@ SRPN_METHOD void srpn::set_primnode(unsigned typecode, bool complement, bool ide
            ((identity ? 1u : 0u) << 8) |
            ((index & 0xFFFFu) << 9);
 }
-SRPN_METHOD bool srpn::complement() const { return ((data >> 7) & 0x1u) != 0; }
-SRPN_METHOD bool srpn::identity() const   { return ((data >> 8) & 0x1u) != 0; }
+SRPN_METHOD bool srpn::is_complement() const { return ((data >> 7) & 0x1u) != 0; }
+SRPN_METHOD bool srpn::is_identity_transform() const   { return ((data >> 8) & 0x1u) != 0; }
 SRPN_METHOD int srpn::index() const {       return (data >> 9) & 0xFFFFu; }
 
 
@@ -110,7 +110,7 @@ SRPN_METHOD int srpn::index() const {       return (data >> 9) & 0xFFFFu; }
 
 SRPN_METHOD std::string srpn::desc() const
 {
-    int tc = typecode();
+    unsigned tc = typecode();
     std::stringstream ss ;
 
     if(CSG::IsOperator(tc))       ss << "OPER " ;
@@ -131,9 +131,9 @@ SRPN_METHOD std::string srpn::desc() const
     }
     else if(CSG::IsPrimitive(tc))
     {
-        ss << "identity    " << std::setw(1) << ( identity() ? "Y" : "N" )   << " " ;
-        ss << "complement  " << std::setw(1) << ( complement() ? "Y" : "N" ) << " ";
-        ss << "index       " << std::setw(10) << index() << " " ;
+        ss << "is_identity_transform    " << std::setw(1) << ( is_identity_transform() ? "Y" : "N" )   << " " ;
+        ss << "is_complement            " << std::setw(1) << ( is_complement() ? "Y" : "N" ) << " ";
+        ss << "index                    " << std::setw(10) << index() << " " ;
     }
     std::string str = ss.str() ;
     return str ;

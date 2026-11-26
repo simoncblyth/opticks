@@ -11,7 +11,7 @@ if IsRemoteSession():  # HMM: maybe do this inside pvplt ?
     MODE = 0
     print("detect fold.IsRemoteSession forcing MODE:%d" % MODE)
 elif MODE in [2,3]:
-    from opticks.ana.pvplt import *  # HMM this import overrides MODE, so need to keep defaults the same 
+    from opticks.ana.pvplt import *  # HMM this import overrides MODE, so need to keep defaults the same
 pass
 
 
@@ -27,12 +27,12 @@ if __name__ == '__main__':
 
     for e in [a,b]:
 
-        nrm = e[:,0,:3] 
-        r_nrm = np.sqrt(np.sum( nrm*nrm, axis=1 ))  
-        print(r_nrm) 
+        nrm = e[:,0,:3]
+        r_nrm = np.sqrt(np.sum( nrm*nrm, axis=1 ))
+        print(r_nrm)
 
 
-        label = "CSG/tests/csg_intersect_leaf_test.sh "    
+        label = "CSG/tests/csg_intersect_leaf_test.sh "
 
         if MODE in [0,1]:
             print("not plotting as MODE %d in environ" % MODE )
