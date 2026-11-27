@@ -1,30 +1,30 @@
-#!/bin/bash -l 
+#!/bin/bash -l
 msg="=== $BASH_SOURCE :"
 usage(){ cat << EOU
 csg_geochain.sh : CPU Opticks equivalent to cxs_geochain.sh with OptiX on GPU using test/CSGIntersectSolidTest.cc tests/CSGIntersectSolidTest.py
 ==================================================================================================================================================
 
-The idea behind this is to provide a convenient way to test code primarily intended to run on GPU 
+The idea behind this is to provide a convenient way to test code primarily intended to run on GPU
 in the more friendly debugging environment of the CPU.::
 
 
-    PUB=unbalanced_ok ./csg_geochain.sh  ana 
+    PUB=unbalanced_ok ./csg_geochain.sh  ana
 
 
     IXYZ=4,0,0 ./csg_geochain.sh  ana
-        selecting single genstep with IXYZ 
+        selecting single genstep with IXYZ
 
     IXYZ=5,0,0 ./csg_geochain.sh  ana
 
-    IXYZ=0,6,0 ./csg_geochain.sh  ana      
+    IXYZ=0,6,0 ./csg_geochain.sh  ana
 
 
     SPUR=1 GEOM=CylinderFourBoxUnion_YX ./csg_geochain.sh ana
-         56/20997 spurious intersects all exiting the cylinder 
+         56/20997 spurious intersects all exiting the cylinder
          within the +Y and -X boxes
 
          Curious that are no such issues with the other two boxes
-         despite the symmetry. 
+         despite the symmetry.
 
          TODO: test with CSG balancing disabled
 
@@ -32,31 +32,31 @@ in the more friendly debugging environment of the CPU.::
           181/20997 spurious all exiting the cylinder with all 4 boxes
 
     SPUR=1 IXYZ=-6,0,0 GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh ana
-          select single genstep   
+          select single genstep
 
     SPUR=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX SAVE_SELECTED_ISECT=1 ./csg_geochain.sh ana
 
     SELECTED_ISECT=/tmp/selected_isect.npy GEOM=AnnulusFourBoxUnion_YX ./csg_geochain.sh run
-          run again just with selected isects, with CSGRecord enabled 
-          will need to use same geometry to get same results     
+          run again just with selected isects, with CSGRecord enabled
+          will need to use same geometry to get same results
 
     SPUR=1 IXYZ=-6,0,0 IW=17 GEOM=AnnulusFourBoxUnion_YX  ./csg_geochain.sh ana
 
 
-    TMIN=50 ./csg_geochain.sh 
-        NB can only change TMIN at C++ level not ana level 
+    TMIN=50 ./csg_geochain.sh
+        NB can only change TMIN at C++ level not ana level
 
-        Note that TMIN is currently absolute, it is not extent relative like with cxr_geochain.sh  
-        rendereing   
+        Note that TMIN is currently absolute, it is not extent relative like with cxr_geochain.sh
+        rendereing
 
 
     IXYZ=8,0,0 TMIN=50 ./csg_geochain.sh ana
-        at python analysis level the highlighted genstep can be changed using IXYZ 
+        at python analysis level the highlighted genstep can be changed using IXYZ
         TMIN does nothing at analysis level the intersects from the prior run are loaded and plotted
-           
+
     SXYZW=4,4,0,80 ./csg_geochain.sh run
-        re-run with a single photon 
-        do this after recompiling with DEBUG flag allows to see the details of the single photon 
+        re-run with a single photon
+        do this after recompiling with DEBUG flag allows to see the details of the single photon
 
 EOU
 }
@@ -117,51 +117,51 @@ geom=AltXJfixtureConstruction_YZ
 #geom=ContiguousThreeSphere_XY
 
 
-catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom}) 
+catgeom=$(cat ~/.opticks/GEOM.txt 2>/dev/null | grep -v \#) && [ -n "$catgeom" ] && echo $msg catgeom $catgeom override of default geom $geom && geom=$(echo ${catgeom})
 export GEOM=${GEOM:-$geom}
-gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX 
+gcn=${GEOM%%_*}   ## name up to the first underscore, assuming use of axis suffix  _XZ _YZ _XY _ZX _ZY _YX
 
 cfbase=$(SOpticksResourceTest --cfbase)
 
-#  moved this into SOpticksResource::CFBase by adding GEOM envvar sensitivity there 
+#  moved this into SOpticksResource::CFBase by adding GEOM envvar sensitivity there
 #
 #if [ "$(uname)" == "Darwin" ] ; then
-#   cfbase=$TMP/GeoChain_Darwin/$gcn 
+#   cfbase=$TMP/GeoChain_Darwin/$gcn
 #else
-#   cfbase=$TMP/GeoChain/$gcn 
-#fi 
+#   cfbase=$TMP/GeoChain/$gcn
+#fi
 
 
-case $gcn in 
-   AnnulusFourBoxUnion)     gridscale=0.1  ;; 
-   AnnulusCrossTwoBoxUnion) gridscale=0.1  ;; 
-  CylinderFourBoxUnion)     gridscale=0.1  ;; 
-   BoxCrossTwoBoxUnion)     gridscale=0.07 ;; 
-   BoxThreeBoxUnion)        gridscale=0.07 ;; 
-   BoxFourBoxUnion)         gridscale=0.07 ;; 
+case $gcn in
+   AnnulusFourBoxUnion)     gridscale=0.1  ;;
+   AnnulusCrossTwoBoxUnion) gridscale=0.1  ;;
+  CylinderFourBoxUnion)     gridscale=0.1  ;;
+   BoxCrossTwoBoxUnion)     gridscale=0.07 ;;
+   BoxThreeBoxUnion)        gridscale=0.07 ;;
+   BoxFourBoxUnion)         gridscale=0.07 ;;
                      *)     gridscale=0.15 ;;
 esac
 
-case $GEOM in 
+case $GEOM in
        AnnulusFourBoxUnion_YX) note="see spurious with IXYZ=5,0,0 and 0,6,0 " ;;
    AnnulusCrossTwoBoxUnion_YX) note="no spurious despite same apparent geom on ray path" ;;
       CylinderFourBoxUnion_YX) note="see spurious" ;;
-           BoxThreeBoxUnion_YX) note="no spurious" ;; 
-           BoxFourBoxUnion_YX) note="see spurious in the +Y and -X small boxes " ;; 
+           BoxThreeBoxUnion_YX) note="no spurious" ;;
+           BoxFourBoxUnion_YX) note="see spurious in the +Y and -X small boxes " ;;
           GeneralSphereDEV_XY) note="phicut bug from \"t_cand <  t_min\" that should be \"t_cand <= t_min \" : SPHI selects spurious in bad phi range "  ;;
                             *) note="" ;;
 esac
 
-case $GEOM in 
-   *_XYZ)   is3d=1 ;; 
+case $GEOM in
+   *_XYZ)   is3d=1 ;;
        *)   is3d=0 ;;
 esac
 
-if [ $is3d -eq 1 ]; then 
-   echo $msg is3d for GEOM $GEOM setting NO_GS and EDL 
+if [ $is3d -eq 1 ]; then
+   echo $msg is3d for GEOM $GEOM setting NO_GS and EDL
    export NO_GS=1
    export ESL=1
-fi 
+fi
 
 
 dx=0
@@ -174,44 +174,44 @@ case $GEOM in
 esac
 
 DZ=${DZ:-$dz}
-pho=${PHO:--100} 
+pho=${PHO:--100}
 
 case $pho in
-  -*)  echo $msg using regular bicycle spoke photon directions ;; 
+  -*)  echo $msg using regular bicycle spoke photon directions ;;
    *)  echo $msg using random photon directions                ;;
 esac
 
-case $GEOM in  
-   *_XZ) cegs=16:0:9:$dx:$dy:$DZ:$pho  ;;  
-   *_YZ) cegs=0:16:9:$dx:$dy:$DZ:$pho  ;;  
-   *_XY) cegs=16:9:0:$dx:$dy:$DZ:$pho  ;;  
-   *_ZX) cegs=9:0:16:$dx:$dy:$DZ:$pho  ;;  
-   *_ZY) cegs=0:9:16:$dx:$dy:$DZ:$pho  ;;  
-   *_YX) cegs=9:16:0:$dx:$dy:$DZ:$pho  ;;  
-   *_XYZ) cegs=9:16:9:$dx:$dy:$DZ:$pho ;;  
-       *) echo $msg UNEXPECTED SUFFIX FOR GEOM $GEOM WHICH DOES NOT END WITH ONE OF : _XZ _YZ _XY _ZX _ZY _YX _XYZ  && exit 1   ;; 
+case $GEOM in
+   *_XZ) cegs=16:0:9:$dx:$dy:$DZ:$pho  ;;
+   *_YZ) cegs=0:16:9:$dx:$dy:$DZ:$pho  ;;
+   *_XY) cegs=16:9:0:$dx:$dy:$DZ:$pho  ;;
+   *_ZX) cegs=9:0:16:$dx:$dy:$DZ:$pho  ;;
+   *_ZY) cegs=0:9:16:$dx:$dy:$DZ:$pho  ;;
+   *_YX) cegs=9:16:0:$dx:$dy:$DZ:$pho  ;;
+   *_XYZ) cegs=9:16:9:$dx:$dy:$DZ:$pho ;;
+       *) echo $msg UNEXPECTED SUFFIX FOR GEOM $GEOM WHICH DOES NOT END WITH ONE OF : _XZ _YZ _XY _ZX _ZY _YX _XYZ  && exit 1   ;;
 esac
 
 echo $msg GEOM $GEOM gcn $gcn gridscale $gridscale ixiyiz $ixiyiz
 
 
 topline="GEOM=$GEOM ./csg_geochain.sh "
-[ -n "$SPHI" ] && topline="SPHI=$SPHI $topline" 
-[ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline" 
-[ -n "$SXYZW" ] && topline="SXYZW=$SXYZW $topline" 
+[ -n "$SPHI" ] && topline="SPHI=$SPHI $topline"
+[ -n "$IXYZ" ] && topline="IXYZ=$IXYZ $topline"
+[ -n "$SXYZW" ] && topline="SXYZW=$SXYZW $topline"
 [ "$DZ" != "0" ] && topline="DZ=$DZ $topline"
-[ -n "$ZOOM" ] && topline="ZOOM=$ZOOM $topline" 
+[ -n "$ZOOM" ] && topline="ZOOM=$ZOOM $topline"
 
 
 cmdline="GEOM=$GEOM ./csg_geochain.sh "
-[ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline" 
-[ -n "$IXYZ" ] && cmdline="IXYZ=$IXYZ $cmdline" 
-[ -n "$SPUR" ] && cmdline="SPUR=$SPUR $cmdline" 
+[ -n "$SPHI" ] && cmdline="SPHI=$SPHI $cmdline"
+[ -n "$IXYZ" ] && cmdline="IXYZ=$IXYZ $cmdline"
+[ -n "$SPUR" ] && cmdline="SPUR=$SPUR $cmdline"
 [ "$DZ" != "0" ] && cmdline="DZ=$DZ $cmdline"
-[ -n "$ZOOM" ] && cmdline="ZOOM=$ZOOM $cmdline" 
+[ -n "$ZOOM" ] && cmdline="ZOOM=$ZOOM $cmdline"
 
 export CMDLINE=$cmdline
-export NOTE=$note 
+export NOTE=$note
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export CEGS=${CEGS:-$cegs}
 export CFBASE=${CFBASE:-$cfbase}  ## moved GEOM sensitivity into SOpticksResource::CFBase : BUT still need this for the script
@@ -231,7 +231,7 @@ check_cegs()
        7) echo $msg 7 element CEGS $CEGS ;;
        *) echo $msg ERROR UNEXPECTED $cegs_elem element CEGS $CEGS && return 1  ;;
     esac
-    return 0 
+    return 0
 }
 
 
@@ -240,14 +240,14 @@ check_cfbase_how_to_create(){ cat << EOH
 How to Create CSGFoundry Geometry
 ======================================
 
-A. From converted G4VSolid 
+A. From converted G4VSolid
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Apply GeoChain conversion to a named geometry::
 
     b7  # when using OptiX 7
-    cd ~/opticks/GeoChain     # or use "gc" shortcut function 
-    GEOM=${GEOM%%_*} ./translate.sh 
+    cd ~/opticks/GeoChain     # or use "gc" shortcut function
+    GEOM=${GEOM%%_*} ./translate.sh
 
 
 B. Directly from CSGSolid/CSGPrim/CSGNode
@@ -257,7 +257,7 @@ Create and persists into CSGFoundry folders one OR all CSGMaker solids::
 
     cd ~/opticks/CSG
 
-    CSGMakerTest     
+    CSGMakerTest
     GEOM=${GEOM%%_*} CSGMakerTest
 
 Alternatively use the script::
@@ -275,18 +275,18 @@ check_cfbase()
     local msg="=== $FUNCNAME :"
     if [ -n "$cfbase" -a ! -d "$cfbase/CSGFoundry" ]; then
 
-       echo $msg : ERROR cfbase $cfbase is defined signalling to use a non-standard CSGFoundry geometry 
-       echo $msg : BUT no such CSGFoundry directory exists 
+       echo $msg : ERROR cfbase $cfbase is defined signalling to use a non-standard CSGFoundry geometry
+       echo $msg : BUT no such CSGFoundry directory exists
        echo $msg :
-       echo $msg : Possibilities: 
+       echo $msg : Possibilities:
        echo $msg :
-       echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches 
+       echo $msg : 1. you intended to use the standard geometry but the GEOM $GEOM envvar does not match any of the if branches
        echo $msg : 2. you want to use a non-standard geometry but have not yet created it
        echo $msg :
-       check_cfbase_how_to_create 
+       check_cfbase_how_to_create
        return 1
     fi
-    return 0 
+    return 0
 }
 
 check_cfbase_file()
@@ -294,46 +294,46 @@ check_cfbase_file()
     local msg="=== $FUNCNAME :"
     if [ -n "$cfbase" -a -d "$cfbase/CSGFoundry" -a ! -f "$cfbase/CSGFoundry/meshname.txt" ]; then
        echo $msg : ERROR cfbase $cfbase is defined and the $cfbase/CSGFoundry directory exists
-       echo $msg : BUT it misses expected files such as $cfbase/CSGFoundry/meshname.txt 
+       echo $msg : BUT it misses expected files such as $cfbase/CSGFoundry/meshname.txt
        echo $msg :
-       check_cfbase_how_to_create 
-       return 1 
-    fi 
-    return 0 
+       check_cfbase_how_to_create
+       return 1
+    fi
+    return 0
 }
 
 dumpvars(){ for var in $* ; do printf "%20s : %s \n" $var "${!var}" ; done ; }
 
-check_cegs        || exit 1 
-check_cfbase      || exit 1 
-check_cfbase_file || exit 1 
-dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXYZ 
+check_cegs        || exit 1
+check_cfbase      || exit 1
+check_cfbase_file || exit 1
+dumpvars GEOM CEGS GRIDSCALE TOPLINE BOTLINE CFBASE NOTE IXYZ
 
 bin=CSGIntersectSolidTest
-script=tests/CSGIntersectSolidTest.py 
+script=tests/CSGIntersectSolidTest.py
 
 arg=${1:-run_ana}
 
-if [ "${arg/dump}" != "$arg" ]; then 
+if [ "${arg/dump}" != "$arg" ]; then
    echo $msg CSGGeometryTest dump
    CSGGeometryTest
-   exit 0 
+   exit 0
 
 elif [ "${arg/run}" != "$arg" ]; then
 
-    if [ -n "$DEBUG" ]; then 
+    if [ -n "$DEBUG" ]; then
         echo $msg running binary $bin under debugger
         if [ "$(uname)" == "Darwin" ]; then
             lldb__ $bin
         else
             gdb $bin
-        fi 
+        fi
         [ $? -ne 0 ] && echo $msg error while running binary $bin under debugger  && exit 1
     else
         echo $msg running binary $bin
         $bin
         [ $? -ne 0 ] && echo $msg error while running binary $bin  && exit 1
-    fi 
+    fi
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
@@ -342,31 +342,31 @@ if [ "${arg/ana}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg script error && exit 2
 
     figdir=$cfbase/$bin/$GEOM/figs
-    ls -l $figdir 
+    ls -l $figdir
 
-    if [ -n "$PUB" ]; then 
+    if [ -n "$PUB" ]; then
 
-       reldir=/env/presentation/CSG/$bin/$GEOM/figs 
+       reldir=/env/presentation/CSG/$bin/$GEOM/figs
        pubdir=$HOME/simoncblyth.bitbucket.io$reldir
 
-       figname=out.png 
-       pubname=${GEOM}_${PUB}.png       
+       figname=out.png
+       pubname=${GEOM}_${PUB}.png
 
        echo $msg figdir $figdir
        echo $msg reldir $reldir
        echo $msg pubdir $pubdir
        echo $msg pubname $pubname
 
-       if [ ! -d "$pubdir" ]; then 
+       if [ ! -d "$pubdir" ]; then
           mkdir -p $pubdir
-       fi  
+       fi
 
        cmd="cp $figdir/$figname $pubdir/$pubname"
        echo $msg cmd $cmd
        eval $cmd
-       echo $msg add below with a title to s5_background_image.txt for presenation 
+       echo $msg add below with a title to s5_background_image.txt for presenation
        echo $msg $reldir/$pubname 1280px_720px
-    fi 
+    fi
 fi
 
 exit 0

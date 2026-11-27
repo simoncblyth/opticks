@@ -13,19 +13,19 @@
 #include "math_constants.h"
 #else
 
-union uif_t 
+union uif_t
 {
-    unsigned u ; 
-    int i ; 
-    float f ; 
+    unsigned u ;
+    int i ;
+    float f ;
 };
 
 LEAF_FUNC
 float __int_as_float(int i)
 {
-    uif_t uif ; 
-    uif.i = i ; 
-    return uif.f ; 
+    uif_t uif ;
+    uif.i = i ;
+    return uif.f ;
 }
 
 #define CUDART_INF_F            __int_as_float(0x7f800000)

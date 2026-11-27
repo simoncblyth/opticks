@@ -1,9 +1,9 @@
 #pragma once
 
 enum {
-     ERROR_LHS_POP_EMPTY         = 0x1 << 0, 
-     ERROR_RHS_POP_EMPTY         = 0x1 << 1, 
-     ERROR_LHS_END_NONEMPTY      = 0x1 << 2, 
+     ERROR_LHS_POP_EMPTY         = 0x1 << 0,
+     ERROR_RHS_POP_EMPTY         = 0x1 << 1,
+     ERROR_LHS_END_NONEMPTY      = 0x1 << 2,
      ERROR_RHS_END_EMPTY         = 0x1 << 3,
      ERROR_BAD_CTRL              = 0x1 << 4,
      ERROR_LHS_OVERFLOW          = 0x1 << 5,
