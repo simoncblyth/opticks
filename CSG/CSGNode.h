@@ -460,18 +460,31 @@ struct CSGNode_traits
 {
     using NodePtr = const CSGNode* ;
 
-    NODE_METHOD static void getParm(NodePtr node, quad& q0, quad& q1, const sparm* /*parm*/)
+    NODE_METHOD static void GetParm(NodePtr node, quad& q0, quad& q1, const sparm* /*parm*/)
     {
         q0 = node->q0 ;
         q1 = node->q1 ;
     }
 
-    NODE_METHOD static const qat4* getItra(NodePtr node, const qat4* itra)
+    NODE_METHOD static const qat4* GetItra(NodePtr node, const qat4* itra)
     {
         const unsigned gtransformIdx = node->gtransformIdx() ;  // gtransformIdx is 1-based, 0 meaning None (ie identity)
         return gtransformIdx > 0 ? itra + gtransformIdx - 1 : nullptr ;
     }
 
+    NODE_METHOD static unsigned GetListPrimCount(NodePtr node)
+    {
+        return node->subNum();
+    }
+    NODE_METHOD static unsigned GetListPrimOffset(NodePtr node)
+    {
+        return node->subOffset();
+    }
+    NODE_METHOD static NodePtr GetListPrimNode(NodePtr node, NodePtr root, unsigned offset_sub, unsigned isub )
+    {
+        // in CSGNode impl the list nodes are referenced from root, not the listnode
+        return root+offset_sub+isub ;
+    }
 };
 
 

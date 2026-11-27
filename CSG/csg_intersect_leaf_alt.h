@@ -1,7 +1,7 @@
 #pragma once
 /**
-csg_intersect_leaf.h : distance_leaf and intersect_leaf functions
-===================================================================
+csg_intersect_leaf_alt.h : distance_leaf_alt and intersect_leaf_alt functions
+==============================================================================
 
 Thus header needs to be included before csg_intersect_node.h which needs to be included before csg_intersect_tree.h
 
@@ -203,12 +203,11 @@ void intersect_leaf_alt(
 
     const unsigned typecode = node->typecode() ;
     const bool complement = node->is_complement();
-    const qat4* q = Traits::getItra(node, itra );
+    const qat4* q = Traits::GetItra(node, itra );
 
     float3 origin    = q ? q->right_multiply(ray_origin,    1.f) : ray_origin ;
     float3 direction = q ? q->right_multiply(ray_direction, 0.f) : ray_direction ;
 
-    printf("//[intersect_leaf_alt typecode %d name %s \n", typecode, CSG::Name(typecode) );
 
 #if !defined(PRODUCTION) && defined(DEBUG_RECORD)
     printf("//[intersect_leaf_alt typecode %d name %s \n", typecode, CSG::Name(typecode) );
@@ -231,7 +230,7 @@ void intersect_leaf_alt(
 #endif
 
     quad q0, q1 ;
-    Traits::getParm(node, q0, q1, parm );
+    Traits::GetParm(node, q0, q1, parm );
 
 
     switch(typecode)

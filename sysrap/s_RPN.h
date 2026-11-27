@@ -39,16 +39,30 @@ struct srpn_traits
 {
     using NodePtr = const srpn* ;
 
-    SRPN_METHOD static void getParm(NodePtr node, quad& q0, quad& q1, const sparm* parm)
+    SRPN_METHOD static void GetParm(NodePtr node, quad& q0, quad& q1, const sparm* parm)
     {
         int idx = node->index();
         q0 = parm[idx].q0 ;
         q1 = parm[idx].q1 ;
     }
 
-    SRPN_METHOD static const qat4* getItra(NodePtr node, const qat4* itra)
+    SRPN_METHOD static const qat4* GetItra(NodePtr node, const qat4* itra)
     {
         return node->is_identity_transform() ? nullptr : itra + node->index() ;     // index is 0-based  - only non-identity transforms are stored
+    }
+
+    SRPN_METHOD static  unsigned GetListPrimCount(NodePtr node)
+    {
+        return node->listprim();
+    }
+    SRPN_METHOD static  unsigned GetListPrimOffset(NodePtr node)
+    {
+        return 1u ;
+    }
+    SRPN_METHOD static  NodePtr  GetListPrimNode(NodePtr node, NodePtr /*root*/, unsigned offset, unsigned idx )
+    {
+        // with RPN the prim immediately follow the listnode
+        return node + offset + idx ;
     }
 
 };

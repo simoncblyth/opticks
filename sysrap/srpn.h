@@ -57,7 +57,7 @@ struct srpn
     SRPN_METHOD unsigned rightspan() const ;
 
     SRPN_METHOD void set_listnode( unsigned typecode, unsigned num_listprim );   // 7 + 10
-    SRPN_METHOD int  listprim() const ;
+    SRPN_METHOD unsigned listprim() const ;
 
     SRPN_METHOD void set_primnode( unsigned typecode, bool complement, bool identity, unsigned index ); // 7 + 1 + 1 + 16 = 25
     SRPN_METHOD bool is_identity_transform() const ;
@@ -90,7 +90,7 @@ SRPN_METHOD void srpn::set_listnode(unsigned typecode, unsigned num_listprim) //
     data = (typecode & 0x7Fu) |
           ((num_listprim & 0x3FFu) << 7);
 }
-SRPN_METHOD int srpn::listprim() const { return (data >> 7) & 0x3FFu; }
+SRPN_METHOD unsigned srpn::listprim() const { return (data >> 7) & 0x3FFu; }
 
 
 SRPN_METHOD void srpn::set_primnode(unsigned typecode, bool complement, bool identity, unsigned index) // 7 + 1 + 1 + 16 = 25

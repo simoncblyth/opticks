@@ -812,9 +812,13 @@ No overlap as::
 
 
 
+Q: Why both node and root node args ?
+A: In CSGNode impl the list node prim are located by offsets relative to root node,
+   which is different from the listnode when the listnode is within a tree, such
+   as when subtracting the listnode.
+
 
 **/
-
 
 INTERSECT_FUNC
 void intersect_node_overlap( bool& valid_isect, float4& isect, const CSGNode* node, const CSGNode* root,
